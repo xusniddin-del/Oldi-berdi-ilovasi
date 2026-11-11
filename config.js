@@ -4,5 +4,5 @@ window.OLDIBERDI_API = "https://script.google.com/macros/s/AKfycbxgQB_WHAKwLpcBI
 // "Dasturchiga murojaat" bo'limi uchun:
 window.OLDIBERDI_DEV = {
   telegram: "mot_075",   // @ belgisisiz
-  phone: ""              // masalan: "+998 90 123 45 67" (bo'sh bo'lsa, qo'ng'iroq tugmasi chiqmaydi)
+  phone: "+998 90 832 44 36"   // bo'sh bo'lsa, qo'ng'iroq tugmasi chiqmaydi
 };
