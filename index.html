@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
 <style>
 /* Layout: one phone-width column; green hero header like the reference poster, white cards, bottom tab bar with a raised + button */
 :root{
@@ -253,6 +253,17 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 .prof-card{display:flex;flex-direction:column;align-items:center;padding:18px;margin-bottom:12px}
 .menu .item{font-weight:600}
 .menu .item svg{width:20px;height:20px;color:var(--muted)}
+/* developer contact & save indicator */
+.copts{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.copt{display:flex;align-items:center;gap:14px;padding:14px;border-radius:16px;background:var(--surface-2);border:1.5px solid var(--line);color:var(--fg);text-decoration:none}
+.copt:active{transform:scale(.99)}
+.copt b{display:block;font-size:16px}
+.copt small{color:var(--muted);font-size:13px}
+.copt .qi{width:48px;height:48px;border-radius:15px;flex-shrink:0}
+.copt .go{margin-left:auto;color:var(--muted)}
+.copt .go svg{width:18px;height:18px;transform:rotate(180deg)}
+.savebar{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:60;display:flex;align-items:center;gap:8px;background:#0e2a1b;color:#fff;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:99px;box-shadow:var(--shadow)}
+.savebar i{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:sp .8s linear infinite}
 /* lock & PIN */
 .lock{min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(170deg,var(--hero-a),var(--hero-b));color:#fff}
 .lock-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-block:40px 16px}
@@ -280,8 +291,8 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=10;
-const WHATS_NEW=["Ma'lumotlar endi Google Sheets'da saqlanadi","Ilovani telefonga ilova sifatida o'rnatish mumkin"];
+const APP_VERSION=11;
+const WHATS_NEW=["Profil → «Dasturchiga murojaat»: qo'ng'iroq yoki Telegram","Ilova tezroq ochiladi va yozuvlar darhol saqlanadi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -326,6 +337,8 @@ const I={
  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
  coin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.4 0-2.5.8-2.5 2s1 1.6 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>',
  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+ chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg>',
+ send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/><path d="M21 3 10 13"/></svg>',
  finger:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 5.5A8 8 0 0 1 20 11v1.5M4 9.5a8 8 0 0 0-.2 1.8V14M8 20a12 12 0 0 1-1.5-6v-2.5a5.5 5.5 0 0 1 11 0V14a14 14 0 0 1-.6 4M12 11.5V14a10 10 0 0 0 2 6M9 12a3 3 0 0 1 6 0"/></svg>',
  backspace:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="m17 9-5 6M12 9l5 6"/></svg>',
  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>',
@@ -358,6 +371,12 @@ async function api(action,data){
  let j;try{j=await r.json()}catch(e){throw new Error("Server javob bermadi. Birozdan keyin urinib ko'ring.")}
  if(!j.ok){if(j.error==='AUTH'){if(S.acc){logout();toast('Sessiya tugadi, qayta kiring')}throw new Error('Qayta kiring')}throw new Error(j.error||'Xatolik yuz berdi')}
  return j}
+const DEV=Object.assign({telegram:'mot_075',phone:''},window.OLDIBERDI_DEV||{});
+/* background saves: the screen changes at once, the server catches up in order */
+let QCHAIN=Promise.resolve();
+function bg(label,task,undo){S.pending=(S.pending||0)+1;showSaving();QCHAIN=QCHAIN.then(()=>task()).catch(e=>{if(undo)undo();compute();saveCache();if(!isTyping())render();toast(label+': '+writeErr(e))}).finally(()=>{S.pending--;showSaving()})}
+function showSaving(){let el=document.getElementById('savebar');if(S.pending>0){if(!el){el=document.createElement('div');el.id='savebar';el.className='savebar';el.setAttribute('role','status');el.innerHTML='<i></i>Saqlanmoqda…';document.body.appendChild(el)}}else if(el)el.remove()}
+window.addEventListener('beforeunload',e=>{if(S.pending>0){e.preventDefault();e.returnValue=''}});
 function setAcc(a){S.acc={...S.acc,...a};LS.set('oldiberdi_acc',JSON.stringify(S.acc))}
 function isTyping(){const a=document.activeElement;return !!a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&!!$('#app')&&$('#app').contains(a)}
 /* photos are kept in Google Drive as "d:<fileId>" and fetched once, then cached on the phone */
@@ -392,7 +411,8 @@ function renderAuth(){
  <div class="err" id="a-err"></div>
  <button class="btn btn-primary" id="a-btn">${reg?"Ro'yxatdan o'tish — bepul":'Kirish'}</button>
  </form>
- <p class="hint" style="text-align:center;margin:14px 0 0">${reg?'Akkauntingizga istalgan telefondan shu raqam va parol bilan kirasiz.':"Akkauntingiz yo'qmi? Yuqoridan «Ro'yxatdan o'tish»ni tanlang."}</p>
+ <p class="hint" style="text-align:center;margin:14px 0 0"><button type="button" class="link" data-act="contactDev">Kirishda muammo bormi? Dasturchiga yozing</button></p>
+ <p class="hint" style="text-align:center;margin:6px 0 0">${reg?'Akkauntingizga istalgan telefondan shu raqam va parol bilan kirasiz.':"Akkauntingiz yo'qmi? Yuqoridan «Ro'yxatdan o'tish»ni tanlang."}</p>
  </div>
  <div class="feat"><div><b>Qarz berdim / oldim</b>Har bir yozuvga rasm va izoh</div><div><b>Odamlar tarixi</b>Kim qancha qarzdor — bir qarashda</div><div><b>Kontaktlardan</b>Telefon kontaktidan tanlash</div><div><b>Muddat nazorati</b>Muddati o'tganlar alohida</div></div></div></div>`;
 }
@@ -438,7 +458,7 @@ function applySync(j,fromCache){
 }
 function saveCache(){if(!S.acc)return;try{localStorage.setItem('oldiberdi_cache',JSON.stringify({acc:{id:S.acc.id},people:Object.values(S.people),tx:Object.values(S.tx)}))}catch(e){}}
 async function sync(){if(!S.acc||S.syncing)return;S.syncing=true;
- try{const j=await api('sync');if(!S.acc)return;applySync(j);if(!isTyping())render();refreshOpenSheets()}
+ try{if(S.pending)return;const j=await api('sync');if(!S.acc||S.pending)return;applySync(j);if(!isTyping())render();refreshOpenSheets()}
  catch(e){if(S.acc&&!S.loaded.p){S.stale=true;if(!isTyping())render()}}
  finally{S.syncing=false}}
 function checkVersion(){fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(v=>{const n=+v.version||0;const was=S.newVer;S.newVer=n>APP_VERSION?n:0;if(!!was!==!!S.newVer&&!isTyping())render()}).catch(()=>{})}
@@ -566,6 +586,7 @@ function vProfile(){const a=S.acc;
   ${BIO.ok?`<button class="item" data-act="toggleBio">${I.finger}<div class="mid">Barmoq izi<div class="t2">${bioGet()?"Yoqilgan · o'chirish uchun bosing":"O'chiq · yoqish uchun bosing"}</div></div></button>`:''}
   <button class="item" data-act="lockNow">${I.lock}<div class="mid">Ilovani hozir qulflash</div></button>
   <button class="item" data-act="currency">${I.coin}<div class="mid">Valyuta<div class="t2">Hozir: ${esc(cur())}</div></div></button>
+  <button class="item" data-act="contactDev">${I.chat}<div class="mid">Dasturchiga murojaat<div class="t2">Savol, taklif yoki muammo bo'lsa</div></div></button>
   <button class="item" data-act="logout" style="color:var(--neg)">${I.logout}<div class="mid">Chiqish</div></button>
  </div>
  <p class="hint" style="margin-top:14px">Akkauntingizga boshqa telefondan kirish uchun shu ilova havolasini oching va <b class="num">${fphone(a.phone)}</b> raqami hamda parolingizni kiriting.</p>
@@ -623,10 +644,11 @@ async function saveTx(){
  const prev=isNew?null:S.tx[id];
  const data={pid:TX.pid,type:TX.type,amount,date:$('#tx-date').value||today(),due:(TX.type==='lend'||TX.type==='borrow')?($('#tx-due').value||''):'',note:$('#tx-note').value.trim(),photo:TX.photo||'',createdAt:prev?.createdAt||now,updatedAt:now,edits:(prev?.edits||[]).slice(-19)};
  if(prev){const ch=[];if(prev.amount!==amount)ch.push(`summa ${fmt(prev.amount)} → ${fmt(amount)}`);if(prev.type!==data.type)ch.push(`tur: ${T[prev.type].short} → ${T[data.type].short}`);if(prev.pid!==data.pid)ch.push('odam almashtirildi');if(prev.date!==data.date)ch.push('sana');if((prev.note||'')!==data.note)ch.push('izoh');if((prev.photo||'')!==data.photo)ch.push('rasm');if((prev.due||'')!==data.due)ch.push('muddat');if(!ch.length){closeSheet();return}data.edits.push({at:now,t:ch.join(', ')})}
- btn.disabled=true;btn.textContent='Saqlanmoqda…';
- try{const j=await api('saveTx',{item:{id,...data}});if(data.photo.startsWith('data:')&&j.item.photo)PH[j.item.photo]=data.photo;S.tx[id]=j.item;compute();saveCache();closeSheet();render();toast(isNew?'Yozib qo\'yildi':'Saqlandi');if(j.item.photo&&S.people[data.pid]&&!S.people[data.pid].photo)touchPerson(data.pid,j.item.photo)}catch(e){err.textContent=writeErr(e);btn.disabled=false;btn.textContent='Saqlash'}
+ const item={id,...data};const needAva=!!data.photo&&!!S.people[data.pid]&&!S.people[data.pid].photo;
+ S.tx[id]=item;compute();saveCache();closeSheet();render();toast(isNew?'Yozib qo\'yildi':'Saqlandi');
+ bg('Yozuv saqlanmadi',async()=>{const j=await api('saveTx',{item});if(data.photo.startsWith('data:')&&j.item.photo)PH[j.item.photo]=data.photo;if(S.tx[id])S.tx[id]=j.item;compute();saveCache();if(needAva&&j.item.photo)await touchPerson(data.pid,j.item.photo)},()=>{if(prev)S.tx[id]=prev;else delete S.tx[id]});
 }
-async function touchPerson(pid,photo,force){const p=S.people[pid];if(!p)return;const now=Date.now();const {id,...rest}=p;const data={...rest,updatedAt:now};if(photo&&(force||!p.photo)){data.photo=photo;data.log=[...(p.log||[]).slice(-29),{at:now,t:'Profil rasmi yozuvdan qo\'yildi'}]}try{const j=await api('savePerson',{item:{id:pid,...data}});S.people[pid]=j.item;compute();saveCache();render();return true}catch(e){if(force)toast(writeErr(e));return false}}
+async function touchPerson(pid,photo,force){const p=S.people[pid];if(!p)return;const now=Date.now();const {id,...rest}=p;const data={...rest,updatedAt:now};if(photo&&(force||!p.photo)){data.photo=photo;data.log=[...(p.log||[]).slice(-29),{at:now,t:'Profil rasmi yozuvdan qo\'yildi'}]}try{const j=await api('savePerson',{item:{id:pid,...data}});S.people[pid]=j.item;compute();saveCache();if(!isTyping())render();return true}catch(e){if(force)toast(writeErr(e));return false}}
 
 function txView(id){
  const t=S.tx[id];if(!t)return;const p=S.people[t.pid]||{name:"O'chirilgan odam"};const m=T[t.type];
@@ -667,11 +689,11 @@ async function savePerson(){
  const log=(prev?.log||[]).slice(-29);
  if(prev){if(prev.name!==name)log.push({at:now,t:`Ism: ${prev.name} → ${name}`});if((prev.phone||'')!==phone)log.push({at:now,t:`Telefon: ${prev.phone?fphone(prev.phone):'—'} → ${phone?fphone(phone):'—'}`});if((prev.photo||'')!==PD.photo)log.push({at:now,t:PD.photo?'Rasm yangilandi':"Rasm olib tashlandi"});if((prev.note||'')!==note)log.push({at:now,t:'Izoh o\'zgardi'})}else log.push({at:now,t:'Yaratildi'});
  const data={name,phone,note,photo:PD.photo||'',createdAt:prev?.createdAt||now,updatedAt:now,log};
- btn.disabled=true;btn.textContent='Saqlanmoqda…';
- try{const j=await api('savePerson',{item:{id,...data}});if(data.photo.startsWith('data:')&&j.item.photo)PH[j.item.photo]=data.photo;S.people[id]=j.item;compute();saveCache();closeSheet();
-  if(PD.forTx&&TX){TX.pid=id;const box=$('#tx-person');if(box)box.innerHTML=personPickHtml();setTimeout(()=>{const a=$('#tx-amount');a&&a.focus()},100)}
-  toast(prev?'Saqlandi':`${name} qo'shildi`);render()
- }catch(e){err.textContent=writeErr(e);btn.disabled=false;btn.textContent='Saqlash'}
+ const item={id,...data};
+ S.people[id]=item;compute();saveCache();closeSheet();
+ if(PD.forTx&&TX){TX.pid=id;const box=$('#tx-person');if(box)box.innerHTML=personPickHtml();setTimeout(()=>{const a=$('#tx-amount');a&&a.focus()},100)}
+ toast(prev?'Saqlandi':`${name} qo'shildi`);render();
+ bg('Odam saqlanmadi',async()=>{const j=await api('savePerson',{item});if(data.photo.startsWith('data:')&&j.item.photo)PH[j.item.photo]=data.photo;if(S.people[id])S.people[id]=j.item;compute();saveCache();if(!isTyping())render()},()=>{if(prev)S.people[id]=prev;else delete S.people[id]});
 }
 
 /* --- profile --- */
@@ -710,10 +732,10 @@ const A={
  importContacts:async()=>{const r=await pickContacts(true);if(!r.length)return;let n=0;for(const c of r){if(Object.values(S.people).some(p=>(c.phone&&p.phone===c.phone)||p.name.toLowerCase()===c.name.toLowerCase()))continue;const now=Date.now();try{const j=await api('savePerson',{item:{id:uid(),name:c.name||fphone(c.phone),phone:c.phone,note:'',photo:'',createdAt:now,log:[{at:now,t:'Kontaktdan qo\'shildi'}]}});S.people[j.item.id]=j.item;compute();render();n++}catch(e){toast(writeErr(e));break}}toast(n?`${n} ta odam qo'shildi`:"Hammasi allaqachon ro'yxatda")},
  txView:d=>txView(d.id),
  txEdit:d=>{closeSheet();txForm({id:d.id})},
- txDel:d=>confirmSheet("Yozuvni o'chirish","Bu yozuv butunlay o'chiriladi va balans qayta hisoblanadi.","O'chirish",async()=>{await api('deleteTx',{id:d.id});delete S.tx[d.id];compute();saveCache();closeAllSheets();render();toast("O'chirildi")}),
+ txDel:d=>confirmSheet("Yozuvni o'chirish","Bu yozuv butunlay o'chiriladi va balans qayta hisoblanadi.","O'chirish",async()=>{const old=S.tx[d.id];delete S.tx[d.id];compute();saveCache();closeAllSheets();render();toast("O'chirildi");bg("O'chirilmadi",()=>api('deleteTx',{id:d.id}),()=>{if(old)S.tx[d.id]=old})}),
  newPerson:d=>personForm({name:d.name||'',forTx:d.for==='tx'}),
  editPerson:d=>personForm({id:d.id}),
- delPerson:d=>{const p=S.people[d.id];const n=Object.values(S.tx).filter(t=>t.pid===d.id);confirmSheet(`${p.name} o'chirilsinmi?`,`Uning ${n.length} ta yozuvi ham o'chiriladi. Buni qaytarib bo'lmaydi.`,"O'chirish",async()=>{await api('deletePerson',{id:d.id});n.forEach(t=>delete S.tx[t.id]);delete S.people[d.id];compute();saveCache();S.view='people';render();toast("O'chirildi")})},
+ delPerson:d=>{const p=S.people[d.id];const n=Object.values(S.tx).filter(t=>t.pid===d.id);confirmSheet(`${p.name} o'chirilsinmi?`,`Uning ${n.length} ta yozuvi ham o'chiriladi. Buni qaytarib bo'lmaydi.`,"O'chirish",async()=>{n.forEach(t=>delete S.tx[t.id]);delete S.people[d.id];compute();saveCache();bg("O'chirilmadi",()=>api('deletePerson',{id:d.id}),()=>{S.people[d.id]=p;n.forEach(t=>S.tx[t.id]=t)});S.view='people';render();toast("O'chirildi")})},
  viewImg:async d=>{const [k,id]=d.src.split(':');const v0=k==='tx'?S.tx[id]?.photo:S.people[id]?.photo;if(!v0)return;const src=phSrc(v0)||await loadPh(v0);if(!src){toast("Rasmni yuklab bo'lmadi");return}const v=document.createElement('div');v.className='viewer';v.innerHTML=`<img src="${esc(src)}" alt="">`;v.onclick=()=>v.remove();document.body.appendChild(v)},
  rmPhoto:(d,el,e)=>{e.preventDefault();if(d.k==='tx'){TX.photo='';el.closest('.field').querySelector('.photo-pick').outerHTML=photoPickHtml('tx','')}},
  copy:async d=>{try{await navigator.clipboard.writeText(d.v);toast('Raqam nusxalandi')}catch(e){toast(d.v)}},
@@ -721,6 +743,7 @@ const A={
  setCur:async d=>{try{const j=await api('setCurrency',{currency:d.v});setAcc(j.acc);closeSheet();render();toast('Valyuta: '+d.v)}catch(e){toast(writeErr(e))}},
  logout:()=>confirmSheet('Chiqish','Akkauntdan chiqasizmi? Keyin raqam va parol bilan qayta kirasiz.','Chiqish',async()=>{logout()}),
  closeSheet:()=>closeSheet(),
+ contactDev:()=>{const ph=normPhone(DEV.phone);openSheet('Dasturchiga murojaat',`<p class="hint" style="margin:0">Ilova bo'yicha savol, taklif yoki muammo bo'lsa, qulay usulni tanlang.</p><div class="copts">${ph?`<a class="copt" href="tel:+${ph}"><span class="qi t-lend">${I.phone}</span><span><b>Qo'ng'iroq qilish</b><small class="num">${fphone(ph)}</small></span><span class="go">${I.left}</span></a>`:''}<a class="copt" href="https://t.me/${esc(DEV.telegram)}" target="_blank" rel="noopener"><span class="qi" style="background:#e2f2fb;color:#1c8fca">${I.send}</span><span><b>Telegram'da yozish</b><small>@${esc(DEV.telegram)}</small></span><span class="go">${I.left}</span></a></div>`)},
  pinKey:d=>{if(S.pinBusy||S.pinBuf.length>=4)return;S.pinBuf+=d.v;S.pinErr='';render();if(S.pinBuf.length===4){S.pinBusy=true;setTimeout(async()=>{try{await pinDone()}finally{S.pinBusy=false}},150)}},
  pinDel:()=>{if(S.pinBusy)return;S.pinBuf=S.pinBuf.slice(0,-1);S.pinErr='';render()},
  bioUnlock:async()=>{if(await bioVerify()){S.locked=false;S.pinBuf='';S.pinTries=0;render();maybeNew()}else toast('Barmoq izi tasdiqlanmadi. PIN kodni kiriting.')},
@@ -732,7 +755,7 @@ const A={
  toggleBio:async()=>{if(bioGet()){LS.del('oldiberdi_bio');toast("Barmoq izi o'chirildi")}else if(await bioEnable())toast('Barmoq izi yoqildi');render()},
  lockNow:()=>{if(!S.acc.pinHash)return;S.locked=true;S.pinBuf='';S.pinErr='';render()},
  setAva:async(d,el)=>{const t=S.tx[d.id];if(!t)return;el.disabled=true;if(await touchPerson(t.pid,t.photo,true)){el.remove();toast('Profil rasmi qo\'yildi')}else el.disabled=false},
- reloadApp:(d,el)=>{el.disabled=true;el.textContent='Yuklanmoqda…';const go=()=>location.reload();if(navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).finally(go);else go()}
+ reloadApp:(d,el)=>{el.disabled=true;el.textContent='Yuklanmoqda…';let done=false;const go=()=>{if(done)return;done=true;location.reload()};const c=navigator.serviceWorker&&navigator.serviceWorker.controller;if(!c)return go();const ch=new MessageChannel();ch.port1.onmessage=go;c.postMessage('refresh',[ch.port2]);setTimeout(go,6000)}
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(!f)return;if(el.tagName==='BUTTON'&&el.type!=='submit')e.preventDefault();f(el.dataset,el,e)});
 document.addEventListener('submit',e=>{e.preventDefault();const k=e.target.dataset.form;({login:doLogin,register:doRegister,tx:saveTx,person:savePerson,profile:saveProfile,pass:savePass})[k]?.(e.target)});
