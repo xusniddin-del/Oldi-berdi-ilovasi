@@ -1,0 +1,17 @@
+{
+  "name": "Oldi-Berdi — qarz daftari",
+  "short_name": "Oldi-Berdi",
+  "description": "Kimga qancha berdingiz, kimdan qancha oldingiz",
+  "lang": "uz",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b5c33",
+  "theme_color": "#0b5c33",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
