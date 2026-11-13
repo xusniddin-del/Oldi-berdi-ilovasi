@@ -296,6 +296,16 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 .share-btns{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 .share-btns .copt{width:100%;text-align:left;font:inherit;cursor:pointer}
 .cf-text{font-size:18px;line-height:1.45;margin:0 0 12px}
+.rem-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:14px;padding:12px 14px;border-radius:18px;background:var(--warn-bg);border:1.5px solid var(--warn);color:var(--fg)}
+.rem-card .mid{flex:1;min-width:0}.rem-card b{display:block;font-size:15px}.rem-card small{color:var(--muted);font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rem-card .qi{width:44px;height:44px;border-radius:14px;flex-shrink:0;background:var(--surface);color:var(--warn)}
+.rem-card .go svg{width:18px;height:18px;transform:rotate(180deg);color:var(--muted)}
+.rem-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.rem-row:last-child{border-bottom:0}
+.rem-row .mid{flex:1;min-width:0}.rem-row b{display:block}.rem-row small{display:block;font-size:12.5px;color:var(--muted)}
+.rem-row .why{color:var(--neg);font-weight:700}.rem-row .why.soon{color:var(--warn)}.rem-row .why.nodue{color:var(--muted)}
+.rem-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.done-pill{font-size:12px;font-weight:800;color:var(--pos)}
 /* lock & PIN */
 .lock{min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(170deg,var(--hero-a),var(--hero-b));color:#fff}
 .lock-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-block:40px 16px}
@@ -323,8 +333,8 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=12;
-const WHATS_NEW=["Ikki tomonlama tasdiq: qarzdor havola orqali «Ha, to'g'ri» deydi","Bir tugma bilan Telegram yoki SMS eslatma","Ishonch reytingi: kim o'z vaqtida qaytaradi","Tez yozish: «Akmalga 500 ming berdim» — yozing yoki gapiring","Dollarda qarz va Markaziy bank kursi","Bo'lib to'lash (nasiya) grafigi"];
+const APP_VERSION=13;
+const WHATS_NEW=["Eslatma va tasdiqlash endi faqat SMS orqali: raqam va matn tayyor bo'ladi","Ilova o'zi so'raydi: muddati o'tgan yoki yaqin qarzdorlarga SMS yuborilsinmi","Muddatsiz qarzlar ham bir necha kunda eslatiladi (Profil → Eslatma sozlamalari)","Raqami yo'q odamga — raqamni kiritasiz va SMS darhol ketadi","Ovoz bilan yozish tuzatildi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -369,6 +379,7 @@ const I={
  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
  coin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.4 0-2.5.8-2.5 2s1 1.6 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>',
  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+ bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>',
  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
@@ -541,7 +552,7 @@ function applySync(j,fromCache){
 }
 function saveCache(){if(!S.acc)return;try{localStorage.setItem('oldiberdi_cache',JSON.stringify({acc:{id:S.acc.id},people:Object.values(S.people),tx:Object.values(S.tx),confirms:S.confirms}))}catch(e){}}
 async function sync(){if(!S.acc||S.syncing)return;S.syncing=true;
- try{if(S.pending)return;const j=await api('sync');if(!S.acc||S.pending)return;applySync(j);if(!isTyping())render();refreshOpenSheets()}
+ try{if(S.pending)return;const j=await api('sync');if(!S.acc||S.pending)return;applySync(j);if(!isTyping())render();refreshOpenSheets();maybeRemindPrompt()}
  catch(e){if(S.acc&&!S.loaded.p){S.stale=true;if(!isTyping())render()}}
  finally{S.syncing=false}}
 function checkVersion(){fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(v=>{const n=+v.version||0;const was=S.newVer;S.newVer=n>APP_VERSION?n:0;if(!!was!==!!S.newVer&&!isTyping())render()}).catch(()=>{})}
@@ -568,7 +579,7 @@ function renderSetup(){const st=S.setup;
  const t={cur:['Hozirgi PIN kod','Avval hozirgi PIN kodingizni kiriting'],pin1:[st.mode==='new'?"PIN kod o'rnating":'Yangi PIN kod',"Ilovaga begonalar kirmasligi uchun 4 xonali kod o'ylab toping"],pin2:['PIN kodni takrorlang','Tasdiqlash uchun yana bir marta kiriting']}[st.step];
  $('#app').innerHTML=`<div class="lock"><div class="lock-top pad"><div class="lock-ic">${I.shield}</div><h2>${t[0]}</h2><p>${t[1]}</p>${pinDots()}</div>${pinPad(false)}<div class="lock-foot">${st.mode==='change'?'<button data-act="pinCancel">Bekor qilish</button>':'<span style="font-size:12.5px;opacity:.8">PIN kod shifrlangan holda saqlanadi</span>'}</div></div>`}
 async function pinDone(){const pin=S.pinBuf;
- if(S.locked){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash){S.locked=false;S.pinBuf='';S.pinTries=0;render();maybeNew()}else{S.pinTries=(S.pinTries||0)+1;S.pinBuf='';if(S.pinTries>=5){logout();toast("5 marta xato kiritildi. Raqam va parol bilan kiring.");return}S.pinErr=`PIN noto'g'ri. Yana ${5-S.pinTries} ta urinish qoldi`;render()}return}
+ if(S.locked){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash){S.locked=false;S.pinBuf='';S.pinTries=0;render();maybeNew();maybeRemindPrompt()}else{S.pinTries=(S.pinTries||0)+1;S.pinBuf='';if(S.pinTries>=5){logout();toast("5 marta xato kiritildi. Raqam va parol bilan kiring.");return}S.pinErr=`PIN noto'g'ri. Yana ${5-S.pinTries} ta urinish qoldi`;render()}return}
  const st=S.setup;if(!st)return;
  if(st.step==='cur'){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash)st.step='pin1';else S.pinErr="Hozirgi PIN noto'g'ri";S.pinBuf='';render();return}
  if(st.step==='pin1'){if(/^(\d)\1{3}$/.test(pin)||pin==='1234'||pin==='4321'){S.pinErr='Bu PIN juda oson. Boshqasini tanlang';S.pinBuf='';render();return}st.first=pin;st.step='pin2';S.pinBuf='';render();return}
@@ -612,6 +623,7 @@ function vHome(){
  <div class="pad"><div class="bal-card"><div class="bal-label">Sof balans <span class="mut">${Object.keys(S.people).length} kishi</span></div><div class="bal-big num ${net>0?'pos':net<0?'neg':''}">${net<0?'−':''}${money(net)}</div><div class="bal-sub">${net>0?'Umumiy hisobda sizga qaytishi kerak':net<0?"Umumiy hisobda siz qaytarishingiz kerak":"Hamma hisob-kitob teng"}</div>
  ${usdOn()&&Object.values(S.tx).some(isUSD)?`<span class="rate-chip num">1 $ = ${fmt(rate())} so'm · MB kursi${S.rate&&S.rate.date?' · '+esc(S.rate.date):''}</span>`:''}
  <div class="bal-split"><button class="tile p" data-act="peopleFilter" data-v="owe"><span>Menga qarzdorlar</span><b class="num">${money(owe)}</b><small>${oweN} kishi</small></button><button class="tile n" data-act="peopleFilter" data-v="debt"><span>Mening qarzlarim</span><b class="num">${money(debt)}</b><small>${debtN} kishi</small></button></div></div>
+ ${(()=>{const rl=remindList();return rl.length?`<button class="rem-card" data-act="remCenter"><span class="qi">${I.bell}</span><span class="mid"><b>Eslatish kerak · ${rl.length} kishi</b><small>${rl.slice(0,3).map(x=>esc(x.p.name)).join(', ')}${rl.length>3?' va boshqalar':''}</small></span><span class="go">${I.left}</span></button>`:''})()}
  ${quickBtns()}
  <form class="quick-in" data-form="quick" autocomplete="off"><div class="qk-wrap"><input id="qk" aria-label="Tez yozish" placeholder="Tez yozish: «Akmalga 500 ming berdim»">${SR?`<button type="button" class="qk-mic" data-act="mic" aria-label="Ovoz bilan yozish">${I.mic}</button>`:''}<button class="qk-go" aria-label="Davom etish">${I.send}</button></div></form>
  ${loadingNote()}
@@ -675,6 +687,7 @@ function vProfile(){const a=S.acc;
   <button class="item" data-act="changePin">${I.shield}<div class="mid">PIN kodni o'zgartirish<div class="t2">Ilovani ochishda so'raladi</div></div></button>
   ${BIO.ok?`<button class="item" data-act="toggleBio">${I.finger}<div class="mid">Barmoq izi<div class="t2">${bioGet()?"Yoqilgan · o'chirish uchun bosing":"O'chiq · yoqish uchun bosing"}</div></div></button>`:''}
   <button class="item" data-act="lockNow">${I.lock}<div class="mid">Ilovani hozir qulflash</div></button>
+  <button class="item" data-act="remSettings">${I.bell}<div class="mid">Eslatma sozlamalari<div class="t2">Muddatsiz qarzlar: har ${remDays()} kunda · ${LS.get('oldiberdi_remauto')==='off'?"o'zi so'ramaydi":"ochilganda so'raydi"}</div></div></button>
   <button class="item" data-act="currency">${I.coin}<div class="mid">Valyuta<div class="t2">Hozir: ${esc(cur())}</div></div></button>
   <button class="item" data-act="contactDev">${I.chat}<div class="mid">Dasturchiga murojaat<div class="t2">Savol, taklif yoki muammo bo'lsa</div></div></button>
   <button class="item" data-act="logout" style="color:var(--neg)">${I.logout}<div class="mid">Chiqish</div></button>
@@ -770,13 +783,38 @@ function txView(id){
 
 function cfPill(id){const c=S.confirms[id];if(id.startsWith('cf_'))return `<span class="cf-pill confirmed">${I.check.replace('<svg','<svg style="width:14px;height:14px"')} Ikki tomonlama</span>`;if(!c)return `<span class="hint">Yuborilmagan</span>`;return c.status==='confirmed'?`<span class="cf-pill confirmed">✓ Tasdiqlandi</span>`:c.status==='rejected'?`<span class="cf-pill rejected">✕ Rad etildi</span>`:`<span class="cf-pill pending">Javob kutilmoqda</span>`}
 function txSentence(type,from,amt,you){return type==='lend'?`${from} ${you?'sizga':''} ${amt} qarz berdi`:type==='borrow'?`${from} ${you?'sizdan':''} ${amt} qarz oldi`:type==='got'?`${from}ga ${amt} qaytarildi`:`${from} ${amt} qaytardi`}
-function shareSheet(title,intro,text,phone){
- const ph=normPhone(phone||'');const nav=!!navigator.share;
- const w=openSheet(title,`<p class="hint" style="margin:0 0 10px">${intro}</p><div class="field"><label for="sh-text">Xabar matni</label><textarea class="inp" id="sh-text" rows="7">${esc(text)}</textarea></div>
- <div class="share-btns"><button class="copt" data-act="shareVia" data-v="tg"><span class="qi" style="background:#e2f2fb;color:#1c8fca">${I.send}</span><span><b>Telegram orqali</b><small>Kontakt tanlab yuborasiz</small></span></button>
- ${ph?`<button class="copt" data-act="shareVia" data-v="sms" data-ph="${ph}"><span class="qi t-lend">${I.chat}</span><span><b>SMS orqali</b><small class="num">${fphone(ph)}</small></span></button>`:''}
- ${nav?`<button class="copt" data-act="shareVia" data-v="any"><span class="qi t-got">${I.link}</span><span><b>Boshqa ilova orqali</b><small>WhatsApp, Instagram va boshqalar</small></span></button>`:''}
- <button class="copt" data-act="shareVia" data-v="copy"><span class="qi t-paid">${I.book}</span><span><b>Nusxalash</b><small>Matnni o'zingiz joylaysiz</small></span></button></div>`,'share');return w}
+/* --- SMS: opens the phone's SMS app with the number and text ready; the person only taps Send --- */
+function smsHref(ph,text){const ios=/iPad|iPhone|iPod/.test(navigator.userAgent);return 'sms:+'+ph+(ios?'&':'?')+'body='+encodeURIComponent(text)}
+function openSms(ph,text){location.href=smsHref(ph,text)}
+function personUpdate(p,patch,logText){const now=Date.now();const {id,...rest}=p;const item={id,...rest,...patch,log:[...(p.log||[]).slice(-29),...(logText?[{at:now,t:logText}]:[])],updatedAt:now};S.people[id]=item;compute();saveCache();bg("O'zgarish saqlanmadi",()=>api('savePerson',{item}).then(j=>{S.people[id]=j.item;saveCache()}));return item}
+function smsSheet(title,intro,text,pid,kind){
+ S.smsCtx={pid,kind};const p=S.people[pid]||{};const ph=normPhone(p.phone||'');
+ openSheet(title,`<p class="hint" style="margin:0 0 10px">${intro}</p>
+ <div class="field"><label for="sh-text">SMS matni</label><textarea class="inp" id="sh-text" rows="7">${esc(text)}</textarea></div>
+ ${ph?'':`<div class="field"><label for="sms-phone">${esc(p.name||'')}ning telefon raqami</label><input class="inp num" id="sms-phone" type="tel" inputmode="tel" placeholder="+998 __ ___ __ __"><span class="hint">Raqam yozilmagan ekan. Kiriting: u saqlanadi va SMS shu raqamga ketadi.</span></div>`}
+ <div class="err" id="sms-err"></div>
+ <button class="btn btn-primary" style="width:100%" data-act="smsSend">${I.chat} ${ph?`SMS yuborish · <span class="num">${fphone(ph)}</span>`:'Saqlash va SMS yuborish'}</button>
+ <p class="hint" style="text-align:center;margin:10px 0 0">SMS ilovangiz ochiladi: raqam va matn tayyor bo'ladi, faqat «Yuborish» ni bosasiz.</p>`,'sms');
+ if(!ph)setTimeout(()=>{const i=$('#sms-phone');i&&i.focus()},300)}
+function smsLog(kind){return kind==='confirm'?'Tasdiqlash havolasi yuborildi (SMS)':'Eslatma yuborildi (SMS)'}
+
+/* --- reminder suggestions: overdue, due today/tomorrow, and debts with no deadline every N days --- */
+function remDays(){return +(LS.get('oldiberdi_remdays')||7)}
+function lastRemind(p){let t=0;(p.log||[]).forEach(l=>{if(/^Eslatma/.test(l.t)&&l.at>t)t=l.at});return t}
+function addDays(ds,k){const [y,m,d]=ds.split('-').map(Number);const x=new Date(y,m-1,d+k);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
+function remindList(){const td=today(),tm=addDays(td,1),out=[];const now=Date.now();
+ for(const p of Object.values(S.people)){const b=S.bal[p.id]||0;if(b<=0)continue;if(+(LS.get('oldiberdi_snooze_'+p.id)||0)>now)continue;
+  const last=lastRemind(p);const since=last?(now-last)/864e5:1e9;
+  let near=null,lastLoan=null;
+  for(const x of Object.values(S.tx)){if(x.pid!==p.id||x.type!=='lend')continue;if(!lastLoan||x.date>lastLoan)lastLoan=x.date;const L=S.alloc[x.id];if(L&&L.left<=0.5)continue;const d=L&&L.inst.length?(nextInst(L)||{}).d:x.due;if(d&&d>=td&&(!near||d<near))near=d}
+  const od=overdueOf(p.id);
+  if(od){if(since>=2)out.push({p,why:'od',rank:0,label:`Muddati ${fdate(od)} da o'tgan`});continue}
+  if(near&&near<=tm){if(since>=1)out.push({p,why:'soon',rank:1,label:near===td?'Muddati bugun':'Muddati ertaga'});continue}
+  if(!near){const age=lastLoan?Math.floor((new Date(td)-new Date(lastLoan))/864e5):0;if(age>=remDays()&&since>=remDays())out.push({p,why:'nodue',rank:2,label:`Muddat kiritilmagan · ${age} kundan beri`})}
+ }
+ return out.sort((a,b)=>a.rank-b.rank||(S.bal[b.p.id]||0)-(S.bal[a.p.id]||0))}
+function remRowHtml(x){const ph=normPhone(x.p.phone||'');return `<div class="rem-row" id="rem-${x.p.id}">${avatar(x.p,42)}<div class="mid"><b>${esc(x.p.name)}</b><small class="why ${x.why}">${x.label}</small><small class="num">${money(S.bal[x.p.id]||0)}${ph?'':' · raqam yo\'q'}</small></div><div class="rem-btns"><button class="btn btn-primary btn-sm" data-act="remSms" data-id="${x.p.id}">${ph?'SMS yuborish':'Raqam kiritish'}</button><button class="btn btn-ghost btn-sm" data-act="remSnooze" data-id="${x.p.id}">Keyinroq</button></div></div>`}
+function maybeRemindPrompt(){if(!S.acc||S.locked||S.setup||sheets.length||S.view!=='home'||!S.loaded.t)return;if(LS.get('oldiberdi_remauto')==='off')return;if(LS.get('oldiberdi_remprompt')===today())return;if(!remindList().length)return;LS.set('oldiberdi_remprompt',today());setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup)A.remCenter()},900)}
 function remindText(p){const b=S.bal[p.id]||0;const od=overdueOf(p.id);let next=null,due=null;
  for(const x of Object.values(S.tx)){if(x.pid!==p.id||x.type!=='lend')continue;const L=S.alloc[x.id];if(!L||L.left<=0.5)continue;const i=nextInst(L);if(i&&(!next||i.d<next.d))next={d:i.d,a:L.t.cur==='USD'?'$'+fmt(i.a):fmt(i.a)+' '+cur()};if(!L.inst.length&&x.due&&(!due||x.due<due))due=x.due}
  let s=`Assalomu alaykum, ${p.name}!\n\nYodingizga solib qo'ymoqchi edim: sizda ${money(b)} qarz bor`;
@@ -904,22 +942,43 @@ const A={
  newTx:d=>{if(!S.loaded.p){toast('Ma\'lumotlar yuklanmoqda…');return}txForm({type:d.type,pid:d.pid||(S.view==='person'?S.pid:null)})},
  txType:d=>{TX.type=d.v;$('#tx-seg').innerHTML=segHtml();syncDue()},
  txCur:(d,el)=>{TX.cur=TX.cur==='USD'?'':'USD';el.textContent=TX.cur==='USD'?'$':"so'm";planPreview();convHint()},
- mic:(d,el)=>{if(!SR)return;if(S.rec){try{S.rec.stop()}catch(e){}return}const inp=$('#qk');const r=new SR();r.lang='uz-UZ';r.interimResults=true;r.maxAlternatives=1;S.rec=r;el.classList.add('on');inp.value='';inp.placeholder='Gapiring…';
-  r.onresult=e=>{let x='';for(const res of e.results)x+=res[0].transcript;inp.value=x};
-  r.onerror=e=>{toast(e.error==='not-allowed'||e.error==='service-not-allowed'?"Mikrofonga ruxsat bering":"Ovozni tanib bo'lmadi — yozib kiriting")};
-  r.onend=()=>{S.rec=null;el.classList.remove('on');inp.placeholder="Tez yozish: «Akmalga 500 ming berdim»";if(inp.value.trim())doQuick()};
-  try{r.start()}catch(e){S.rec=null;el.classList.remove('on')}},
- remind:d=>{const p=S.people[d.id];if(!p)return;S.shareCtx={kind:'remind',pid:p.id};shareSheet('Eslatma yuborish',`${esc(p.name)}ga qarz haqida muloyim eslatma. Matnni xohlaganingizcha o'zgartiring.`,remindText(p),p.phone)},
+ mic:async(d,el)=>{const inp=$('#qk');if(!inp)return;const PH="Tez yozish: «Akmalga 500 ming berdim»";
+  if(S.rec){try{S.rec.stop()}catch(e){}return}
+  const fallback=msg=>{S.rec=null;clearTimeout(S.recT);el.classList.remove('on');inp.placeholder=PH;inp.focus();toast(msg||"Klaviaturadagi 🎤 tugmasini bosib gapiring")};
+  if(!SR)return fallback();
+  el.classList.add('on');inp.value='';inp.placeholder='Gapiring…';S.rec={stop(){}};
+  try{if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){const st=await navigator.mediaDevices.getUserMedia({audio:true});st.getTracks().forEach(t=>t.stop())}}catch(e){return fallback("Mikrofonga ruxsat berilmadi. Klaviaturadagi 🎤 tugmasini bosib gapiring")}
+  const r=new SR();r.lang='uz-UZ';r.interimResults=true;r.continuous=true;r.maxAlternatives=1;S.rec=r;let got='',err='';
+  r.onresult=e=>{let x='';for(const res of e.results)x+=res[0].transcript;got=x;inp.value=x;clearTimeout(S.recT);S.recT=setTimeout(()=>{try{r.stop()}catch(_){}},1800)};
+  r.onerror=e=>{err=e.error};
+  r.onend=()=>{S.rec=null;clearTimeout(S.recT);el.classList.remove('on');inp.placeholder=PH;
+   if(got.trim()){doQuick();return}
+   if(err==='no-speech'||!err)toast("Hech narsa eshitilmadi. Tugmani bosib, keyin gapiring");
+   else fallback(err==='not-allowed'||err==='service-not-allowed'?"Ovozli yozish bu ilovada yopiq. Klaviaturadagi 🎤 tugmasini bosib gapiring":"Ovozni tanib bo'lmadi. Klaviaturadagi 🎤 tugmasini bosib gapiring")};
+  try{r.start()}catch(e){return fallback()}
+  S.recT=setTimeout(()=>{try{r.stop()}catch(_){}},10000)},
+ remind:d=>{const p=S.people[d.id];if(!p)return;smsSheet('Eslatma (SMS)',`${esc(p.name)}ga qarz haqida muloyim eslatma. Matnni xohlaganingizcha o'zgartiring.`,remindText(p),p.id,'remind')},
  shareConfirm:async(d,el)=>{const t=S.tx[d.id];if(!t)return;const p=S.people[t.pid]||{name:''};el.disabled=true;const old=el.innerHTML;el.textContent='Havola tayyorlanmoqda…';
   try{await QCHAIN;const j=await api('shareTx',{id:d.id});S.confirms[d.id]={status:j.status,token:j.token};saveCache();
    const amt=amtTxt(t);const me=S.acc.name;const desc=t.type==='lend'?`${me} sizga ${amt} qarz berdi`:t.type==='borrow'?`${me} sizdan ${amt} qarz oldi`:t.type==='got'?`siz ${me}ga ${amt} qaytardingiz`:`${me} sizga ${amt} qaytardi`;
-   const text=`Assalomu alaykum, ${p.name}!
-
-Oldi-Berdi'da yozuv: ${desc} (${fdate(t.date)}).
-Iltimos, to'g'riligini tasdiqlang:
-${confirmLink(j.token)}`;
-   S.shareCtx={kind:'confirm',id:d.id};closeSheet();shareSheet('Tasdiqlashga yuborish',`Havolani ${esc(p.name)}ga yuboring. U ochib, «Ha, to'g'ri» tugmasini bosadi va yozuv ikki tomonlama tasdiqlanadi.`,text,p.phone)}
+   const text=`Assalomu alaykum, ${p.name}!\nOldi-Berdi: ${desc} (${fdate(t.date)}).\nTasdiqlang: ${confirmLink(j.token)}`;
+   closeSheet();smsSheet('Tasdiqlashga yuborish',`Havola SMS bilan ${esc(p.name)}ga boradi. U ochib, «Ha, to'g'ri» ni bosadi va yozuv ikki tomonlama tasdiqlanadi.`,text,t.pid,'confirm')}
   catch(e){toast(writeErr(e));el.disabled=false;el.innerHTML=old}},
+ smsSend:()=>{const c=S.smsCtx||{};let p=S.people[c.pid];if(!p)return;const text=($('#sh-text')||{}).value||'';let ph=normPhone(p.phone||'');const patch={};
+  if(!ph){const v=normPhone(($('#sms-phone')||{}).value);if(v.length<9||v.length>15){$('#sms-err').textContent="Telefon raqamni to'g'ri kiriting";return}ph=v;patch.phone=v}
+  personUpdate(p,patch,smsLog(c.kind)+(patch.phone?' · telefon qo\'shildi':''));
+  openSms(ph,text);closeSheet();const row=$('#rem-'+p.id);if(row)row.querySelector('.rem-btns').innerHTML='<span class="done-pill">✓ Yuborildi</span>';render()},
+ remCenter:()=>{const rl=remindList();if(!rl.length){toast("Hozircha eslatish kerak bo'lgan odam yo'q");return}
+  openSheet('Eslatma yuborish vaqti',`<p class="hint" style="margin:0 0 4px">Qarzini qaytarish vaqti kelganlar. SMS yuborilsinmi?</p><div>${rl.map(remRowHtml).join('')}</div><button class="link" style="margin-top:10px" data-act="remSettings">Eslatma sozlamalari</button>`,'rem')},
+ remSms:(d,el)=>{const p=S.people[d.id];if(!p)return;const ph=normPhone(p.phone||'');
+  if(!ph){smsSheet('Eslatma (SMS)',`${esc(p.name)}ning raqami yo'q. Raqamni kiriting — saqlanadi va eslatma darhol yuboriladi.`,remindText(p),p.id,'remind');return}
+  personUpdate(p,{},smsLog('remind'));openSms(ph,remindText(p));el.parentElement.innerHTML='<span class="done-pill">✓ Yuborildi</span>';render()},
+ remSnooze:(d,el)=>{const t=new Date();t.setDate(t.getDate()+1);t.setHours(6,0,0,0);LS.set('oldiberdi_snooze_'+d.id,String(t.getTime()));const row=$('#rem-'+d.id);if(row)row.remove();render();if(!document.querySelector('.rem-row'))closeSheet()},
+ remSettings:()=>{const cur=remDays();const auto=LS.get('oldiberdi_remauto')!=='off';
+  openSheet('Eslatma sozlamalari',`<p class="hint" style="margin-top:0">Muddat kiritilmagan qarzlar bo'yicha necha kunda bir eslatish taklif qilinsin?</p><div class="chips" style="flex-wrap:wrap">${[3,7,14,30].map(n=>`<button class="chip ${cur===n?'on':''}" data-act="remDaysSet" data-v="${n}">${n} kun</button>`).join('')}</div>
+  <label class="chk" style="margin-top:14px"><input type="checkbox" id="rem-auto" ${auto?'checked':''}> Ilova ochilganda o'zi so'rasin</label>
+  <p class="hint">Muddati o'tganlar har 2 kunda, muddati bugun yoki ertaga bo'lganlar bir marta taklif qilinadi.</p>`,'remset')},
+ remDaysSet:d=>{LS.set('oldiberdi_remdays',d.v);closeSheet();A.remSettings();render()},
  shareVia:async(d)=>{const text=($('#sh-text')||{}).value||'';
   if(d.v==='copy'){try{await navigator.clipboard.writeText(text);toast('Nusxalandi')}catch(e){const ta=$('#sh-text');ta.select();toast('Matnni belgilab nusxalang')}}
   else if(d.v==='tg'){window.open('https://t.me/share/url?url='+encodeURIComponent(text),'_blank')}
@@ -961,7 +1020,7 @@ ${confirmLink(j.token)}`;
  reloadApp:(d,el)=>{el.disabled=true;el.textContent='Yuklanmoqda…';let done=false;const go=()=>{if(done)return;done=true;location.reload()};const c=navigator.serviceWorker&&navigator.serviceWorker.controller;if(!c)return go();const ch=new MessageChannel();ch.port1.onmessage=go;c.postMessage('refresh',[ch.port2]);setTimeout(go,6000)}
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(!f)return;if(el.tagName==='BUTTON'&&el.type!=='submit')e.preventDefault();f(el.dataset,el,e)});
-document.addEventListener('change',e=>{if(e.target.id==='tx-plan-on'&&TX){TX.planOn=e.target.checked;const b=$('#tx-plan-box');if(b)b.hidden=!TX.planOn;syncDue()}});
+document.addEventListener('change',e=>{if(e.target.id==='rem-auto'){LS.set('oldiberdi_remauto',e.target.checked?'on':'off');render()}if(e.target.id==='tx-plan-on'&&TX){TX.planOn=e.target.checked;const b=$('#tx-plan-box');if(b)b.hidden=!TX.planOn;syncDue()}});
 document.addEventListener('submit',e=>{e.preventDefault();const k=e.target.dataset.form;({quick:doQuick,login:doLogin,register:doRegister,tx:saveTx,person:savePerson,profile:saveProfile,pass:savePass})[k]?.(e.target)});
 document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.input==='pq'){S.pq=t.value;render._focus='pq';render()}
