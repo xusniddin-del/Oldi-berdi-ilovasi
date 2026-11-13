@@ -291,6 +291,8 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 .qk-wrap button svg{width:20px;height:20px}
 .qk-go{background:var(--brand);color:var(--on-brand)}
 .qk-mic{background:var(--surface-2);color:var(--brand)}
+.qk-mic{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.qk-mic.busy{opacity:.55;pointer-events:none}
 .qk-mic.on{background:var(--neg);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 8px rgba(217,80,47,.18)}}
 .share-btns{display:flex;flex-direction:column;gap:10px;margin-top:12px}
@@ -333,8 +335,8 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=13;
-const WHATS_NEW=["Eslatma va tasdiqlash endi faqat SMS orqali: raqam va matn tayyor bo'ladi","Ilova o'zi so'raydi: muddati o'tgan yoki yaqin qarzdorlarga SMS yuborilsinmi","Muddatsiz qarzlar ham bir necha kunda eslatiladi (Profil → Eslatma sozlamalari)","Raqami yo'q odamga — raqamni kiritasiz va SMS darhol ketadi","Ovoz bilan yozish tuzatildi"];
+const APP_VERSION=14;
+const WHATS_NEW=["Ovoz bilan yozish: mikrofon tugmasini ushlab turib gapiring, qo'yib yuborsangiz o'zi yozadi","Ovoz o'zbek tilida taniladi, klaviatura kerak emas"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -425,7 +427,7 @@ function bg(label,task,undo){S.pending=(S.pending||0)+1;showSaving();QCHAIN=QCHA
 function showSaving(){let el=document.getElementById('savebar');if(S.pending>0){if(!el){el=document.createElement('div');el.id='savebar';el.className='savebar';el.setAttribute('role','status');el.innerHTML='<i></i>Saqlanmoqda…';document.body.appendChild(el)}}else if(el)el.remove()}
 window.addEventListener('beforeunload',e=>{if(S.pending>0){e.preventDefault();e.returnValue=''}});
 function setAcc(a){S.acc={...S.acc,...a};LS.set('oldiberdi_acc',JSON.stringify(S.acc))}
-function isTyping(){if(S.rec)return true;const a=document.activeElement;return !!a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&!!$('#app')&&$('#app').contains(a)}
+function isTyping(){if(S.rec||(typeof VR!=='undefined'&&VR.on))return true;const a=document.activeElement;return !!a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&!!$('#app')&&$('#app').contains(a)}
 /* photos are kept in Google Drive as "d:<fileId>" and fetched once, then cached on the phone */
 const PH={},phWait={};
 function phSrc(v){if(!v)return'';if(v.startsWith('data:'))return v;if(v.startsWith('d:')){if(PH[v])return PH[v];const c=LS.get('ph_'+v);if(c){PH[v]=c;return c}loadPh(v);return''}return''}
@@ -625,7 +627,7 @@ function vHome(){
  <div class="bal-split"><button class="tile p" data-act="peopleFilter" data-v="owe"><span>Menga qarzdorlar</span><b class="num">${money(owe)}</b><small>${oweN} kishi</small></button><button class="tile n" data-act="peopleFilter" data-v="debt"><span>Mening qarzlarim</span><b class="num">${money(debt)}</b><small>${debtN} kishi</small></button></div></div>
  ${(()=>{const rl=remindList();return rl.length?`<button class="rem-card" data-act="remCenter"><span class="qi">${I.bell}</span><span class="mid"><b>Eslatish kerak · ${rl.length} kishi</b><small>${rl.slice(0,3).map(x=>esc(x.p.name)).join(', ')}${rl.length>3?' va boshqalar':''}</small></span><span class="go">${I.left}</span></button>`:''})()}
  ${quickBtns()}
- <form class="quick-in" data-form="quick" autocomplete="off"><div class="qk-wrap"><input id="qk" aria-label="Tez yozish" placeholder="Tez yozish: «Akmalga 500 ming berdim»">${SR?`<button type="button" class="qk-mic" data-act="mic" aria-label="Ovoz bilan yozish">${I.mic}</button>`:''}<button class="qk-go" aria-label="Davom etish">${I.send}</button></div></form>
+ <form class="quick-in" data-form="quick" autocomplete="off"><div class="qk-wrap"><input id="qk" aria-label="Tez yozish" placeholder="Tez yozish: «Akmalga 500 ming berdim»">${navigator.mediaDevices||SR?`<button type="button" class="qk-mic" data-hold="mic" aria-label="Ushlab turib gapiring" title="Ushlab turib gapiring">${I.mic}</button>`:''}<button class="qk-go" aria-label="Davom etish">${I.send}</button></div></form>
  ${loadingNote()}
  ${od.length?`<div class="sec-head"><h2>Muddati o'tganlar</h2><span class="badge warn">${od.length}</span></div><div class="card list">${od.slice(0,5).map(x=>personRow(x.p)).join('')}</div>`:''}
  <div class="sec-head"><h2>So'nggi yozuvlar</h2>${recent.length?'<button class="link" data-act="go" data-v="history">Hammasi</button>':''}</div>
@@ -857,6 +859,47 @@ function parseQuick(raw){
  return {type,amount,cur:usd&&usdOn()?'USD':'',pid:best?best.p.id:null,name}}
 function doQuick(){const inp=$('#qk');const raw=(inp&&inp.value||'').trim();if(!raw){toast("Masalan: «Akmalga 500 ming berdim»");return}
  const r=parseQuick(raw);txForm({type:r.type,pid:r.pid,amount:r.amount||'',cur:r.cur,q:r.pid?'':r.name});inp.value=''}
+
+/* --- voice: hold the mic, speak, release. The server (Gemini) turns the recording into Uzbek text --- */
+const QK_PH="Tez yozish: «Akmalga 500 ming berdim»";
+const VR={on:false};
+async function voiceStart(btn){
+ if(VR.on)return;const inp=$('#qk');if(!inp)return;
+ if(S.api<3)return A.mic({},btn);
+ if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){toast("Bu telefonda mikrofon ishlamaydi");return}
+ Object.assign(VR,{on:true,btn,chunks:[],t0:Date.now(),released:false,ctx:null});btn.classList.add('on');inp.value='';inp.placeholder="Gapiring… tugmani qo'yib yuboring";
+ try{VR.stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}})}
+ catch(e){voiceReset();toast("Mikrofonga ruxsat bering: telefon so'raganda «Ruxsat berish» ni bosing");return}
+ if(VR.released){voiceReset();toast("Tugmani ushlab turib gapiring, keyin qo'yib yuboring");return}
+ const AC=window.AudioContext||window.webkitAudioContext;VR.ctx=new AC();VR.rate=VR.ctx.sampleRate;VR.t0=Date.now();
+ VR.src=VR.ctx.createMediaStreamSource(VR.stream);VR.proc=VR.ctx.createScriptProcessor(4096,1,1);
+ VR.proc.onaudioprocess=e=>{if(VR.on)VR.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)))};
+ VR.src.connect(VR.proc);VR.proc.connect(VR.ctx.destination);
+ VR.timer=setTimeout(()=>voiceStop(),15000)}
+function voiceReset(){VR.on=false;clearTimeout(VR.timer);try{VR.proc&&VR.proc.disconnect();VR.src&&VR.src.disconnect()}catch(e){}try{VR.stream&&VR.stream.getTracks().forEach(t=>t.stop())}catch(e){}try{VR.ctx&&VR.ctx.close()}catch(e){}
+ VR.proc=VR.src=VR.stream=VR.ctx=null;if(VR.btn)VR.btn.classList.remove('on');const inp=$('#qk');if(inp)inp.placeholder=QK_PH}
+async function voiceStop(){
+ if(!VR.on)return;VR.released=true;if(!VR.ctx)return;
+ const chunks=VR.chunks,rate=VR.rate,dur=(Date.now()-VR.t0)/1000;voiceReset();
+ if(dur<0.7||!chunks.length){toast("Tugmani ushlab turib gapiring, keyin qo'yib yuboring");return}
+ const inp=$('#qk'),btn=$('.qk-mic');if(inp)inp.placeholder='Tanilmoqda…';btn&&btn.classList.add('busy');
+ try{const j=await api('voice',{audio:await blobToB64(encodeWav(chunks,rate)),mime:'audio/wav'});const text=(j.text||'').trim();
+  if(!text){toast("Hech narsa eshitilmadi, qayta urinib ko'ring");return}
+  const box=$('#qk');if(box){box.value=text;doQuick()}}
+ catch(e){toast(e.message==='VOICE_OFF'?"Ovozli yozish serverda hali yoqilmagan":writeErr(e))}
+ finally{const b=$('.qk-mic');b&&b.classList.remove('busy');const i=$('#qk');if(i)i.placeholder=QK_PH}}
+function encodeWav(chunks,inRate){const outRate=Math.min(16000,inRate);let len=0;chunks.forEach(c=>len+=c.length);const data=new Float32Array(len);let o=0;chunks.forEach(c=>{data.set(c,o);o+=c.length});
+ const ratio=inRate/outRate,n=Math.floor(len/ratio),pcm=new Int16Array(n);
+ for(let i=0;i<n;i++){const a=Math.floor(i*ratio),b=Math.min(len,Math.floor((i+1)*ratio));let sum=0,c=0;for(let k=a;k<b;k++){sum+=data[k];c++}const v=Math.max(-1,Math.min(1,c?sum/c:0));pcm[i]=v<0?v*0x8000:v*0x7fff}
+ const buf=new ArrayBuffer(44+n*2),dv=new DataView(buf),w=(off,str)=>{for(let i=0;i<str.length;i++)dv.setUint8(off+i,str.charCodeAt(i))};
+ w(0,'RIFF');dv.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,outRate,true);dv.setUint32(28,outRate*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,n*2,true);
+ new Int16Array(buf,44).set(pcm);return new Blob([buf],{type:'audio/wav'})}
+function blobToB64(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(b)})}
+document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('[data-hold=mic]');if(!b)return;e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}voiceStart(b)});
+['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev,()=>{if(VR.on)voiceStop()}));
+document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('[data-hold=mic]'))e.preventDefault()});
+document.addEventListener('keydown',e=>{const b=e.target.closest&&e.target.closest('[data-hold=mic]');if(b&&(e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();voiceStart(b)}});
+document.addEventListener('keyup',e=>{if(e.target.closest&&e.target.closest('[data-hold=mic]')&&(e.key===' '||e.key==='Enter'))voiceStop()});
 
 /* --- confirmation page (opened from a ?c= link) --- */
 let CF=null;
