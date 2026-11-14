@@ -328,6 +328,26 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 .lock-foot{text-align:center;padding-block:20px calc(26px + env(safe-area-inset-bottom,0px))}
 .lock-foot button:not(.btn){color:#fff;opacity:.9;font-weight:600;text-decoration:underline;padding:8px}
 .btn.lime{background:var(--lime);color:#0b2a17;width:100%}
+.lang-sw{display:inline-flex;background:rgba(255,255,255,.16);border-radius:999px;padding:3px;margin:0 0 14px;gap:2px}
+.lang-sw button{border:0;background:none;color:inherit;font:inherit;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;opacity:.8;cursor:pointer}
+.lang-sw button.on{background:#fff;color:var(--brand-deep);opacity:1}
+.sec-links{display:flex;gap:14px}
+.rmonth{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;margin:4px 0 12px}
+.rmonth b{font-size:17px}.rmonth .icon-btn:disabled{opacity:.3}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rtile{border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.rtile span{font-size:13px;font-weight:700;opacity:.85}.rtile b{font-size:clamp(17px,5vw,22px);overflow-wrap:anywhere}.rtile small{font-size:12px;opacity:.75}
+.rtile.p{background:var(--pos-bg);color:var(--pos)}.rtile.t{background:var(--teal-bg);color:var(--teal)}.rtile.n{background:var(--neg-bg);color:var(--neg)}.rtile.l{background:var(--plum-bg);color:var(--plum)}
+.rcard{padding:14px;margin-top:12px}.rrow{display:flex;justify-content:space-between;align-items:center;font-weight:700}.rrow b{font-size:20px;color:var(--brand)}
+.rbar,.dbar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:8px}.rbar i,.dbar i{display:block;height:100%;background:var(--brand);border-radius:99px}
+.dbar{height:6px;margin-top:6px}.dbar i{background:var(--pos)}
+.rchart{width:100%;height:auto;display:block}.rchart .ax{stroke:var(--line)}.rchart .b1{fill:var(--brand)}.rchart .b2{fill:var(--teal);opacity:.55}.rchart g:not(.on) .b1{opacity:.55}.rchart g.on .b2{opacity:1}
+.rchart .lb{font-size:10px;fill:var(--muted);font-weight:600}.rchart g.on .lb{fill:var(--fg);font-weight:800}.rchart .vl{font-size:8.5px;fill:var(--muted)}
+.rleg{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--muted);margin-top:6px}.rleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.rleg i.b1{background:var(--brand)}.rleg i.b2{background:var(--teal)}
+.rtable{padding:4px 0}.rth,.rtr{display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;padding:10px 14px;align-items:center;text-align:left}
+.rth{font-size:12px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--line)}.rth span:not(:first-child),.rtr .num{text-align:right;min-width:72px}
+.rtr{width:100%;border:0;background:none;font:inherit;color:inherit;border-bottom:1px solid var(--line);cursor:pointer}.rtr:last-child{border-bottom:0}
+.rtr .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rtr .sub{grid-column:1/-1;color:var(--muted);font-size:12px;margin-top:-2px}
 </style>
 </head>
 <body>
@@ -335,8 +355,8 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=14;
-const WHATS_NEW=["Ovoz bilan yozish: mikrofon tugmasini ushlab turib gapiring, qo'yib yuborsangiz o'zi yozadi","Ovoz o'zbek tilida taniladi, klaviatura kerak emas"];
+const APP_VERSION=15;
+const WHATS_NEW=["Oylik hisobot: qancha berildi, qancha qaytdi, kim ko'p qarzdor — grafiklar bilan","Hisobotni Excel faylga yuklab olish","Rus tili: Profil → Til bo'limidan almashtiriladi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -358,6 +378,141 @@ function toast(msg){document.querySelectorAll('.toast').forEach(t=>t.remove());c
 function compressImage(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>{const img=new Image();img.onload=()=>{let max=760,q=.74,url='';for(let i=0;i<6;i++){const s=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);url=c.toDataURL('image/jpeg',q);if(url.length<160000)break;max=Math.round(max*.8);q=Math.max(.45,q-.08)}res(url)};img.onerror=()=>rej(new Error('img'));img.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
 const CONTACTS_OK=!!(navigator.contacts&&navigator.contacts.select);
 async function pickContacts(multiple){try{const r=await navigator.contacts.select(['name','tel'],{multiple:!!multiple});return (r||[]).map(c=>({name:((c.name||[])[0]||'').trim(),phone:normPhone((c.tel||[])[0]||'')})).filter(c=>c.name||c.phone)}catch(e){toast("Kontaktlarni ochib bo'lmadi. Ismni qo'lda yozing.");return[]}}
+
+/* ============ language: Uzbek (source) / Russian ============ */
+let LANG=(()=>{const v=LS.get('oldiberdi_lang');if(v)return v;return /^ru/i.test(navigator.language||'')?'ru':'uz'})();
+function isRu(){return LANG==='ru'}
+const RU_MON_G=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const RU_MON_N=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+const RU_MON_S={yan:'янв',fev:'фев',mar:'мар',apr:'апр',may:'мая',iyu:'июн',avg:'авг',sen:'сен',okt:'окт',noy:'ноя',dek:'дек'};
+const RU={
+"Oldim":"Взял","Berdim":"Дал","Qaytardi":"Мне вернули","Qaytardim":"Я вернул","Oldi":"Взял","Berdi":"Дал",
+"Qarz berdim":"Дал в долг","Qarz oldim":"Взял в долг","Qarzini qaytardi":"Мне вернули долг","Qarzimni qaytardim":"Я вернул долг",
+"U sizga qarzdor":"Он(а) вам должен","Siz unga qarzdor":"Вы ему должны","Uning qarzi kamayadi":"Его долг уменьшится","Sizning qarzingiz kamayadi":"Ваш долг уменьшится",
+"Asosiy":"Главная","Odamlar":"Люди","Tarix":"История","Profil":"Профиль","Yangi yozuv":"Новая запись","Hisobot":"Отчёт",
+"Xayrli tong":"Доброе утро","Xayrli kun":"Добрый день","Xayrli kech":"Добрый вечер","Xayrli tun":"Доброй ночи",
+"Onlayn · sinxronlangan":"Онлайн · синхронизировано","Onlayn: istalgan telefondan kirish mumkin":"Онлайн: вход с любого телефона",
+"Faqat shu qurilmada":"Только на этом устройстве","Faqat shu qurilmada saqlanmoqda":"Хранится только на этом устройстве",
+"Sof balans":"Чистый баланс","Umumiy hisobda sizga qaytishi kerak":"Всего вам должны вернуть","Umumiy hisobda siz qaytarishingiz kerak":"Всего вы должны вернуть","Hamma hisob-kitob teng":"Все расчёты закрыты",
+"Menga qarzdorlar":"Мне должны","Mening qarzlarim":"Мои долги","Menga qarzdor":"Мне должны","Men qarzdorman":"Я должен","Hisob teng":"Расчёт закрыт","hisob teng":"расчёт закрыт",
+"Sizga qarzdor":"Вам должен","sizga qarzdor":"вам должен","Siz unga qarzdorsiz":"Вы ему должны","siz qarzdorsiz":"вы должны",
+"Muddati o'tganlar":"Просроченные","muddati o'tgan":"просрочен","So'nggi yozuvlar":"Последние записи","Hammasi":"Все",
+"Daftar hali bo'sh":"Тетрадь пока пуста","Pastdagi yashil «+» tugmasini bosib birinchi qarzni yozing.":"Нажмите зелёную кнопку «+» внизу и запишите первый долг.",
+"Tez yozish":"Быстрая запись","Tez yozish: «Akmalga 500 ming berdim»":"Быстро: «Акмалю 500 тысяч дал»","Davom etish":"Продолжить","Masalan: «Akmalga 500 ming berdim»":"Например: «Akmalga 500 ming berdim»",
+"Eslatish kerak":"Нужно напомнить","va boshqalar":"и другие",
+"Ism yoki raqam bo'yicha qidirish":"Поиск по имени или номеру","Ism yoki izoh bo'yicha qidirish":"Поиск по имени или примечанию",
+"Hech kim topilmadi":"Никого не найдено","Hali hech kim qo'shilmagan":"Пока никого нет","Yuqoridagi tugma bilan odam qo'shing yoki qarz yozayotganda yarating.":"Добавьте человека кнопкой вверху или создайте при записи долга.",
+"Telefon yozilmagan":"Телефон не указан","Kontaktlardan qo'shish":"Добавить из контактов","Yangi odam":"Новый человек",
+"Eslatma yuborish":"Отправить напоминание","Eslatma (SMS)":"Напоминание (SMS)","To'lov grafigi":"График платежей","Tarix":"История","O'zgarishlar":"Изменения","Odamni o'chirish":"Удалить человека",
+"Hali yozuv yo'q":"Записей пока нет","Yuqoridagi tugmalardan birini bosing.":"Нажмите одну из кнопок выше.","Jami berilgan:":"Всего дано:","· Jami olingan:":"· Всего взято:",
+"Ishonchli":"Надёжный","O'rtacha":"Средне","Kechiktiradi":"Задерживает","o'z vaqtida qaytarish":"возврат вовремя",
+"Hammasi":"Все","Yozuv topilmadi":"Записей не найдено","Qarz yozganingizda shu yerda ko'rinadi.":"Здесь появятся ваши записи.",
+"Ma'lumotlarni o'zgartirish":"Изменить данные","Ism, telefon, rasm":"Имя, телефон, фото","Parolni o'zgartirish":"Сменить пароль","PIN kodni o'zgartirish":"Сменить PIN-код","Ilovani ochishda so'raladi":"Запрашивается при входе",
+"Barmoq izi":"Отпечаток пальца","Yoqilgan · o'chirish uchun bosing":"Включён · нажмите, чтобы выключить","O'chiq · yoqish uchun bosing":"Выключен · нажмите, чтобы включить","Ilovani hozir qulflash":"Заблокировать сейчас",
+"Eslatma sozlamalari":"Настройки напоминаний","Valyuta":"Валюта","Dasturchiga murojaat":"Связаться с разработчиком","Savol, taklif yoki muammo bo'lsa":"Вопросы, предложения или проблемы","Chiqish":"Выйти","Til":"Язык","Oylik hisobot":"Отчёт за месяц",
+"Akkauntingizga boshqa telefondan kirish uchun shu ilova havolasini oching va":"Чтобы войти с другого телефона, откройте ссылку приложения и введите номер","raqami hamda parolingizni kiriting.":"и ваш пароль.",
+"Kirish":"Вход","Ro'yxatdan o'tish":"Регистрация","Ro'yxatdan o'tish — bepul":"Зарегистрироваться — бесплатно","Ismingiz":"Ваше имя","Telefon raqam":"Номер телефона","Parol":"Пароль","Kamida 4 belgi":"Минимум 4 символа","Parolni takrorlang":"Повторите пароль",
+"Qarz daftaringiz — doim cho'ntagingizda":"Ваша тетрадь долгов — всегда в кармане","Akkauntingizga istalgan telefondan shu raqam va parol bilan kirasiz.":"Входите с любого телефона по этому номеру и паролю.","Akkauntingiz yo'qmi? Yuqoridan «Ro'yxatdan o'tish»ni tanlang.":"Нет аккаунта? Выберите «Регистрация» вверху.",
+"Kirishda muammo bormi? Dasturchiga yozing":"Проблемы со входом? Напишите разработчику","Qarz berdim / oldim":"Дал / взял в долг","Har bir yozuvga rasm va izoh":"Фото и примечание к каждой записи","Odamlar tarixi":"История людей","Kim qancha qarzdor — bir qarashda":"Кто сколько должен — с первого взгляда","Kontaktlardan":"Из контактов","Telefon kontaktidan tanlash":"Выбор из контактов телефона","Muddat nazorati":"Контроль сроков","Muddati o'tganlar alohida":"Просроченные отдельно",
+"Kirilmoqda…":"Вход…","Yaratilmoqda…":"Создание…","Parolni ko'rsatish":"Показать пароль","Parolni yashirish":"Скрыть пароль",
+"Kim bilan":"С кем","Summa":"Сумма","Sana":"Дата","Muddat":"Срок","Izoh":"Примечание","Masalan: 2 qop un, naqd pul…":"Например: 2 мешка муки, наличные…","Rasm (mijoz, chek yoki mahsulot)":"Фото (клиент, чек или товар)","Odamning profil rasmi bo'lmasa, shu rasm profiliga ham qo'yiladi.":"Если у человека нет фото профиля, это фото станет фото профиля.",
+"Rasm qo'shish":"Добавить фото","Rasmni almashtirish":"Заменить фото","Kamera yoki galereyadan":"С камеры или из галереи","Rasmni olib tashlash":"Убрать фото","Yozib qo'yish":"Записать","Saqlash":"Сохранить","Yozuvni tahrirlash":"Изменить запись",
+"Ismni yozing yoki tanlang":"Введите имя или выберите","Telefon kontaktlaridan tanlash":"Выбрать из контактов телефона","Hali odam yo'q. Ismini yozing — «yaratish» tugmasi chiqadi.":"Пока никого нет. Введите имя — появится кнопка «создать».",
+"Bo'lib to'lash (nasiya grafigi)":"Рассрочка (график платежей)","Necha oyga":"На сколько месяцев","1-to'lov sanasi":"Дата 1-го платежа","Summani kiriting — grafik shu yerda chiqadi":"Введите сумму — график появится здесь",
+"Kim bilan ekanini tanlang yoki yarating":"Выберите или создайте человека","Summani kiriting":"Введите сумму","Grafik uchun summa va oylar sonini kiriting (2–36 oy)":"Для графика введите сумму и число месяцев (2–36)",
+"Turi":"Тип","Qaytarish muddati":"Срок возврата","Yozilgan":"Записано","Tasdiq":"Подтверждение","Yuborilmagan":"Не отправлено","Javob kutilmoqda":"Ожидает ответа","✓ Tasdiqlandi":"✓ Подтверждено","✕ Rad etildi":"✕ Отклонено","Ikki tomonlama":"Двусторонняя",
+"Tasdiqlashga yuborish":"Отправить на подтверждение","Tasdiqlash havolasini qayta yuborish":"Отправить ссылку повторно","Tahrirlash":"Изменить","O'chirish":"Удалить","O'zgartirishlar":"Изменения","Havola tayyorlanmoqda…":"Готовим ссылку…",
+"To'landi":"Оплачено","Kechikkan":"Просрочено","Kutilmoqda":"Ожидается","To'langan:":"Оплачено:","· Qoldi:":"· Осталось:",
+"Ism familiya":"Имя и фамилия","Masalan: Akmal aka (do'kon)":"Например: Акмал ака (магазин)","Manzil, ish joyi, eslatma…":"Адрес, работа, заметка…","Rasm qo'yish":"Добавить фото","Yaratish":"Создать","Odamni tahrirlash":"Изменить человека","Telefon kontaktlaridan olish":"Взять из контактов телефона",
+"iPhone va ayrim brauzerlar kontaktlar ro'yxatini ilovaga bermaydi — ism va raqamni qo'lda yozing.":"iPhone и некоторые браузеры не дают доступ к контактам — введите имя и номер вручную.",
+"SMS matni":"Текст SMS","SMS yuborish":"Отправить SMS","Saqlash va SMS yuborish":"Сохранить и отправить SMS","SMS ilovangiz ochiladi: raqam va matn tayyor bo'ladi, faqat «Yuborish» ni bosasiz.":"Откроется приложение SMS: номер и текст будут готовы, останется нажать «Отправить».",
+"Raqam yozilmagan ekan. Kiriting: u saqlanadi va SMS shu raqamga ketadi.":"Номер не указан. Введите его: он сохранится, и SMS уйдёт на этот номер.",
+"Eslatma yuborish vaqti":"Пора напомнить","Qarzini qaytarish vaqti kelganlar. SMS yuborilsinmi?":"Тем, кому пора вернуть долг. Отправить SMS?","Raqam kiritish":"Ввести номер","Keyinroq":"Позже","✓ Yuborildi":"✓ Отправлено","Muddati bugun":"Срок сегодня","Muddati ertaga":"Срок завтра","Muddat kiritilmagan":"Срок не указан","· raqam yo'q":"· нет номера",
+"Hozircha eslatish kerak bo'lgan odam yo'q":"Пока некому напоминать","Muddat kiritilmagan qarzlar bo'yicha necha kunda bir eslatish taklif qilinsin?":"Как часто предлагать напомнить о долгах без срока?","Ilova ochilganda o'zi so'rasin":"Спрашивать при открытии приложения",
+"Muddati o'tganlar har 2 kunda, muddati bugun yoki ertaga bo'lganlar bir marta taklif qilinadi.":"Просроченные — каждые 2 дня, со сроком сегодня или завтра — один раз.","o'zi so'ramaydi":"не спрашивает","ochilganda so'raydi":"спрашивает при открытии","Muddatsiz qarzlar:":"Долги без срока:",
+"Qo'ng'iroq qilish":"Позвонить","Telegram'da yozish":"Написать в Telegram","Ilova bo'yicha savol, taklif yoki muammo bo'lsa, qulay usulni tanlang.":"Есть вопрос, предложение или проблема? Выберите удобный способ.",
+"Ma'lumotlarim":"Мои данные","Ism":"Имя","Telefon raqam (kirish uchun)":"Номер телефона (для входа)","Rasmni almashtirish":"Заменить фото",
+"Hozirgi parol":"Текущий пароль","Yangi parol":"Новый пароль","Yangi parolni takrorlang":"Повторите новый пароль","Parolni yangilash":"Обновить пароль",
+"Summalar yonida ko'rsatiladigan belgi. Eski yozuvlar summasi o'zgarmaydi.":"Знак рядом с суммами. Суммы старых записей не меняются.",
+"Bekor qilish":"Отмена","Yozuvni o'chirish":"Удалить запись","Bu yozuv butunlay o'chiriladi va balans qayta hisoblanadi.":"Запись будет удалена, баланс пересчитается.",
+"Akkauntdan chiqasizmi? Keyin raqam va parol bilan qayta kirasiz.":"Выйти из аккаунта? Потом войдёте снова по номеру и паролю.",
+"Ilova yangilandi":"Приложение обновлено","Tushunarli":"Понятно","Ilovaning yangi versiyasi chiqdi":"Вышла новая версия","Yangilash":"Обновить","Yuklanmoqda…":"Загрузка…",
+"PIN kodni kiriting":"Введите PIN-код","Barmoq izi yoki PIN kod bilan oching":"Откройте отпечатком или PIN-кодом","PIN esdan chiqdimi? Parol bilan kirish":"Забыли PIN? Войти по паролю",
+"PIN kod o'rnating":"Установите PIN-код","Yangi PIN kod":"Новый PIN-код","PIN kodni takrorlang":"Повторите PIN-код","Hozirgi PIN kod":"Текущий PIN-код","Avval hozirgi PIN kodingizni kiriting":"Сначала введите текущий PIN-код","Tasdiqlash uchun yana bir marta kiriting":"Введите ещё раз для подтверждения",
+"Ilovaga begonalar kirmasligi uchun 4 xonali kod o'ylab toping":"Придумайте 4-значный код, чтобы посторонние не вошли","PIN kod shifrlangan holda saqlanadi":"PIN-код хранится в зашифрованном виде","Barmoq izi bilan ochish":"Вход по отпечатку",
+"Ilovani PIN o'rniga barmoq izingiz bilan ochasiz. Bu ixtiyoriy, keyin Profildan ham yoqsa bo'ladi.":"Открывайте приложение отпечатком вместо PIN. Это необязательно — можно включить позже в профиле.","Barmoq izini yoqish":"Включить отпечаток",
+"Bu PIN juda oson. Boshqasini tanlang":"Слишком простой PIN. Выберите другой","PIN mos kelmadi. Qaytadan o'ylab toping":"PIN не совпал. Придумайте заново","Hozirgi PIN noto'g'ri":"Текущий PIN неверный","PIN kod o'rnatildi":"PIN-код установлен","PIN kod yangilandi":"PIN-код обновлён",
+"Qarz yozuvini tasdiqlash":"Подтверждение записи о долге","Noto'g'ri":"Неверно","Ha, to'g'ri":"Да, верно","✓ Siz tasdiqladingiz":"✓ Вы подтвердили","✕ Siz rad etdingiz":"✕ Вы отклонили","Daftaringizga qo'shildi.":"Добавлено в вашу тетрадь.","Daftarimni ochish":"Открыть мою тетрадь",
+"Mening daftarimga ham qo'shish":"Добавить и в мою тетрадь","O'zingiz ham qarzlaringizni yozib boring — Oldi-Berdi bepul.":"Ведите и свои долги — Oldi-Berdi бесплатно.","Oldi-Berdi'ni ochish":"Открыть Oldi-Berdi","Ilovani ochish":"Открыть приложение","Havolani yuborgan odamdan yangisini so'rang.":"Попросите отправителя прислать новую ссылку.",
+"Rahmat! Tasdiqlandi":"Спасибо! Подтверждено","Javobingiz yuborildi":"Ваш ответ отправлен","Qo'shilmoqda…":"Добавляем…","To'lov grafigi":"График платежей",
+"Yozib qo'yildi":"Записано","Saqlandi":"Сохранено","O'chirildi":"Удалено","Nusxalandi":"Скопировано","Raqam nusxalandi":"Номер скопирован","Saqlanmoqda…":"Сохраняем…",
+"Internetga ulanib bo'lmadi. Qayta urinib ko'ring.":"Нет подключения к интернету. Попробуйте ещё раз.","Server javob bermadi. Birozdan keyin urinib ko'ring.":"Сервер не ответил. Попробуйте чуть позже.","Saqlab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.":"Не удалось сохранить. Проверьте интернет и попробуйте снова.",
+"Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.":"Не удалось подключиться — проверьте интернет. Данные могут быть устаревшими.",
+"Ismingizni yozing":"Введите имя","Ismni yozing":"Введите имя","Telefon raqam noto'g'ri":"Неверный номер телефона","Parol kamida 4 belgidan iborat bo'lsin":"Пароль — минимум 4 символа","Parollar bir xil emas":"Пароли не совпадают","Raqam va parolni kiriting":"Введите номер и пароль",
+"Bu raqam ro'yxatdan o'tmagan":"Этот номер не зарегистрирован","Parol noto'g'ri":"Неверный пароль","Bu raqam allaqachon ro'yxatdan o'tgan. «Kirish»ni tanlang.":"Этот номер уже зарегистрирован. Выберите «Вход».","Bu raqam boshqa akkauntga tegishli":"Этот номер принадлежит другому аккаунту",
+"Hozirgi parol noto'g'ri":"Текущий пароль неверный","Yangi parol kamida 4 belgi bo'lsin":"Новый пароль — минимум 4 символа","Yangi parollar bir xil emas":"Новые пароли не совпадают","Hozirgi parolni kiriting":"Введите текущий пароль","Parol yangilandi":"Пароль обновлён",
+"Telefon raqamni to'g'ri kiriting":"Введите правильный номер","Sessiya tugadi, qayta kiring":"Сессия истекла, войдите снова","Telefon raqam va parolingiz bilan kiring":"Войдите по номеру и паролю","Xatolik yuz berdi":"Произошла ошибка",
+"Havola eskirgan yoki noto'g'ri":"Ссылка устарела или неверна","Bu yozuv o'chirilgan":"Эта запись удалена","Yozuv hali saqlanmagan. Birozdan keyin urinib ko'ring.":"Запись ещё не сохранена. Попробуйте чуть позже.",
+"Yozuv saqlanmadi":"Запись не сохранена","Odam saqlanmadi":"Человек не сохранён","O'zgarish saqlanmadi":"Изменение не сохранено","O'chirilmadi":"Не удалено",
+"Bu odam o'chirilgan":"Этот человек удалён","O'chirilgan odam":"Удалённый человек","Odam":"Человек","Orqaga":"Назад","Yopish":"Закрыть",
+"Profil rasmi qo'yildi":"Фото профиля установлено","Rasmni o'qib bo'lmadi":"Не удалось прочитать фото","Rasmni yuklab bo'lmadi":"Не удалось загрузить фото","Rasmni kattalashtirish":"Увеличить фото",
+"Hammasi allaqachon ro'yxatda":"Все уже в списке","Bu yozuv":"Эта запись","Tez orada":"Скоро",
+"Ilova hali serverga ulanmagan.":"Приложение ещё не подключено к серверу.","Sozlash kerak":"Нужна настройка",
+"Tugmani ushlab turib gapiring, keyin qo'yib yuboring":"Удерживайте кнопку и говорите, затем отпустите",
+"Yaratildi":"Создан","Eslatma yuborildi (SMS)":"Напоминание отправлено (SMS)","Tasdiqlash havolasi yuborildi (SMS)":"Ссылка на подтверждение отправлена (SMS)","Telefon qo'shildi":"Телефон добавлен","telefon qo'shildi":"телефон добавлен","Izoh o'zgardi":"Примечание изменено","Rasm yangilandi":"Фото обновлено","Rasm olib tashlandi":"Фото удалено","Profil rasmi yozuvdan qo'yildi":"Фото профиля взято из записи","Kontaktdan qo'shildi":"Добавлен из контактов","Tasdiqlash havolasidan qo'shildi":"Добавлен по ссылке подтверждения",
+"grafik":"график","chiqim":"расход","kirim":"приход",
+/* report */
+"Berildi":"Дано","Qaytdi":"Вернули","Olindi":"Взято","Qaytarildi":"Возвращено","Qaytish foizi":"Доля возврата","Oxirgi 6 oy":"Последние 6 месяцев","Berilgan":"Дано","Qaytgan":"Вернули","Eng katta qarzdorlar":"Крупнейшие должники","Hozirgi holat":"Текущее состояние",
+"Odamlar bo'yicha":"По людям","Bu oyda yozuv yo'q":"В этом месяце записей нет","Excel'ga yuklab olish":"Скачать в Excel","Fayl tayyorlanmoqda…":"Готовим файл…","Excel fayl yuklab olindi":"Файл Excel скачан","Faylni yaratib bo'lmadi. Internetni tekshiring.":"Не удалось создать файл. Проверьте интернет.",
+"Oldingi oy":"Предыдущий месяц","Keyingi oy":"Следующий месяц","Bu oy":"Этот месяц","Yozuvlar soni":"Записей","Qoldiq":"Остаток","Ism":"Имя","Bu oyda berildi":"Дано в этом месяце","Bu oyda qaytdi":"Вернули в этом месяце","Grafiklar va Excel fayl":"Графики и файл Excel","Hech kim qarzdor emas":"Никто не должен","Ko'rsatkich":"Показатель","Oy":"Месяц","oy":"мес.","Holat":"Статус","Ishonch":"Надёжность","Barcha yozuvlar":"Все записи","Grafik":"График","Muddati o'tgan":"Просрочено","Hisobot":"Отчёт","Telefon":"Телефон","Boshqa odam":"Другой человек","Valyutani almashtirish":"Сменить валюту","Oxirgi raqamni o'chirish":"Удалить последнюю цифру","Tasdiqlangan":"Подтверждено","Barmoq izi bilan ochish":"Вход по отпечатку","Masalan: Xusniddin":"Например: Хусниддин"
+};
+const RU_RX=[
+ [/(\d{1,2})-(yanvar|fevral|mart|aprel|may|iyun|iyul|avgust|sentabr|oktabr|noyabr|dekabr)/g,(m,d,mo)=>d+' '+RU_MON_G[MON.indexOf(mo)]],
+ [/(\d{1,2})-(yan|fev|mar|apr|may|iyu|avg|sen|okt|noy|dek),/g,(m,d,mo)=>d+' '+RU_MON_S[mo]+','],
+ [/\b(yanvar|fevral|mart|aprel|may|iyun|iyul|avgust|sentabr|oktabr|noyabr|dekabr)( \d{4})?\b/g,(m,mo,y)=>RU_MON_N[MON.indexOf(mo)]+(y||'')],
+ [/Muddati? (.+?) da o'tgan/g,'Срок истёк $1'],[/Muddat (.+?) da o'tgan/g,'Срок истёк $1'],
+ [/(\d+) ta to'lov bo'yicha: o'z vaqtida qaytarish/g,'по $1 платежам: возврат вовремя'],
+ [/(\d+) ta yozuvi ham o'chiriladi\. Buni qaytarib bo'lmaydi\./g,'Его $1 записей тоже удалятся. Это нельзя отменить.'],
+ [/(\d+) ta yozuv/g,'$1 записей'],[/(\d+) kishi/g,'$1 чел.'],[/(\d+) kundan beri/g,'уже $1 дн.'],[/har (\d+) kunda/g,'каждые $1 дн.'],[/(\d+) kun\b/g,'$1 дн.'],
+ [/(\d+) oy · (.+?) dan/g,'$1 мес. · с $2'],[/Versiya (\d+)\. Nima yangi:/g,'Версия $1. Что нового:'],
+ [/«(.+?)» kontaktda yo'q — yangi yaratish/g,'«$1» нет в контактах — создать'],[/«(.+?)» ni yaratish/g,'Создать «$1»'],[/«(.+?)» allaqachon bor\. Baribir yaratish uchun yana bosing\./g,'«$1» уже есть. Нажмите ещё раз, чтобы всё равно создать.'],
+ [/^(.+?) tarixini ochish$/g,'История: $1'],[/^Shu rasmni (.+?) profiliga qo'yish$/g,'Сделать фото профиля: $1'],[/^(.+?) o'chirilsinmi\?$/g,'Удалить $1?'],
+ [/^Xush kelibsiz, (.+)!$/g,'Добро пожаловать, $1!'],[/^(\d+) ta odam qo'shildi$/g,'Добавлено: $1'],[/^(.+?) qo'shildi$/g,'$1 — добавлен(а)'],
+ [/PIN noto'g'ri\. Yana (\d+) ta urinish qoldi/g,'Неверный PIN. Осталось попыток: $1'],[/5 marta xato kiritildi\. Raqam va parol bilan kiring\./g,'5 неверных попыток. Войдите по номеру и паролю.'],
+ [/^(.+?)ga qarz haqida muloyim eslatma\. Matnni xohlaganingizcha o'zgartiring\.$/g,'Вежливое напоминание о долге для $1. Текст можно изменить.'],
+ [/^(.+?)ning raqami yo'q\. Raqamni kiriting — saqlanadi va eslatma darhol yuboriladi\.$/g,'У $1 нет номера. Введите его — он сохранится, и напоминание уйдёт сразу.'],
+ [/^(.+?)ning telefon raqami$/g,'Номер телефона: $1'],
+ [/^Havola SMS bilan (.+?)ga boradi\. U ochib, «Ha, to'g'ri» ni bosadi va yozuv ikki tomonlama tasdiqlanadi\.$/g,'Ссылка уйдёт по SMS для $1. Он откроет её, нажмёт «Да, верно», и запись будет подтверждена обеими сторонами.'],
+ [/^Bu yozuv (.+?) yuborgan tasdiqlash havolasidan qo'shilgan\.$/g,'Запись добавлена по ссылке подтверждения от $1.'],
+ [/^(.+?) bilan gaplashib, yozuvni to'g'irlashini so'rang\.$/g,'Поговорите с $1 и попросите исправить запись.'],
+ [/O'z vaqtida qaytarish: (\d+)%/g,'Возврат вовремя: $1%'],[/(\d+)% qaytdi/g,'вернули $1%'],[/(\d+) ta odam/g,'$1 чел.'],[/SMS yuborish · /g,'Отправить SMS · '],[/Hozir: /g,'Сейчас: '],[/Eslatish kerak · /g,'Нужно напомнить · '],[/MB kursi/g,'курс ЦБ'],
+ [/so'm/g,'сум']
+];
+const RU_WORDS=[["Qaytardim","Я вернул"],["Qaytardi","Мне вернули"],["Berdim","Дал"],["Oldim","Взял"],["Ishonchli","Надёжный"],["O'rtacha","Средне"],["Kechiktiradi","Задерживает"],["Muddat","Срок"],["muddat","срок"],["grafik","график"],["chiqim","расход"],["kirim","приход"],["shundan","из них"],["Olindi","Взято"],["Qaytarildi","Возвращено"]].map(([k,v])=>[new RegExp("(^|[^A-Za-z'])"+k.replace(/'/g,"'")+"(?![A-Za-z'])","g"),v]);
+const RU_EXACT=new Map(Object.entries(RU));
+const RU_SUB=Object.entries(RU).filter(([k])=>/\s/.test(k)&&k.length>=6).sort((a,b)=>b[0].length-a[0].length);
+function tr(s){if(LANG!=='ru'||!s||!/[A-Za-z]/.test(s))return s;
+ const lead=s.match(/^\s*/)[0],trail=s.match(/\s*$/)[0],core=s.trim();
+ if(RU_EXACT.has(core))return lead+RU_EXACT.get(core)+trail;
+ let out=core;const keep=[];out=out.replace(/Oldi-Berdi/g,()=>{keep.push('Oldi-Berdi');return '\u0001'});
+ for(const [rx,rep] of RU_RX)out=out.replace(rx,rep);
+ if(RU_EXACT.has(out))out=RU_EXACT.get(out);
+ for(const [k,v] of RU_SUB)if(out.includes(k))out=out.split(k).join(v);
+ if(/[A-Za-z]/.test(out))for(const [rx,v] of RU_WORDS)out=out.replace(rx,(m,a)=>a+v);
+ out=out.replace(/\u0001/g,()=>keep.shift());
+ return lead+out+trail}
+const TR_ATTR=['placeholder','aria-label','title'];
+function trTree(root){if(LANG!=='ru'||!root)return;
+ if(root.nodeType===3){const v=root.nodeValue;const n=tr(v);if(n!==v)root.nodeValue=n;return}
+ if(root.nodeType!==1)return;
+ if(root.tagName==='SCRIPT'||root.tagName==='STYLE'||root.tagName==='TEXTAREA'||root.closest&&root.closest('[data-notr]'))return;
+ for(const a of TR_ATTR){const v=root.getAttribute&&root.getAttribute(a);if(v){const n=tr(v);if(n!==v)root.setAttribute(a,n)}}
+ const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT,{acceptNode:n=>n.nodeType===1&&(n.tagName==='TEXTAREA'||n.tagName==='SCRIPT'||n.tagName==='STYLE'||n.hasAttribute('data-notr'))?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+ root.querySelectorAll&&root.querySelectorAll('textarea[placeholder]').forEach(t=>{const v=t.getAttribute('placeholder'),x=tr(v);if(x!==v)t.setAttribute('placeholder',x)});
+ let n;while((n=w.nextNode())){if(n.nodeType===3){const v=n.nodeValue;const t=tr(v);if(t!==v)n.nodeValue=t}else for(const a of TR_ATTR){const v=n.getAttribute(a);if(v){const t=tr(v);if(t!==v)n.setAttribute(a,t)}}}}
+new MutationObserver(ms=>{if(LANG!=='ru')return;for(const m of ms)for(const nd of m.addedNodes)trTree(nd)}).observe(document.documentElement,{childList:true,subtree:true});
+function setLang(l){LANG=l;LS.set('oldiberdi_lang',l);document.documentElement.lang=l==='ru'?'ru':'uz';if(S.acc&&!S.locked&&!S.setup){closeAllSheets();render()}else if(typeof CF!=='undefined'&&CF){location.reload();return}else if(!S.acc)renderAuth();else render();trTree(document.body)}
+function langSwitch(){return `<div class="lang-sw" role="group" aria-label="Til / Язык" data-notr><button type="button" class="${LANG==='uz'?'on':''}" data-act="setLang" data-v="uz">O'zbekcha</button><button type="button" class="${LANG==='ru'?'on':''}" data-act="setLang" data-v="ru">Русский</button></div>`}
 
 /* ============ icons ============ */
 const I={
@@ -396,6 +551,10 @@ const I={
  contacts:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M8 17a4 4 0 0 1 8 0M2 8h2M2 12h2M2 16h2"/></svg>',
  userplus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>',
  img:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>',
+ chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+ globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
+ download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
+ right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>'
 };
 const LOGO='<div class="logo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" fill="#ffd34d"/><circle cx="24" cy="24" r="11" fill="none" stroke="#e0a500" stroke-width="2"/><path d="M8 14l6-6M8 8h6v6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 34l-6 6M40 40h-6v-6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="29" text-anchor="middle" font-size="13" font-weight="800" fill="#9a6b00" font-family="sans-serif">S</text></svg></div>';
@@ -494,7 +653,7 @@ const col=k=>`u/${S.acc.id}/${k}`;
 /* ============ auth ============ */
 function renderAuth(){
  const reg=S.authTab==='reg';
- $('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Qarz daftaringiz — doim cho'ntagingizda</p>${Store.cloud?'':'<div class="banner" style="display:inline-block;margin-top:14px">Internet bazasi ulanmagan: ma\'lumot faqat shu qurilmada saqlanadi</div>'}</div>
+ $('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${langSwitch()}${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Qarz daftaringiz — doim cho'ntagingizda</p>${Store.cloud?'':'<div class="banner" style="display:inline-block;margin-top:14px">Internet bazasi ulanmagan: ma\'lumot faqat shu qurilmada saqlanadi</div>'}</div>
  <div class="pad"><div class="auth-card"><div class="tabs"><button data-act="authTab" data-v="login" class="${reg?'':'on'}">Kirish</button><button data-act="authTab" data-v="reg" class="${reg?'on':''}">Ro'yxatdan o'tish</button></div>
  <form data-form="${reg?'register':'login'}" autocomplete="on">
  ${reg?`<div class="field"><label for="a-name">Ismingiz</label><input class="inp" id="a-name" name="name" autocomplete="name" placeholder="Masalan: Xusniddin" required></div>`:''}
@@ -601,14 +760,14 @@ function render(){
  if(S.setup)return renderSetup();
  const y=window.scrollY;const keep=render._last===S.view+'|'+S.pid;
  const v=S.view;
- let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():vProfile();
+ let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():v==='report'?vReport():vProfile();
  $('#app').innerHTML=body+'<div class="spacer"></div>'+nav()+(S.newVer?`<div class="upd" role="status"><span>Ilovaning yangi versiyasi chiqdi</span><button class="btn" data-act="reloadApp">Yangilash</button></div>`:'');
  if(keep)window.scrollTo(0,y);else window.scrollTo(0,0);
  render._last=S.view+'|'+S.pid;
  // restore focus on search inputs
  if(render._focus){const el=document.getElementById(render._focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}render._focus=null}
 }
-function nav(){const b=(v,ic,l)=>`<button data-act="go" data-v="${v}" class="${S.view===v||(v==='people'&&S.view==='person')?'on':''}"><span class="ni">${I[ic]}</span>${l}</button>`;
+function nav(){const b=(v,ic,l)=>`<button data-act="go" data-v="${v}" class="${S.view===v||(v==='people'&&S.view==='person')||(v==='history'&&S.view==='report')?'on':''}"><span class="ni">${I[ic]}</span>${l}</button>`;
  return `<nav class="nav"><div class="nav-in">${b('home','home','Asosiy')}${b('people','users','Odamlar')}<div><button class="fab" data-act="newTx" aria-label="Yangi yozuv">${I.plus}</button></div>${b('history','clock','Tarix')}${b('profile','user','Profil')}</div></nav>`}
 function loadingNote(){if(S.stale)return `<div class="banner">Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.</div>`;if(!S.loaded.p||!S.loaded.t)return `<div class="empty"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div><p>Yuklanmoqda…</p></div>`;return ''}
 function txRow(t,showPerson=true){const p=S.people[t.pid]||{name:"O'chirilgan odam"};const m=T[t.type]||T.lend;
@@ -627,10 +786,10 @@ function vHome(){
  <div class="bal-split"><button class="tile p" data-act="peopleFilter" data-v="owe"><span>Menga qarzdorlar</span><b class="num">${money(owe)}</b><small>${oweN} kishi</small></button><button class="tile n" data-act="peopleFilter" data-v="debt"><span>Mening qarzlarim</span><b class="num">${money(debt)}</b><small>${debtN} kishi</small></button></div></div>
  ${(()=>{const rl=remindList();return rl.length?`<button class="rem-card" data-act="remCenter"><span class="qi">${I.bell}</span><span class="mid"><b>Eslatish kerak · ${rl.length} kishi</b><small>${rl.slice(0,3).map(x=>esc(x.p.name)).join(', ')}${rl.length>3?' va boshqalar':''}</small></span><span class="go">${I.left}</span></button>`:''})()}
  ${quickBtns()}
- <form class="quick-in" data-form="quick" autocomplete="off"><div class="qk-wrap"><input id="qk" aria-label="Tez yozish" placeholder="Tez yozish: «Akmalga 500 ming berdim»">${navigator.mediaDevices||SR?`<button type="button" class="qk-mic" data-hold="mic" aria-label="Ushlab turib gapiring" title="Ushlab turib gapiring">${I.mic}</button>`:''}<button class="qk-go" aria-label="Davom etish">${I.send}</button></div></form>
+ <form class="quick-in" data-form="quick" autocomplete="off"><div class="qk-wrap"><input id="qk" aria-label="Tez yozish" placeholder="Tez yozish: «Akmalga 500 ming berdim»"><button class="qk-go" aria-label="Davom etish">${I.send}</button></div></form>
  ${loadingNote()}
  ${od.length?`<div class="sec-head"><h2>Muddati o'tganlar</h2><span class="badge warn">${od.length}</span></div><div class="card list">${od.slice(0,5).map(x=>personRow(x.p)).join('')}</div>`:''}
- <div class="sec-head"><h2>So'nggi yozuvlar</h2>${recent.length?'<button class="link" data-act="go" data-v="history">Hammasi</button>':''}</div>
+ <div class="sec-head"><h2>So'nggi yozuvlar</h2>${recent.length?'<span class="sec-links"><button class="link" data-act="go" data-v="report">Hisobot</button><button class="link" data-act="go" data-v="history">Hammasi</button></span>':''}</div>
  ${recent.length?`<div class="card list">${recent.map(t=>txRow(t)).join('')}</div>`:(S.loaded.t?`<div class="card empty"><div class="ei">${I.book}</div><b>Daftar hali bo'sh</b>Pastdagi yashil «+» tugmasini bosib birinchi qarzni yozing.</div>`:'')}
  </div>`}
 function vPeople(){
@@ -674,7 +833,7 @@ function vHistory(){
  list.forEach(t=>{const k=(t.date||'').slice(0,7);if(!groups[k])groups[k]=[];groups[k].push(t)});
  for(const k of Object.keys(groups)){const [y,m]=k.split('-').map(Number);let inn=0,out=0;groups[k].forEach(t=>{if(t.type==='lend'||t.type==='paid')out+=baseAmt(t);else inn+=baseAmt(t)});
   html+=`<div class="date-sep" style="display:flex;justify-content:space-between"><span>${MON[m-1]} ${y}</span><span class="num" style="text-transform:none;letter-spacing:0">chiqim ${fmt(out)} · kirim ${fmt(inn)}</span></div><div class="card list">${groups[k].map(t=>txRow(t)).join('')}</div>`}
- return `<div class="pad"><div class="topbar"><h1>Tarix</h1></div>
+ return `<div class="pad"><div class="topbar"><h1>Tarix</h1><button class="btn btn-ghost btn-sm" data-act="go" data-v="report">${I.chart} Hisobot</button></div>
  <div class="search">${I.search}<input class="inp" id="hq" data-input="hq" placeholder="Ism yoki izoh bo'yicha qidirish" value="${esc(S.hq)}"></div>
  <div class="chips">${ch('all','Hammasi')}${ch('lend','Berdim')}${ch('borrow','Oldim')}${ch('got','Qaytardi')}${ch('paid','Qaytardim')}</div>
  ${loadingNote()}
@@ -689,6 +848,8 @@ function vProfile(){const a=S.acc;
   <button class="item" data-act="changePin">${I.shield}<div class="mid">PIN kodni o'zgartirish<div class="t2">Ilovani ochishda so'raladi</div></div></button>
   ${BIO.ok?`<button class="item" data-act="toggleBio">${I.finger}<div class="mid">Barmoq izi<div class="t2">${bioGet()?"Yoqilgan · o'chirish uchun bosing":"O'chiq · yoqish uchun bosing"}</div></div></button>`:''}
   <button class="item" data-act="lockNow">${I.lock}<div class="mid">Ilovani hozir qulflash</div></button>
+  <button class="item" data-act="go" data-v="report">${I.chart}<div class="mid">Oylik hisobot<div class="t2">Grafiklar va Excel fayl</div></div></button>
+  <button class="item" data-act="langSheet">${I.globe}<div class="mid">Til<div class="t2" data-notr>${LANG==='ru'?'Русский':"O'zbekcha"}</div></div></button>
   <button class="item" data-act="remSettings">${I.bell}<div class="mid">Eslatma sozlamalari<div class="t2">Muddatsiz qarzlar: har ${remDays()} kunda · ${LS.get('oldiberdi_remauto')==='off'?"o'zi so'ramaydi":"ochilganda so'raydi"}</div></div></button>
   <button class="item" data-act="currency">${I.coin}<div class="mid">Valyuta<div class="t2">Hozir: ${esc(cur())}</div></div></button>
   <button class="item" data-act="contactDev">${I.chat}<div class="mid">Dasturchiga murojaat<div class="t2">Savol, taklif yoki muammo bo'lsa</div></div></button>
@@ -696,6 +857,61 @@ function vProfile(){const a=S.acc;
  </div>
  <p class="hint" style="margin-top:14px">Akkauntingizga boshqa telefondan kirish uchun shu ilova havolasini oching va <b class="num">${fphone(a.phone)}</b> raqami hamda parolingizni kiriting.</p>
  </div>`}
+
+function ymShift(ym,k){const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-1+k,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function ymName(ym,short){const [y,m]=ym.split('-').map(Number);const n=isRu()?RU_MON_N[m-1]:MON[m-1];const cap=n.charAt(0).toUpperCase()+n.slice(1);return short?cap.slice(0,3):cap+' '+y}
+function monthStats(ym){const r={lend:0,got:0,borrow:0,paid:0,n:0,per:{}};
+ for(const t of Object.values(S.tx)){if(!(t.date||'').startsWith(ym))continue;const a=baseAmt(t);r[t.type]=(r[t.type]||0)+a;r.n++;const q=r.per[t.pid]||(r.per[t.pid]={lend:0,got:0,borrow:0,paid:0,n:0});q[t.type]+=a;q.n++}
+ return r}
+function shortNum(n){n=Math.abs(n);return n>=1e9?(Math.round(n/1e8)/10)+(isRu()?' млрд':' mlrd'):n>=1e6?(Math.round(n/1e5)/10)+(isRu()?' млн':' mln'):n>=1e3?Math.round(n/1e3)+(isRu()?' тыс':' ming'):String(Math.round(n))}
+function barChart(ym){const ms=[];for(let k=5;k>=0;k--){const m=ymShift(ym,-k);const st=monthStats(m);ms.push({m,a:st.lend,b:st.got})}
+ const max=Math.max(1,...ms.map(x=>Math.max(x.a,x.b)));const W=320,H=150,top=16,bot=24,gw=W/6,bw=16;
+ let g='';ms.forEach((x,i)=>{const cx=gw*i+gw/2;const h1=(H-top-bot)*x.a/max,h2=(H-top-bot)*x.b/max;const on=x.m===ym;
+  g+=`<g class="${on?'on':''}"><rect x="${cx-bw-1}" y="${H-bot-h1}" width="${bw}" height="${Math.max(h1,x.a?2:0)}" rx="3" class="b1"/><rect x="${cx+1}" y="${H-bot-h2}" width="${bw}" height="${Math.max(h2,x.b?2:0)}" rx="3" class="b2"/><text x="${cx}" y="${H-7}" text-anchor="middle" class="lb">${ymName(x.m,true)}</text>${x.a?`<text x="${cx-bw/2-1}" y="${H-bot-h1-4}" text-anchor="middle" class="vl">${shortNum(x.a)}</text>`:''}</g>`});
+ return `<svg class="rchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${tr('Oxirgi 6 oy')}" data-notr><line x1="0" x2="${W}" y1="${H-bot}" y2="${H-bot}" class="ax"/>${g}</svg><div class="rleg"><span><i class="b1"></i>Berilgan</span><span><i class="b2"></i>Qaytgan</span></div>`}
+function vReport(){
+ const ym=S.rm||(S.rm=today().slice(0,7));const st=monthStats(ym);const isCur=ym===today().slice(0,7);
+ const pct=st.lend?Math.round(st.got/st.lend*100):0;
+ const debtors=Object.values(S.people).map(p=>({p,b:S.bal[p.id]||0})).filter(x=>x.b>0.5).sort((a,b)=>b.b-a.b).slice(0,5);const dmax=debtors.length?debtors[0].b:1;
+ const per=Object.entries(st.per).map(([pid,q])=>({p:S.people[pid]||{id:pid,name:"O'chirilgan odam"},q})).sort((a,b)=>(b.q.lend+b.q.got+b.q.borrow+b.q.paid)-(a.q.lend+a.q.got+a.q.borrow+a.q.paid));
+ const tile=(cls,l,v)=>`<div class="rtile ${cls}"><span>${l}</span><b class="num">${fmt(v)}</b><small>${esc(cur())}</small></div>`;
+ return `<div class="pad"><div class="topbar"><button class="icon-btn" data-act="go" data-v="history" aria-label="Orqaga">${I.left}</button><h1>Hisobot</h1><button class="btn btn-primary btn-sm" data-act="xlsx">${I.download} Excel</button></div>
+ <div class="rmonth"><button class="icon-btn" data-act="rm" data-v="-1" aria-label="Oldingi oy">${I.left}</button><b data-notr>${ymName(ym)}</b><button class="icon-btn" data-act="rm" data-v="1" aria-label="Keyingi oy" ${isCur?'disabled':''}>${I.right}</button></div>
+ ${loadingNote()}
+ <div class="rgrid">${tile('p','Berildi',st.lend)}${tile('t','Qaytdi',st.got)}${tile('n','Olindi',st.borrow)}${tile('l','Qaytarildi',st.paid)}</div>
+ <div class="card rcard"><div class="rrow"><span>Qaytish foizi</span><b class="num">${st.lend?pct+'%':'—'}</b></div><div class="rbar"><i style="width:${Math.min(100,pct)}%"></i></div><p class="hint" style="margin:6px 0 0">${st.n} ta yozuv</p></div>
+ <div class="sec-head"><h2>Oxirgi 6 oy</h2></div><div class="card rcard">${barChart(ym)}</div>
+ <div class="sec-head"><h2>Eng katta qarzdorlar</h2><span class="hint">Hozirgi holat</span></div>
+ ${debtors.length?`<div class="card list">${debtors.map(x=>`<button class="item" data-act="openPerson" data-id="${x.p.id}">${avatar(x.p,38)}<div class="mid"><div class="t1">${esc(x.p.name)} ${trustBadge(x.p.id)}</div><div class="dbar"><i style="width:${Math.max(4,Math.round(x.b/dmax*100))}%"></i></div></div><div class="r"><b class="num pos">${fmt(x.b)}</b><small>${esc(cur())}</small></div></button>`).join('')}</div>`:`<div class="card empty"><b>Hech kim qarzdor emas</b></div>`}
+ <div class="sec-head"><h2>Odamlar bo'yicha</h2></div>
+ ${per.length?`<div class="card rtable"><div class="rth"><span>Ism</span><span>Berildi</span><span>Qaytdi</span></div>${per.map(x=>`<button class="rtr" data-act="openPerson" data-id="${x.p.id}"><span class="nm">${esc(x.p.name)}</span><span class="num pos">${x.q.lend?fmt(x.q.lend):'—'}</span><span class="num">${x.q.got?fmt(x.q.got):'—'}</span>${x.q.borrow||x.q.paid?`<small class="sub">Olindi ${fmt(x.q.borrow)} · Qaytarildi ${fmt(x.q.paid)}</small>`:''}</button>`).join('')}</div>`:`<div class="card empty"><div class="ei">${I.chart}</div><b>Bu oyda yozuv yo'q</b></div>`}
+ <button class="btn btn-ghost" style="width:100%;margin-top:16px" data-act="xlsx">${I.download} Excel'ga yuklab olish</button>
+ </div>`}
+let XLSXP=null;
+function loadXlsx(){if(window.XLSX)return Promise.resolve(window.XLSX);if(XLSXP)return XLSXP;XLSXP=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=()=>res(window.XLSX);sc.onerror=()=>{XLSXP=null;rej(new Error('xlsx'))};document.head.appendChild(sc)});return XLSXP}
+async function exportXlsx(btn){const ym=S.rm||today().slice(0,7);const old=btn&&btn.innerHTML;if(btn){btn.disabled=true;btn.textContent=tr('Fayl tayyorlanmoqda…')}
+ try{const X=await loadXlsx();const R=x=>tr(x);const C=R(cur());const tname=t=>R((T[t.type]||T.lend).label);const pn=pid=>(S.people[pid]||{}).name||R("O'chirilgan odam");
+  const rowTx=t=>[t.date||'',pn(t.pid),tname(t),+t.amount||0,isUSD(t)?'USD':C,Math.round(baseAmt(t)*100)/100,t.due||'',(t.plan||[]).length?(t.plan.length+' '+R('oy')):'',t.note||''];
+  const hTx=[R('Sana'),R('Ism'),R('Turi'),R('Summa'),R('Valyuta'),R('Summa')+' ('+C+')',R('Muddat'),R('Grafik'),R('Izoh')];
+  const st=monthStats(ym);const sum=[[R('Oylik hisobot')+' — '+ymName(ym)],[],[R('Ko\'rsatkich'),R('Summa')+' ('+C+')'],[R('Berildi'),st.lend],[R('Qaytdi'),st.got],[R('Olindi'),st.borrow],[R('Qaytarildi'),st.paid],[R('Qaytish foizi'),st.lend?Math.round(st.got/st.lend*100)/100:''],[R('Yozuvlar soni'),st.n],[],[R('Oxirgi 6 oy')],[R('Oy'),R('Berildi'),R('Qaytdi'),R('Olindi'),R('Qaytarildi')]];
+  for(let k=5;k>=0;k--){const m=ymShift(ym,-k);const q=monthStats(m);sum.push([ymName(m),q.lend,q.got,q.borrow,q.paid])}
+  const monthTx=txSorted(Object.values(S.tx).filter(t=>(t.date||'').startsWith(ym))).map(rowTx);
+  const allTx=txSorted(Object.values(S.tx)).map(rowTx);
+  const ppl=Object.values(S.people).map(p=>{const b=S.bal[p.id]||0;const tr0=S.trust[p.id];return [p.name,p.phone?fphone(p.phone):'',Math.abs(Math.round(b*100)/100),b>0?R('Menga qarzdor'):b<0?R('Men qarzdorman'):R('Hisob teng'),overdueOf(p.id)||'',tr0?tr0.score/100:'',p.note||'']}).sort((a,b)=>b[2]-a[2]);
+  const wb=X.utils.book_new();
+  const add=(name,rows,cols,fmtCols)=>{const ws=X.utils.aoa_to_sheet(rows);ws['!cols']=cols.map(w=>({wch:w}));if(fmtCols){const rg=X.utils.decode_range(ws['!ref']);for(let r=rg.s.r;r<=rg.e.r;r++)for(const [c,z] of fmtCols){const a=X.utils.encode_cell({r,c});if(ws[a]&&typeof ws[a].v==='number')ws[a].z=z}}X.utils.book_append_sheet(wb,ws,name.slice(0,31))};
+  add(R('Hisobot'),sum,[24,16,16,16,16],[[1,'#,##0'],[2,'#,##0'],[3,'#,##0'],[4,'#,##0']]);
+  const pr=X.utils.encode_cell({r:7,c:1});
+  add(ymName(ym),[hTx,...monthTx],[12,22,18,14,8,16,12,10,30],[[3,'#,##0.##'],[5,'#,##0']]);
+  add(R('Odamlar'),[[R('Ism'),R('Telefon raqam'),R('Qoldiq')+' ('+C+')',R('Holat'),R('Muddati o\'tgan'),R('Ishonch'),R('Izoh')],...ppl],[22,18,16,16,14,10,30],[[2,'#,##0'],[5,'0%']]);
+  add(R('Barcha yozuvlar'),[hTx,...allTx],[12,22,18,14,8,16,12,10,30],[[3,'#,##0.##'],[5,'#,##0']]);
+  const ws0=wb.Sheets[wb.SheetNames[0]];if(ws0[pr]&&typeof ws0[pr].v==='number')ws0[pr].z='0%';
+  const fn=`Oldi-Berdi_${ym}.xlsx`;
+  const out=X.write(wb,{bookType:'xlsx',type:'array'});const blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  let shared=false;try{const f=new File([blob],fn,{type:blob.type});if(/Android|iPhone|iPad/i.test(navigator.userAgent)&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});shared=true}}catch(e){if(e&&e.name==='AbortError')shared=true}
+  if(!shared){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},4000);toast(R('Excel fayl yuklab olindi'))}
+ }catch(e){toast(tr("Faylni yaratib bo'lmadi. Internetni tekshiring."))}
+ finally{if(btn){btn.disabled=false;btn.innerHTML=old}}}
 
 /* ============ sheets ============ */
 const sheets=[];
@@ -817,12 +1033,18 @@ function remindList(){const td=today(),tm=addDays(td,1),out=[];const now=Date.no
  return out.sort((a,b)=>a.rank-b.rank||(S.bal[b.p.id]||0)-(S.bal[a.p.id]||0))}
 function remRowHtml(x){const ph=normPhone(x.p.phone||'');return `<div class="rem-row" id="rem-${x.p.id}">${avatar(x.p,42)}<div class="mid"><b>${esc(x.p.name)}</b><small class="why ${x.why}">${x.label}</small><small class="num">${money(S.bal[x.p.id]||0)}${ph?'':' · raqam yo\'q'}</small></div><div class="rem-btns"><button class="btn btn-primary btn-sm" data-act="remSms" data-id="${x.p.id}">${ph?'SMS yuborish':'Raqam kiritish'}</button><button class="btn btn-ghost btn-sm" data-act="remSnooze" data-id="${x.p.id}">Keyinroq</button></div></div>`}
 function maybeRemindPrompt(){if(!S.acc||S.locked||S.setup||sheets.length||S.view!=='home'||!S.loaded.t)return;if(LS.get('oldiberdi_remauto')==='off')return;if(LS.get('oldiberdi_remprompt')===today())return;if(!remindList().length)return;LS.set('oldiberdi_remprompt',today());setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup)A.remCenter()},900)}
-function remindText(p){const b=S.bal[p.id]||0;const od=overdueOf(p.id);let next=null,due=null;
+function remindText(p){if(isRu())return remindTextRu(p);const b=S.bal[p.id]||0;const od=overdueOf(p.id);let next=null,due=null;
  for(const x of Object.values(S.tx)){if(x.pid!==p.id||x.type!=='lend')continue;const L=S.alloc[x.id];if(!L||L.left<=0.5)continue;const i=nextInst(L);if(i&&(!next||i.d<next.d))next={d:i.d,a:L.t.cur==='USD'?'$'+fmt(i.a):fmt(i.a)+' '+cur()};if(!L.inst.length&&x.due&&(!due||x.due<due))due=x.due}
  let s=`Assalomu alaykum, ${p.name}!\n\nYodingizga solib qo'ymoqchi edim: sizda ${money(b)} qarz bor`;
  const u=S.usd[p.id]||0;if(u>0&&usdOn())s+=` (shundan $${fmt(u)})`;s+='.';
  if(next)s+=next.d<today()?`\n${fdate(next.d)} kuni ${next.a} to'lashingiz kerak edi.`:`\nKeyingi to'lov: ${fdate(next.d)} — ${next.a}.`;else if(od)s+=`\nQaytarish muddati ${fdate(od)} edi.`;else if(due)s+=`\nQaytarish muddati: ${fdate(due)}.`;
  return s+`\n\nRahmat!\n${S.acc.name}`}
+function remindTextRu(p){const b=S.bal[p.id]||0;const od=overdueOf(p.id);let next=null,due=null;const R=x=>tr(x);
+ for(const x of Object.values(S.tx)){if(x.pid!==p.id||x.type!=='lend')continue;const L=S.alloc[x.id];if(!L||L.left<=0.5)continue;const i=nextInst(L);if(i&&(!next||i.d<next.d))next={d:i.d,a:L.t.cur==='USD'?'$'+fmt(i.a):R(fmt(i.a)+' '+cur())};if(!L.inst.length&&x.due&&(!due||x.due<due))due=x.due}
+ let s=`Здравствуйте, ${p.name}!\n\nХочу напомнить: за вами долг ${R(money(b))}`;
+ const u=S.usd[p.id]||0;if(u>0&&usdOn())s+=` (из них $${fmt(u)})`;s+='.';
+ if(next)s+=next.d<today()?`\n${R(fdate(next.d))} нужно было оплатить ${next.a}.`:`\nСледующий платёж: ${R(fdate(next.d))} — ${next.a}.`;else if(od)s+=`\nСрок возврата был ${R(fdate(od))}.`;else if(due)s+=`\nСрок возврата: ${R(fdate(due))}.`;
+ return s+`\n\nСпасибо!\n${S.acc.name}`}
 function confirmLink(token){return location.origin+location.pathname.replace(/index\.html$/,'')+'?c='+token}
 
 /* --- quick entry: "Akmalga 500 ming berdim" (typed or spoken) --- */
@@ -831,13 +1053,13 @@ const NUMW={bir:1,ikki:2,uch:3,"to'rt":4,tort:4,besh:5,olti:6,yetti:7,sakkiz:8,"
 function parseNum(s){
  s=s.replace(/(\d)[\s.](?=\d{3}(?!\d))/g,'$1').replace(/(\d)[\s.](?=\d{3}(?!\d))/g,'$1').replace(/(\d),(\d)/g,'$1.$2');
  let total=0,curv=0,half=false,found=false;
- for(let w of s.split(/[\s,;]+/)){w=w.replace(/[^0-9a-z'.$]/g,'').replace(/^\$/,'');if(!w)continue;
-  const m=w.match(/^(\d+(?:\.\d+)?)(k|ming|mln|million)?$/);
-  if(m){curv+=parseFloat(m[1]);found=true;if(m[2]){total+=curv*(m[2]==='k'||m[2]==='ming'?1e3:1e6);curv=0}continue}
+ for(let w of s.split(/[\s,;]+/)){w=w.replace(/[^0-9a-z'.$\u0430-\u044f\u0451]/g,'').replace(/^\$/,'');if(!w)continue;
+  const m=w.match(/^(\d+(?:\.\d+)?)(k|ming|mln|million|к|т|тыс|млн)?$/);
+  if(m){curv+=parseFloat(m[1]);found=true;if(m[2]){total+=curv*(/^(k|ming|к|т|тыс)$/.test(m[2])?1e3:1e6);curv=0}continue}
   if(w==='yarim'){half=true;found=true;continue}
   if(NUMW[w]!=null){curv+=NUMW[w];found=true;continue}
   if(w==='yuz'){curv=(curv||1)*100;found=true;continue}
-  const mul=/^ming/.test(w)?1e3:/^(million|mln|millon)/.test(w)?1e6:/^(milliard|mlrd)/.test(w)?1e9:0;
+  const mul=/^(ming|тыс)/.test(w)?1e3:/^(million|mln|millon|млн|миллион)/.test(w)?1e6:/^(milliard|mlrd|млрд|миллиард)/.test(w)?1e9:0;
   if(mul){total+=((curv||0)+(half?0.5:0)||1)*mul;curv=0;half=false;found=true;continue}
  }
  total+=curv+(half&&!curv?0:0);return found?Math.round(total*100)/100:0}
@@ -845,7 +1067,7 @@ function normName(x){return String(x||'').toLowerCase().replace(/[’‘`ʻʼ']/
 function parseQuick(raw){
  const low=' '+raw.toLowerCase().replace(/[’‘`ʻʼ]/g,"'")+' ';
  let type='lend';
- if(/qaytardim|to'ladim|uzdim/.test(low))type='paid';else if(/qaytardi|to'ladi|uzdi/.test(low))type='got';else if(/\boldim\b|qarz oldim|qarzga oldim|olgandim/.test(low))type='borrow';
+ if(/qaytardim|to'ladim|uzdim|я вернул|я отдал|вернула? ему|вернула? ей|отдала? долг/.test(low))type='paid';else if(/qaytardi|to'ladi|uzdi|вернула?|вернули|отдала?/.test(low))type='got';else if(/\boldim\b|qarz oldim|qarzga oldim|olgandim|взяла?|заняла?|одолжила? у/.test(low))type='borrow';
  const usd=/dollar|\$|usd|долл/.test(low);
  const amount=parseNum(low.split(/muddat/)[0]);
  const txt=normName(raw),words=txt.split(' ');let best=null;
@@ -853,9 +1075,9 @@ function parseQuick(raw){
   if(txt.includes(pn)){if(!best||pn.length>best.len)best={p,len:pn.length}}
   else if(words.some(w=>w.startsWith(first)&&w.length-first.length<=5)){if(!best||first.length>best.len)best={p,len:first.length}}}
  let name='';
- if(!best){const stop=/^(qarz|qarzga|ming|million|mln|yuz|dollar|berdim|oldim|qaytardi|qaytardim|bugun|kecha|som|so'm|sum|ga|dan|va|uchun)$/i;
+ if(!best){const stop=/^(qarz|qarzga|ming|million|mln|yuz|dollar|berdim|oldim|qaytardi|qaytardim|bugun|kecha|som|so'm|sum|ga|dan|va|uchun|я|дал|дала|взял|взяла|вернул|вернула|вернули|в|долг|тысяч|тысячи|тыс|млн|сум|сегодня|вчера|у|мне|ему|ей|занял|заняла|одолжил|долларов)$/i;
   const w=raw.trim().split(/\s+/).find(x=>/^[^\d\s$]{2,}/.test(x)&&!stop.test(x.replace(/[,.!?]/g,''))&&!NUMW[x.toLowerCase()]);
-  if(w){name=w.replace(/[,.!?]/g,'').replace(/(ga|ka|qa|dan|ning|ni|da)$/i,'');name=name.charAt(0).toUpperCase()+name.slice(1)}}
+  if(w){name=w.replace(/[,.!?]/g,'').replace(/(ga|ka|qa|dan|ning|ni|da)$/i,'');if(/[\u0400-\u04ff]/.test(name)&&name.length>4)name=name.replace(/(ю|у)$/i,'');name=name.charAt(0).toUpperCase()+name.slice(1)}}
  return {type,amount,cur:usd&&usdOn()?'USD':'',pid:best?best.p.id:null,name}}
 function doQuick(){const inp=$('#qk');const raw=(inp&&inp.value||'').trim();if(!raw){toast("Masalan: «Akmalga 500 ming berdim»");return}
  const r=parseQuick(raw);txForm({type:r.type,pid:r.pid,amount:r.amount||'',cur:r.cur,q:r.pid?'':r.name});inp.value=''}
@@ -905,11 +1127,11 @@ document.addEventListener('keyup',e=>{if(e.target.closest&&e.target.closest('[da
 let CF=null;
 async function renderConfirm(c){
  CF={c,d:null,state:''};
- $('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Qarz yozuvini tasdiqlash</p></div><div class="pad"><div class="auth-card" id="cf-box"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div></div></div></div>`;
+ $('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${langSwitch()}${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Qarz yozuvini tasdiqlash</p></div><div class="pad"><div class="auth-card" id="cf-box"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div></div></div></div>`;
  try{CF.d=await api('getConfirm',{c})}catch(e){$('#cf-box').innerHTML=`<b>${esc(e.message)}</b><p class="hint">Havolani yuborgan odamdan yangisini so'rang.</p><a class="btn btn-ghost" style="width:100%" href="./">Ilovani ochish</a>`;return}
  drawConfirm()}
 function drawConfirm(){const d=CF.d;const amt=d.cur==='USD'?'$'+fmt(d.amount):fmt(d.amount)+' '+(d.currency||"so'm");const f=`<b>${esc(d.from)}</b>`,a=`<b class="num">${esc(amt)}</b>`;
- const line=d.type==='lend'?`${f} sizga ${a} qarz berganini yozib qo'ydi.`:d.type==='borrow'?`${f} sizdan ${a} qarz olganini yozib qo'ydi.`:d.type==='got'?`${f} siz unga ${a} qaytarganingizni yozib qo'ydi.`:`${f} sizga ${a} qaytarganini yozib qo'ydi.`;
+ const line=isRu()?(d.type==='lend'?`${f} записал(а), что дал(а) вам в долг ${a}.`:d.type==='borrow'?`${f} записал(а), что взял(а) у вас в долг ${a}.`:d.type==='got'?`${f} записал(а), что вы вернули ему(ей) ${a}.`:`${f} записал(а), что вернул(а) вам ${a}.`):d.type==='lend'?`${f} sizga ${a} qarz berganini yozib qo'ydi.`:d.type==='borrow'?`${f} sizdan ${a} qarz olganini yozib qo'ydi.`:d.type==='got'?`${f} siz unga ${a} qaytarganingizni yozib qo'ydi.`:`${f} sizga ${a} qaytarganini yozib qo'ydi.`;
  const plan=Array.isArray(d.plan)?d.plan:[];const logged=!!(S.token&&LS.get('oldiberdi_acc'));
  let foot='';
  if(d.status==='pending')foot=`<div class="actions"><button class="btn btn-ghost" data-act="cfAnswer" data-v="no">Noto'g'ri</button><button class="btn btn-primary" data-act="cfAnswer" data-v="yes">${I.check} Ha, to'g'ri</button></div>`;
@@ -979,6 +1201,10 @@ const A={
  authTab:d=>{S.authTab=d.v;renderAuth()},
  eye:(d,el)=>{const i=el.parentElement.querySelector('input');const show=i.type==='password';i.type=show?'text':'password';i.classList.add('pw');el.classList.toggle('on',show);el.innerHTML=show?I.eyeOff:I.eye;el.setAttribute('aria-label',show?'Parolni yashirish':"Parolni ko'rsatish")},
  go:d=>{closeAllSheets();S.view=d.v;render()},
+ rm:d=>{S.rm=ymShift(S.rm||today().slice(0,7),+d.v);render()},
+ xlsx:(d,el)=>exportXlsx(el),
+ setLang:d=>{setLang(d.v);if(sheets.length)closeAllSheets()},
+ langSheet:()=>openSheet('Til',`<div class="copts" data-notr>${[['uz',"O'zbekcha"],['ru','Русский']].map(([k,l])=>`<button class="copt" data-act="setLang" data-v="${k}"><span class="qi" style="background:var(--surface-2);color:var(--brand)">${I.globe}</span><span><b>${l}</b></span><span class="go">${LANG===k?I.check:''}</span></button>`).join('')}</div>`),
  peopleFilter:d=>{S.pf=d.v;S.view='people';render()},
  pf:d=>{S.pf=d.v;render()},hf:d=>{S.hf=d.v;render()},
  openPerson:d=>{closeAllSheets();S.pid=d.id;S.view='person';render()},
@@ -1004,7 +1230,8 @@ const A={
  shareConfirm:async(d,el)=>{const t=S.tx[d.id];if(!t)return;const p=S.people[t.pid]||{name:''};el.disabled=true;const old=el.innerHTML;el.textContent='Havola tayyorlanmoqda…';
   try{await QCHAIN;const j=await api('shareTx',{id:d.id});S.confirms[d.id]={status:j.status,token:j.token};saveCache();
    const amt=amtTxt(t);const me=S.acc.name;const desc=t.type==='lend'?`${me} sizga ${amt} qarz berdi`:t.type==='borrow'?`${me} sizdan ${amt} qarz oldi`:t.type==='got'?`siz ${me}ga ${amt} qaytardingiz`:`${me} sizga ${amt} qaytardi`;
-   const text=`Assalomu alaykum, ${p.name}!\nOldi-Berdi: ${desc} (${fdate(t.date)}).\nTasdiqlang: ${confirmLink(j.token)}`;
+   const amtR=tr(amt),descR=t.type==='lend'?`${me} дал(а) вам в долг ${amtR}`:t.type==='borrow'?`${me} взял(а) у вас в долг ${amtR}`:t.type==='got'?`вы вернули ${me} ${amtR}`:`${me} вернул(а) вам ${amtR}`;
+   const text=isRu()?`Здравствуйте, ${p.name}!\nOldi-Berdi: ${descR} (${tr(fdate(t.date))}).\nПодтвердите: ${confirmLink(j.token)}`:`Assalomu alaykum, ${p.name}!\nOldi-Berdi: ${desc} (${fdate(t.date)}).\nTasdiqlang: ${confirmLink(j.token)}`;
    closeSheet();smsSheet('Tasdiqlashga yuborish',`Havola SMS bilan ${esc(p.name)}ga boradi. U ochib, «Ha, to'g'ri» ni bosadi va yozuv ikki tomonlama tasdiqlanadi.`,text,t.pid,'confirm')}
   catch(e){toast(writeErr(e));el.disabled=false;el.innerHTML=old}},
  smsSend:()=>{const c=S.smsCtx||{};let p=S.people[c.pid];if(!p)return;const text=($('#sh-text')||{}).value||'';let ph=normPhone(p.phone||'');const patch={};
