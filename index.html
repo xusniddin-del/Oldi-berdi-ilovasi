@@ -348,6 +348,18 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 .rth{font-size:12px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--line)}.rth span:not(:first-child),.rtr .num{text-align:right;min-width:72px}
 .rtr{width:100%;border:0;background:none;font:inherit;color:inherit;border-bottom:1px solid var(--line);cursor:pointer}.rtr:last-child{border-bottom:0}
 .rtr .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rtr .sub{grid-column:1/-1;color:var(--muted);font-size:12px;margin-top:-2px}
+.cur-btn svg{width:13px;height:13px;margin-left:3px;vertical-align:-1px}
+a.btn{text-decoration:none}
+.lock-tag{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:800;color:#a06a00;background:#fff3d6;border-radius:99px;padding:2px 7px;vertical-align:2px;letter-spacing:.2px}.lock-tag svg{width:11px;height:11px}
+.btn svg+svg,.btn .lock-ic{width:14px;height:14px}
+.prem-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;cursor:pointer;font:inherit;color:#fff;background:linear-gradient(135deg,var(--brand-deep),var(--brand));border-radius:18px;padding:14px 16px;margin:12px 0 0;box-shadow:var(--shadow)}
+.prem-card .pi{width:40px;height:40px;border-radius:12px;background:var(--lime);color:var(--brand-deep);display:grid;place-items:center;font-size:20px;font-weight:900;flex:none}.prem-card .pi svg{width:22px;height:22px}
+.prem-card .mid{flex:1;min-width:0;display:flex;flex-direction:column}.prem-card b{font-size:16px}.prem-card small{opacity:.85;font-size:12.5px}.prem-card .go svg{width:20px;height:20px}
+.prem-hit{display:flex;align-items:center;gap:10px;background:#fff3d6;color:#7a5200;border-radius:14px;padding:12px 14px;margin-bottom:6px}.prem-hit svg{width:20px;height:20px;flex:none}.prem-hit.on{background:var(--pos-bg);color:var(--pos)}
+.prem-list{list-style:none;margin:8px 0 12px;padding:0}.prem-list li{display:flex;gap:12px;align-items:flex-start;padding:9px 6px;border-bottom:1px solid var(--line)}.prem-list li:last-child{border-bottom:0}
+.prem-list li.hl{background:var(--pos-bg);border-radius:12px}.prem-list .pi{color:var(--brand);flex:none;margin-top:2px}.prem-list .pi svg{width:18px;height:18px}.prem-list span{display:flex;flex-direction:column}.prem-list small{color:var(--muted);font-size:12.5px}
+.prem-price{text-align:center;font-size:24px;font-weight:900;color:var(--brand);margin:4px 0}
+.lock-row{display:inline-flex;align-items:center;gap:6px;border:1px dashed #e0b44c;background:#fffaf0;color:#7a5200;border-radius:99px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px}.lock-row svg{width:14px;height:14px}
 </style>
 </head>
 <body>
@@ -355,8 +367,8 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=15;
-const WHATS_NEW=["Oylik hisobot: qancha berildi, qancha qaytdi, kim ko'p qarzdor — grafiklar bilan","Hisobotni Excel faylga yuklab olish","Rus tili: Profil → Til bo'limidan almashtiriladi"];
+const APP_VERSION=16;
+const WHATS_NEW=["Premium tarif: oylik hisobot, Excel, SMS eslatmalar, ishonch reytingi, dollar, bo'lib to'lash, ikki tomonlama tasdiq va rus tili","Profil → Premium bo'limidan qanday olishni ko'ring"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -464,7 +476,7 @@ const RU={
 /* report */
 "Berildi":"Дано","Qaytdi":"Вернули","Olindi":"Взято","Qaytarildi":"Возвращено","Qaytish foizi":"Доля возврата","Oxirgi 6 oy":"Последние 6 месяцев","Berilgan":"Дано","Qaytgan":"Вернули","Eng katta qarzdorlar":"Крупнейшие должники","Hozirgi holat":"Текущее состояние",
 "Odamlar bo'yicha":"По людям","Bu oyda yozuv yo'q":"В этом месяце записей нет","Excel'ga yuklab olish":"Скачать в Excel","Fayl tayyorlanmoqda…":"Готовим файл…","Excel fayl yuklab olindi":"Файл Excel скачан","Faylni yaratib bo'lmadi. Internetni tekshiring.":"Не удалось создать файл. Проверьте интернет.",
-"Oldingi oy":"Предыдущий месяц","Keyingi oy":"Следующий месяц","Bu oy":"Этот месяц","Yozuvlar soni":"Записей","Qoldiq":"Остаток","Ism":"Имя","Bu oyda berildi":"Дано в этом месяце","Bu oyda qaytdi":"Вернули в этом месяце","Grafiklar va Excel fayl":"Графики и файл Excel","Hech kim qarzdor emas":"Никто не должен","Ko'rsatkich":"Показатель","Oy":"Месяц","oy":"мес.","Holat":"Статус","Ishonch":"Надёжность","Barcha yozuvlar":"Все записи","Grafik":"График","Muddati o'tgan":"Просрочено","Hisobot":"Отчёт","Telefon":"Телефон","Boshqa odam":"Другой человек","Valyutani almashtirish":"Сменить валюту","Oxirgi raqamni o'chirish":"Удалить последнюю цифру","Tasdiqlangan":"Подтверждено","Barmoq izi bilan ochish":"Вход по отпечатку","Masalan: Xusniddin":"Например: Хусниддин"
+"Oldingi oy":"Предыдущий месяц","Keyingi oy":"Следующий месяц","Bu oy":"Этот месяц","Yozuvlar soni":"Записей","Qoldiq":"Остаток","Ism":"Имя","Bu oyda berildi":"Дано в этом месяце","Bu oyda qaytdi":"Вернули в этом месяце","Grafiklar va Excel fayl":"Графики и файл Excel","Hech kim qarzdor emas":"Никто не должен","Ko'rsatkich":"Показатель","Oy":"Месяц","oy":"мес.","Holat":"Статус","Ishonch":"Надёжность","Barcha yozuvlar":"Все записи","Grafik":"График","Muddati o'tgan":"Просрочено","Hisobot":"Отчёт","Telefon":"Телефон","Boshqa odam":"Другой человек","Valyutani almashtirish":"Сменить валюту","Oxirgi raqamni o'chirish":"Удалить последнюю цифру","Tasdiqlangan":"Подтверждено","Barmoq izi bilan ochish":"Вход по отпечатку","Masalan: Xusniddin":"Например: Хусниддин","Premium funksiya":"Функция Premium","Premium faol":"Premium активен","Premium'ga o'tish":"Перейти на Premium","Hisobot, Excel, SMS eslatma, dollar va boshqalar":"Отчёт, Excel, SMS-напоминания, доллар и другое","Muddatsiz":"Бессрочно","Premium yoqildi! Rahmat":"Premium включён! Спасибо","Telegram orqali olish":"Получить через Telegram","To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.":"После оплаты разработчик включит Premium в вашем аккаунте. Переустанавливать приложение не нужно.","Ishonch reytingi — Premium":"Рейтинг надёжности — Premium","Grafiklar, eng katta qarzdorlar":"Графики, крупнейшие должники","Hisobotni .xlsx qilib yuklab olish":"Скачать отчёт в .xlsx","Kimga eslatish kerakligini ilova o'zi topadi":"Приложение само находит, кому напомнить","Kim o'z vaqtida qaytarishini ko'rsatadi":"Показывает, кто возвращает вовремя","Dollar va MB kursi":"Доллар и курс ЦБ","Dollarda qarz yozish, so'mga avtomatik hisoblash":"Долги в долларах с пересчётом в сумы","Nasiya grafigi va kechikishlar":"График рассрочки и просрочки","Qarzdor SMS havola orqali tasdiqlaydi":"Должник подтверждает по ссылке из SMS","Ilovani rus tilida ishlatish":"Пользоваться приложением на русском","Excel fayl":"Файл Excel","SMS eslatmalar":"SMS-напоминания","Ishonch reytingi":"Рейтинг надёжности","Ikki tomonlama tasdiq":"Двустороннее подтверждение","Rus tili":"Русский язык","Bo'lib to'lash":"Рассрочка","Ikki tomonlama tasdiq — Premium funksiya":"Двустороннее подтверждение — функция Premium"
 };
 const RU_RX=[
  [/(\d{1,2})-(yanvar|fevral|mart|aprel|may|iyun|iyul|avgust|sentabr|oktabr|noyabr|dekabr)/g,(m,d,mo)=>d+' '+RU_MON_G[MON.indexOf(mo)]],
@@ -477,7 +489,7 @@ const RU_RX=[
  [/(\d+) oy · (.+?) dan/g,'$1 мес. · с $2'],[/Versiya (\d+)\. Nima yangi:/g,'Версия $1. Что нового:'],
  [/«(.+?)» kontaktda yo'q — yangi yaratish/g,'«$1» нет в контактах — создать'],[/«(.+?)» ni yaratish/g,'Создать «$1»'],[/«(.+?)» allaqachon bor\. Baribir yaratish uchun yana bosing\./g,'«$1» уже есть. Нажмите ещё раз, чтобы всё равно создать.'],
  [/^(.+?) tarixini ochish$/g,'История: $1'],[/^Shu rasmni (.+?) profiliga qo'yish$/g,'Сделать фото профиля: $1'],[/^(.+?) o'chirilsinmi\?$/g,'Удалить $1?'],
- [/^Xush kelibsiz, (.+)!$/g,'Добро пожаловать, $1!'],[/^(\d+) ta odam qo'shildi$/g,'Добавлено: $1'],[/^(.+?) qo'shildi$/g,'$1 — добавлен(а)'],
+ [/^«(.+?)» — Premium funksiya$/g,(m,x)=>'«'+(RU[x]||x)+'» — функция Premium'],[/^Premium faol · (.+?) gacha$/g,'Premium активен до $1'],[/^(.+?) gacha$/g,'до $1'],[/^Xush kelibsiz, (.+)!$/g,'Добро пожаловать, $1!'],[/^(\d+) ta odam qo'shildi$/g,'Добавлено: $1'],[/^(.+?) qo'shildi$/g,'$1 — добавлен(а)'],
  [/PIN noto'g'ri\. Yana (\d+) ta urinish qoldi/g,'Неверный PIN. Осталось попыток: $1'],[/5 marta xato kiritildi\. Raqam va parol bilan kiring\./g,'5 неверных попыток. Войдите по номеру и паролю.'],
  [/^(.+?)ga qarz haqida muloyim eslatma\. Matnni xohlaganingizcha o'zgartiring\.$/g,'Вежливое напоминание о долге для $1. Текст можно изменить.'],
  [/^(.+?)ning raqami yo'q\. Raqamni kiriting — saqlanadi va eslatma darhol yuboriladi\.$/g,'У $1 нет номера. Введите его — он сохранится, и напоминание уйдёт сразу.'],
@@ -511,7 +523,7 @@ function trTree(root){if(LANG!=='ru'||!root)return;
  root.querySelectorAll&&root.querySelectorAll('textarea[placeholder]').forEach(t=>{const v=t.getAttribute('placeholder'),x=tr(v);if(x!==v)t.setAttribute('placeholder',x)});
  let n;while((n=w.nextNode())){if(n.nodeType===3){const v=n.nodeValue;const t=tr(v);if(t!==v)n.nodeValue=t}else for(const a of TR_ATTR){const v=n.getAttribute(a);if(v){const t=tr(v);if(t!==v)n.setAttribute(a,t)}}}}
 new MutationObserver(ms=>{if(LANG!=='ru')return;for(const m of ms)for(const nd of m.addedNodes)trTree(nd)}).observe(document.documentElement,{childList:true,subtree:true});
-function setLang(l){LANG=l;LS.set('oldiberdi_lang',l);document.documentElement.lang=l==='ru'?'ru':'uz';if(S.acc&&!S.locked&&!S.setup){closeAllSheets();render()}else if(typeof CF!=='undefined'&&CF){location.reload();return}else if(!S.acc)renderAuth();else render();trTree(document.body)}
+function setLang(l){if(l==='ru'&&locked('ru')){closeAllSheets();premSheet('ru');return}LANG=l;LS.set('oldiberdi_lang',l);document.documentElement.lang=l==='ru'?'ru':'uz';if(S.acc&&!S.locked&&!S.setup){closeAllSheets();render()}else if(typeof CF!=='undefined'&&CF){location.reload();return}else if(!S.acc)renderAuth();else render();trTree(document.body)}
 function langSwitch(){return `<div class="lang-sw" role="group" aria-label="Til / Язык" data-notr><button type="button" class="${LANG==='uz'?'on':''}" data-act="setLang" data-v="uz">O'zbekcha</button><button type="button" class="${LANG==='ru'?'on':''}" data-act="setLang" data-v="ru">Русский</button></div>`}
 
 /* ============ icons ============ */
@@ -580,12 +592,28 @@ async function api(action,data){
  if(!j.ok){if(j.error==='AUTH'){if(S.acc){logout();toast('Sessiya tugadi, qayta kiring')}throw new Error('Qayta kiring')}throw new Error(j.error||'Xatolik yuz berdi')}
  return j}
 const DEV=Object.assign({telegram:'mot_075',phone:''},window.OLDIBERDI_DEV||{});
+/* ============ premium ============ */
+const PREM=Object.assign({price:'',features:['report','excel','remind','trust','usd','plan','confirm','ru']},window.OLDIBERDI_PREMIUM||{});
+const PREM_INFO={report:['Oylik hisobot',"Grafiklar, eng katta qarzdorlar"],excel:['Excel fayl','Hisobotni .xlsx qilib yuklab olish'],remind:['SMS eslatmalar',"Kimga eslatish kerakligini ilova o'zi topadi"],trust:['Ishonch reytingi',"Kim o'z vaqtida qaytarishini ko'rsatadi"],usd:['Dollar va MB kursi','Dollarda qarz yozish, so\'mga avtomatik hisoblash'],plan:["Bo'lib to'lash",'Nasiya grafigi va kechikishlar'],confirm:['Ikki tomonlama tasdiq','Qarzdor SMS havola orqali tasdiqlaydi'],ru:['Rus tili','Ilovani rus tilida ishlatish']};
+function isPrem(){const p=S.acc&&S.acc.premium;return !!(p&&p.on)}
+function locked(f){return !!S.acc&&PREM.features.includes(f)&&!isPrem()}
+function lk(f){return locked(f)?`<span class="lock-tag">${I.lock}Premium</span>`:''}
+function need(f){if(locked(f)){premSheet(f);return false}return true}
+function premSheet(f){const ph=S.acc?fphone(S.acc.phone):'';const msg=`Assalomu alaykum! Oldi-Berdi Premium olmoqchiman.\nAkkaunt raqamim: ${ph}`;const dph=normPhone(DEV.phone);
+ const p=S.acc&&S.acc.premium||{};
+ openSheet('Oldi-Berdi Premium',`${isPrem()?`<div class="prem-hit on">${I.check}<b>Premium faol${p.until?' · '+fdate(p.until)+' gacha':''}</b></div>`:f&&PREM_INFO[f]?`<div class="prem-hit">${I.lock}<b>«${PREM_INFO[f][0]}» — Premium funksiya</b></div>`:''}
+ <ul class="prem-list">${PREM.features.filter(k=>PREM_INFO[k]).map(k=>`<li class="${k===f?'hl':''}"><span class="pi">${I.check}</span><span><b>${PREM_INFO[k][0]}</b><small>${PREM_INFO[k][1]}</small></span></li>`).join('')}</ul>
+ ${isPrem()?'':`${PREM.price?`<div class="prem-price" data-notr>${esc(PREM.price)}</div>`:''}<p class="hint" style="text-align:center">To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.</p>
+ <a class="btn btn-primary" style="width:100%" href="https://t.me/${esc(DEV.telegram)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">${I.send} Telegram orqali olish</a>
+ ${dph?`<a class="btn btn-ghost" style="width:100%;margin-top:10px" href="tel:+${dph}">${I.phone} Qo'ng'iroq qilish</a>`:''}`}`,'prem')}
 /* background saves: the screen changes at once, the server catches up in order */
 let QCHAIN=Promise.resolve();
 function bg(label,task,undo){S.pending=(S.pending||0)+1;showSaving();QCHAIN=QCHAIN.then(()=>task()).catch(e=>{if(undo)undo();compute();saveCache();if(!isTyping())render();toast(label+': '+writeErr(e))}).finally(()=>{S.pending--;showSaving()})}
 function showSaving(){let el=document.getElementById('savebar');if(S.pending>0){if(!el){el=document.createElement('div');el.id='savebar';el.className='savebar';el.setAttribute('role','status');el.innerHTML='<i></i>Saqlanmoqda…';document.body.appendChild(el)}}else if(el)el.remove()}
 window.addEventListener('beforeunload',e=>{if(S.pending>0){e.preventDefault();e.returnValue=''}});
-function setAcc(a){S.acc={...S.acc,...a};LS.set('oldiberdi_acc',JSON.stringify(S.acc))}
+function setAcc(a){const was=isPrem();const had=!!S.acc;S.acc={...S.acc,...a};LS.set('oldiberdi_acc',JSON.stringify(S.acc));
+ if(had&&!was&&isPrem())setTimeout(()=>toast('Premium yoqildi! Rahmat'),300);
+ if(LANG==='ru'&&locked('ru')){LANG='uz';document.documentElement.lang='uz'}}
 function isTyping(){if(S.rec||(typeof VR!=='undefined'&&VR.on))return true;const a=document.activeElement;return !!a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&!!$('#app')&&$('#app').contains(a)}
 /* photos are kept in Google Drive as "d:<fileId>" and fetched once, then cached on the phone */
 const PH={},phWait={};
@@ -641,7 +669,7 @@ function overdueOf(pid){const b=S.bal[pid]||0;if(!b)return null;const want=b>0?'
   const d=L&&L.inst.length?(nextInst(L)||{}).d:x.due;
   if(d&&d<td&&(!hit||d<hit))hit=d}
  return hit}
-function trustBadge(pid,big){const r=S.trust[pid];if(!r)return '';const c=r.score>=85?'good':r.score>=60?'mid':'bad';const l=r.score>=85?'Ishonchli':r.score>=60?"O'rtacha":'Kechiktiradi';return `<span class="trust ${c}" title="O'z vaqtida qaytarish: ${r.score}%">${big?l+' · ':''}${r.score}%</span>`}
+function trustBadge(pid,big){const r=S.trust[pid];if(!r||locked('trust'))return '';const c=r.score>=85?'good':r.score>=60?'mid':'bad';const l=r.score>=85?'Ishonchli':r.score>=60?"O'rtacha":'Kechiktiradi';return `<span class="trust ${c}" title="O'z vaqtida qaytarish: ${r.score}%">${big?l+' · ':''}${r.score}%</span>`}
 function addMonths(ds,k){const [y,m,d]=ds.split('-').map(Number);const last=new Date(y,m-1+k+1,0).getDate();const x=new Date(y,m-1+k,Math.min(d,last));return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
 function planHtml(L,compact){if(!L||!L.inst.length)return '';const td=today();const usd=isUSD(L.t);
  const rows=L.inst.map((i,k)=>{const st=i.paidDate?`<span class="st ok">To'landi</span>`:i.d<td?`<span class="st late">Kechikkan</span>`:`<span class="st wait">Kutilmoqda</span>`;return `<div class="plan-row"><span>${k+1}. ${fdate(i.d)}</span><span class="num"><b>${usd?'$'+fmt(i.a):fmt(i.a)}</b> ${st}</span></div>`}).join('');
@@ -784,7 +812,7 @@ function vHome(){
  <div class="pad"><div class="bal-card"><div class="bal-label">Sof balans <span class="mut">${Object.keys(S.people).length} kishi</span></div><div class="bal-big num ${net>0?'pos':net<0?'neg':''}">${net<0?'−':''}${money(net)}</div><div class="bal-sub">${net>0?'Umumiy hisobda sizga qaytishi kerak':net<0?"Umumiy hisobda siz qaytarishingiz kerak":"Hamma hisob-kitob teng"}</div>
  ${usdOn()&&Object.values(S.tx).some(isUSD)?`<span class="rate-chip num">1 $ = ${fmt(rate())} so'm · MB kursi${S.rate&&S.rate.date?' · '+esc(S.rate.date):''}</span>`:''}
  <div class="bal-split"><button class="tile p" data-act="peopleFilter" data-v="owe"><span>Menga qarzdorlar</span><b class="num">${money(owe)}</b><small>${oweN} kishi</small></button><button class="tile n" data-act="peopleFilter" data-v="debt"><span>Mening qarzlarim</span><b class="num">${money(debt)}</b><small>${debtN} kishi</small></button></div></div>
- ${(()=>{const rl=remindList();return rl.length?`<button class="rem-card" data-act="remCenter"><span class="qi">${I.bell}</span><span class="mid"><b>Eslatish kerak · ${rl.length} kishi</b><small>${rl.slice(0,3).map(x=>esc(x.p.name)).join(', ')}${rl.length>3?' va boshqalar':''}</small></span><span class="go">${I.left}</span></button>`:''})()}
+ ${(()=>{const rl=remindList();return rl.length?`<button class="rem-card" data-act="remCenter"><span class="qi">${I.bell}</span><span class="mid"><b>Eslatish kerak · ${rl.length} kishi ${lk('remind')}</b><small>${rl.slice(0,3).map(x=>esc(x.p.name)).join(', ')}${rl.length>3?' va boshqalar':''}</small></span><span class="go">${I.left}</span></button>`:''})()}
  ${quickBtns()}
  <form class="quick-in" data-form="quick" autocomplete="off"><div class="qk-wrap"><input id="qk" aria-label="Tez yozish" placeholder="Tez yozish: «Akmalga 500 ming berdim»"><button class="qk-go" aria-label="Davom etish">${I.send}</button></div></form>
  ${loadingNote()}
@@ -813,9 +841,9 @@ function vPerson(){
  const logs=(p.log||[]).slice().reverse();
  return `<div class="pad"><div class="topbar"><button class="icon-btn" data-act="go" data-v="people" aria-label="Orqaga">${I.left}</button><h1></h1><button class="icon-btn" data-act="editPerson" data-id="${p.id}" aria-label="Tahrirlash">${I.edit}</button></div>
  <div class="p-head">${p.photo?`<button data-act="viewImg" data-src="person:${p.id}" style="margin:0 auto;display:block">${avatar(p,96)}</button>`:`<div style="display:flex;justify-content:center">${avatar(p,96)}</div>`}<h2>${esc(p.name)}</h2>${p.phone?`<button class="p-phone" data-act="copy" data-v="${esc(fphone(p.phone))}">${I.phone} <span class="num">${fphone(p.phone)}</span></button>`:'<span class="hint">Telefon yozilmagan</span>'}
- ${tr?`<div>${trustBadge(p.id,true)}<div class="hint" style="margin-top:4px">${tr.n} ta to'lov bo'yicha: o'z vaqtida qaytarish</div></div>`:''}
+ ${tr&&locked('trust')?`<button class="lock-row" data-act="prem" data-v="trust">${I.lock} Ishonch reytingi — Premium</button>`:''}${tr&&!locked('trust')?`<div>${trustBadge(p.id,true)}<div class="hint" style="margin-top:4px">${tr.n} ta to'lov bo'yicha: o'z vaqtida qaytarish</div></div>`:''}
  <div class="p-bal ${b>0?'p':b<0?'n':'z'}"><span>${b>0?'Sizga qarzdor':b<0?'Siz unga qarzdorsiz':'Hisob teng'}</span><b class="num">${money(b)}</b>${usdPart&&usdOn()?`<span class="usd-note num">shundan ${usdPart<0?'−':''}$${fmt(usdPart)} · 1$ = ${fmt(rate())} so'm</span>`:''}${od?`<span class="badge warn">Muddat ${fdate(od)} da o'tgan</span>`:''}</div>
- ${b>0?`<button class="btn btn-primary" style="width:100%;margin-top:6px" data-act="remind" data-id="${p.id}">${I.send} Eslatma yuborish</button>`:''}
+ ${b>0?`<button class="btn btn-primary" style="width:100%;margin-top:6px" data-act="remind" data-id="${p.id}">${I.send} Eslatma yuborish ${locked('remind')?I.lock:''}</button>`:''}
  <div class="hint">Jami berilgan: <b class="num">${money(sumL)}</b> · Jami olingan: <b class="num">${money(sumB)}</b></div>
  ${p.note?`<div class="p-note">${esc(p.note)}</div>`:''}</div>
  ${quickBtns(p.id)}
@@ -833,7 +861,7 @@ function vHistory(){
  list.forEach(t=>{const k=(t.date||'').slice(0,7);if(!groups[k])groups[k]=[];groups[k].push(t)});
  for(const k of Object.keys(groups)){const [y,m]=k.split('-').map(Number);let inn=0,out=0;groups[k].forEach(t=>{if(t.type==='lend'||t.type==='paid')out+=baseAmt(t);else inn+=baseAmt(t)});
   html+=`<div class="date-sep" style="display:flex;justify-content:space-between"><span>${MON[m-1]} ${y}</span><span class="num" style="text-transform:none;letter-spacing:0">chiqim ${fmt(out)} · kirim ${fmt(inn)}</span></div><div class="card list">${groups[k].map(t=>txRow(t)).join('')}</div>`}
- return `<div class="pad"><div class="topbar"><h1>Tarix</h1><button class="btn btn-ghost btn-sm" data-act="go" data-v="report">${I.chart} Hisobot</button></div>
+ return `<div class="pad"><div class="topbar"><h1>Tarix</h1><button class="btn btn-ghost btn-sm" data-act="go" data-v="report">${I.chart} Hisobot${locked('report')?' '+I.lock:''}</button></div>
  <div class="search">${I.search}<input class="inp" id="hq" data-input="hq" placeholder="Ism yoki izoh bo'yicha qidirish" value="${esc(S.hq)}"></div>
  <div class="chips">${ch('all','Hammasi')}${ch('lend','Berdim')}${ch('borrow','Oldim')}${ch('got','Qaytardi')}${ch('paid','Qaytardim')}</div>
  ${loadingNote()}
@@ -842,14 +870,15 @@ function vHistory(){
 function vProfile(){const a=S.acc;
  return `<div class="pad"><div class="topbar"><h1>Profil</h1></div>
  <div class="card prof-card">${avatar(a,84)}<h2 style="margin:10px 0 0;font-size:20px">${esc(a.name)}</h2><span class="hint num">${fphone(a.phone)}</span><span class="mode-pill ${Store.cloud?'':'off'}" style="background:var(--surface-2);color:var(--muted)"><i></i>${Store.cloud?'Onlayn: istalgan telefondan kirish mumkin':'Faqat shu qurilmada saqlanmoqda'}</span></div>
+ ${isPrem()?`<button class="prem-card on" data-act="prem"><span class="pi">${I.check}</span><span class="mid"><b>Premium faol</b><small>${a.premium.until?fdate(a.premium.until)+' gacha':'Muddatsiz'}</small></span></button>`:`<button class="prem-card" data-act="prem"><span class="pi">★</span><span class="mid"><b>Premium'ga o'tish</b><small>Hisobot, Excel, SMS eslatma, dollar va boshqalar</small></span><span class="go">${I.right}</span></button>`}
  <div class="card list menu">
   <button class="item" data-act="editProfile">${I.edit}<div class="mid">Ma'lumotlarni o'zgartirish<div class="t2">Ism, telefon, rasm</div></div></button>
   <button class="item" data-act="changePass">${I.lock}<div class="mid">Parolni o'zgartirish</div></button>
   <button class="item" data-act="changePin">${I.shield}<div class="mid">PIN kodni o'zgartirish<div class="t2">Ilovani ochishda so'raladi</div></div></button>
   ${BIO.ok?`<button class="item" data-act="toggleBio">${I.finger}<div class="mid">Barmoq izi<div class="t2">${bioGet()?"Yoqilgan · o'chirish uchun bosing":"O'chiq · yoqish uchun bosing"}</div></div></button>`:''}
   <button class="item" data-act="lockNow">${I.lock}<div class="mid">Ilovani hozir qulflash</div></button>
-  <button class="item" data-act="go" data-v="report">${I.chart}<div class="mid">Oylik hisobot<div class="t2">Grafiklar va Excel fayl</div></div></button>
-  <button class="item" data-act="langSheet">${I.globe}<div class="mid">Til<div class="t2" data-notr>${LANG==='ru'?'Русский':"O'zbekcha"}</div></div></button>
+  <button class="item" data-act="go" data-v="report">${I.chart}<div class="mid">Oylik hisobot ${lk('report')}<div class="t2">Grafiklar va Excel fayl</div></div></button>
+  <button class="item" data-act="langSheet">${I.globe}<div class="mid">Til ${lk('ru')}<div class="t2" data-notr>${LANG==='ru'?'Русский':"O'zbekcha"}</div></div></button>
   <button class="item" data-act="remSettings">${I.bell}<div class="mid">Eslatma sozlamalari<div class="t2">Muddatsiz qarzlar: har ${remDays()} kunda · ${LS.get('oldiberdi_remauto')==='off'?"o'zi so'ramaydi":"ochilganda so'raydi"}</div></div></button>
   <button class="item" data-act="currency">${I.coin}<div class="mid">Valyuta<div class="t2">Hozir: ${esc(cur())}</div></div></button>
   <button class="item" data-act="contactDev">${I.chat}<div class="mid">Dasturchiga murojaat<div class="t2">Savol, taklif yoki muammo bo'lsa</div></div></button>
@@ -875,7 +904,7 @@ function vReport(){
  const debtors=Object.values(S.people).map(p=>({p,b:S.bal[p.id]||0})).filter(x=>x.b>0.5).sort((a,b)=>b.b-a.b).slice(0,5);const dmax=debtors.length?debtors[0].b:1;
  const per=Object.entries(st.per).map(([pid,q])=>({p:S.people[pid]||{id:pid,name:"O'chirilgan odam"},q})).sort((a,b)=>(b.q.lend+b.q.got+b.q.borrow+b.q.paid)-(a.q.lend+a.q.got+a.q.borrow+a.q.paid));
  const tile=(cls,l,v)=>`<div class="rtile ${cls}"><span>${l}</span><b class="num">${fmt(v)}</b><small>${esc(cur())}</small></div>`;
- return `<div class="pad"><div class="topbar"><button class="icon-btn" data-act="go" data-v="history" aria-label="Orqaga">${I.left}</button><h1>Hisobot</h1><button class="btn btn-primary btn-sm" data-act="xlsx">${I.download} Excel</button></div>
+ return `<div class="pad"><div class="topbar"><button class="icon-btn" data-act="go" data-v="history" aria-label="Orqaga">${I.left}</button><h1>Hisobot</h1><button class="btn btn-primary btn-sm" data-act="xlsx">${locked('excel')?I.lock:I.download} Excel</button></div>
  <div class="rmonth"><button class="icon-btn" data-act="rm" data-v="-1" aria-label="Oldingi oy">${I.left}</button><b data-notr>${ymName(ym)}</b><button class="icon-btn" data-act="rm" data-v="1" aria-label="Keyingi oy" ${isCur?'disabled':''}>${I.right}</button></div>
  ${loadingNote()}
  <div class="rgrid">${tile('p','Berildi',st.lend)}${tile('t','Qaytdi',st.got)}${tile('n','Olindi',st.borrow)}${tile('l','Qaytarildi',st.paid)}</div>
@@ -931,9 +960,9 @@ function txForm(opts={}){
  const w=openSheet(ed?'Yozuvni tahrirlash':'Yangi yozuv',`<form data-form="tx">
  <div class="seg" id="tx-seg">${segHtml()}</div>
  <div class="field"><span class="lbl">Kim bilan</span><div id="tx-person">${personPickHtml()}</div></div>
- <div class="field"><label for="tx-amount">Summa</label><div class="inp-wrap"><input class="inp amount-inp num" id="tx-amount" inputmode="decimal" autocomplete="off" placeholder="0" value="${TX.amount?fmt(TX.amount):''}" data-amount data-plan>${usdOn()?`<button type="button" class="cur-tag cur-btn" id="tx-cur" data-act="txCur" aria-label="Valyutani almashtirish">${TX.cur==='USD'?'$':"so'm"}</button>`:`<span class="cur-tag">${esc(cur())}</span>`}</div><span class="hint" id="tx-conv"></span></div>
+ <div class="field"><label for="tx-amount">Summa</label><div class="inp-wrap"><input class="inp amount-inp num" id="tx-amount" inputmode="decimal" autocomplete="off" placeholder="0" value="${TX.amount?fmt(TX.amount):''}" data-amount data-plan>${usdOn()?`<button type="button" class="cur-tag cur-btn" id="tx-cur" data-act="txCur" aria-label="Valyutani almashtirish">${TX.cur==='USD'?'$':"so'm"}${locked('usd')?' '+I.lock:''}</button>`:`<span class="cur-tag">${esc(cur())}</span>`}</div><span class="hint" id="tx-conv"></span></div>
  <div class="row2"><div class="field"><label for="tx-date">Sana</label><input class="inp" type="date" id="tx-date" value="${esc(TX.date)}"></div><div class="field" id="tx-due-f"><label for="tx-due">Muddat</label><input class="inp" type="date" id="tx-due" value="${esc(TX.due||'')}"></div></div>
- ${S.api>=2?`<div class="field" id="tx-plan-f"><label class="chk"><input type="checkbox" id="tx-plan-on" ${TX.planOn?'checked':''}> Bo'lib to'lash (nasiya grafigi)</label>
+ ${S.api>=2?`<div class="field" id="tx-plan-f"><label class="chk"><input type="checkbox" id="tx-plan-on" ${TX.planOn?'checked':''}> Bo'lib to'lash (nasiya grafigi) ${lk('plan')}</label>
   <div class="plan-box" id="tx-plan-box" ${TX.planOn?'':'hidden'}><div class="row2"><div class="field" style="margin:0"><label for="tx-months">Necha oyga</label><input class="inp num" id="tx-months" type="number" inputmode="numeric" min="2" max="36" value="${TX.months}" data-plan></div><div class="field" style="margin:0"><label for="tx-first">1-to'lov sanasi</label><input class="inp" type="date" id="tx-first" value="${esc(TX.first)}" data-plan></div></div><div class="plan-list" id="tx-plan-prev"></div></div></div>`:''}
  <div class="field"><label for="tx-note">Izoh</label><textarea class="inp" id="tx-note" placeholder="Masalan: 2 qop un, naqd pul…">${esc(TX.note)}</textarea></div>
  <div class="field"><span class="lbl">Rasm (mijoz, chek yoki mahsulot)</span>${photoPickHtml('tx',TX.photo)}<span class="hint">Odamning profil rasmi bo'lmasa, shu rasm profiliga ham qo'yiladi.</span></div>
@@ -994,7 +1023,7 @@ function txView(id){
  ${id.startsWith('cf_')?`<p class="hint" style="margin:8px 0 0">Bu yozuv ${esc(p.name)} yuborgan tasdiqlash havolasidan qo'shilgan.</p>`:''}
  <div class="kv"><span>Yozilgan</span><b class="num">${fdt(t.createdAt)}</b></div>
  ${(t.edits||[]).length?`<div class="kv" style="flex-direction:column;gap:4px"><span>O'zgartirishlar</span>${t.edits.slice().reverse().map(e=>`<div class="hint">${fdt(e.at)} — ${esc(e.t)}</div>`).join('')}</div>`:''}
- ${S.api<2||S.confirms[id]?.status==='confirmed'||id.startsWith('cf_')?'':`<button class="btn btn-primary" style="width:100%;margin-top:14px" data-act="shareConfirm" data-id="${id}">${I.check} ${S.confirms[id]?'Tasdiqlash havolasini qayta yuborish':'Tasdiqlashga yuborish'}</button>`}
+ ${S.api<2||S.confirms[id]?.status==='confirmed'||id.startsWith('cf_')?'':`<button class="btn btn-primary" style="width:100%;margin-top:14px" data-act="shareConfirm" data-id="${id}">${locked('confirm')?I.lock:I.check} ${S.confirms[id]?'Tasdiqlash havolasini qayta yuborish':'Tasdiqlashga yuborish'}</button>`}
  <div class="actions"><button class="btn btn-ghost" data-act="txEdit" data-id="${id}">${I.edit} Tahrirlash</button><button class="btn btn-danger" data-act="txDel" data-id="${id}">${I.trash} O'chirish</button></div>
  ${t.photo&&S.people[t.pid]&&S.people[t.pid].photo!==t.photo?`<button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="setAva" data-id="${id}">${I.user} Shu rasmni ${esc(p.name)} profiliga qo'yish</button>`:''}
  ${S.people[t.pid]&&S.view!=='person'?`<button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="openPerson" data-id="${t.pid}">${esc(p.name)} tarixini ochish</button>`:''}`,'txView');w.dataset.id=id}
@@ -1032,7 +1061,7 @@ function remindList(){const td=today(),tm=addDays(td,1),out=[];const now=Date.no
  }
  return out.sort((a,b)=>a.rank-b.rank||(S.bal[b.p.id]||0)-(S.bal[a.p.id]||0))}
 function remRowHtml(x){const ph=normPhone(x.p.phone||'');return `<div class="rem-row" id="rem-${x.p.id}">${avatar(x.p,42)}<div class="mid"><b>${esc(x.p.name)}</b><small class="why ${x.why}">${x.label}</small><small class="num">${money(S.bal[x.p.id]||0)}${ph?'':' · raqam yo\'q'}</small></div><div class="rem-btns"><button class="btn btn-primary btn-sm" data-act="remSms" data-id="${x.p.id}">${ph?'SMS yuborish':'Raqam kiritish'}</button><button class="btn btn-ghost btn-sm" data-act="remSnooze" data-id="${x.p.id}">Keyinroq</button></div></div>`}
-function maybeRemindPrompt(){if(!S.acc||S.locked||S.setup||sheets.length||S.view!=='home'||!S.loaded.t)return;if(LS.get('oldiberdi_remauto')==='off')return;if(LS.get('oldiberdi_remprompt')===today())return;if(!remindList().length)return;LS.set('oldiberdi_remprompt',today());setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup)A.remCenter()},900)}
+function maybeRemindPrompt(){if(!S.acc||locked('remind')||S.locked||S.setup||sheets.length||S.view!=='home'||!S.loaded.t)return;if(LS.get('oldiberdi_remauto')==='off')return;if(LS.get('oldiberdi_remprompt')===today())return;if(!remindList().length)return;LS.set('oldiberdi_remprompt',today());setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup)A.remCenter()},900)}
 function remindText(p){if(isRu())return remindTextRu(p);const b=S.bal[p.id]||0;const od=overdueOf(p.id);let next=null,due=null;
  for(const x of Object.values(S.tx)){if(x.pid!==p.id||x.type!=='lend')continue;const L=S.alloc[x.id];if(!L||L.left<=0.5)continue;const i=nextInst(L);if(i&&(!next||i.d<next.d))next={d:i.d,a:L.t.cur==='USD'?'$'+fmt(i.a):fmt(i.a)+' '+cur()};if(!L.inst.length&&x.due&&(!due||x.due<due))due=x.due}
  let s=`Assalomu alaykum, ${p.name}!\n\nYodingizga solib qo'ymoqchi edim: sizda ${money(b)} qarz bor`;
@@ -1078,7 +1107,7 @@ function parseQuick(raw){
  if(!best){const stop=/^(qarz|qarzga|ming|million|mln|yuz|dollar|berdim|oldim|qaytardi|qaytardim|bugun|kecha|som|so'm|sum|ga|dan|va|uchun|я|дал|дала|взял|взяла|вернул|вернула|вернули|в|долг|тысяч|тысячи|тыс|млн|сум|сегодня|вчера|у|мне|ему|ей|занял|заняла|одолжил|долларов)$/i;
   const w=raw.trim().split(/\s+/).find(x=>/^[^\d\s$]{2,}/.test(x)&&!stop.test(x.replace(/[,.!?]/g,''))&&!NUMW[x.toLowerCase()]);
   if(w){name=w.replace(/[,.!?]/g,'').replace(/(ga|ka|qa|dan|ning|ni|da)$/i,'');if(/[\u0400-\u04ff]/.test(name)&&name.length>4)name=name.replace(/(ю|у)$/i,'');name=name.charAt(0).toUpperCase()+name.slice(1)}}
- return {type,amount,cur:usd&&usdOn()?'USD':'',pid:best?best.p.id:null,name}}
+ return {type,amount,cur:usd&&usdOn()&&!locked('usd')?'USD':'',pid:best?best.p.id:null,name}}
 function doQuick(){const inp=$('#qk');const raw=(inp&&inp.value||'').trim();if(!raw){toast("Masalan: «Akmalga 500 ming berdim»");return}
  const r=parseQuick(raw);txForm({type:r.type,pid:r.pid,amount:r.amount||'',cur:r.cur,q:r.pid?'':r.name});inp.value=''}
 
@@ -1200,17 +1229,18 @@ function currencyForm(){const opts=["so'm",'$','€','₽','₸'];openSheet('Val
 const A={
  authTab:d=>{S.authTab=d.v;renderAuth()},
  eye:(d,el)=>{const i=el.parentElement.querySelector('input');const show=i.type==='password';i.type=show?'text':'password';i.classList.add('pw');el.classList.toggle('on',show);el.innerHTML=show?I.eyeOff:I.eye;el.setAttribute('aria-label',show?'Parolni yashirish':"Parolni ko'rsatish")},
- go:d=>{closeAllSheets();S.view=d.v;render()},
+ go:d=>{if(d.v==='report'&&locked('report')){closeAllSheets();premSheet('report');return}closeAllSheets();S.view=d.v;render()},
+ prem:d=>{closeAllSheets();premSheet(d.v)},
  rm:d=>{S.rm=ymShift(S.rm||today().slice(0,7),+d.v);render()},
- xlsx:(d,el)=>exportXlsx(el),
+ xlsx:(d,el)=>{if(need('excel'))exportXlsx(el)},
  setLang:d=>{setLang(d.v);if(sheets.length)closeAllSheets()},
- langSheet:()=>openSheet('Til',`<div class="copts" data-notr>${[['uz',"O'zbekcha"],['ru','Русский']].map(([k,l])=>`<button class="copt" data-act="setLang" data-v="${k}"><span class="qi" style="background:var(--surface-2);color:var(--brand)">${I.globe}</span><span><b>${l}</b></span><span class="go">${LANG===k?I.check:''}</span></button>`).join('')}</div>`),
+ langSheet:()=>openSheet('Til',`<div class="copts" data-notr>${[['uz',"O'zbekcha"],['ru','Русский']].map(([k,l])=>`<button class="copt" data-act="setLang" data-v="${k}"><span class="qi" style="background:var(--surface-2);color:var(--brand)">${I.globe}</span><span><b>${l}</b></span><span class="go">${LANG===k?I.check:k==='ru'&&locked('ru')?I.lock:''}</span></button>`).join('')}</div>`),
  peopleFilter:d=>{S.pf=d.v;S.view='people';render()},
  pf:d=>{S.pf=d.v;render()},hf:d=>{S.hf=d.v;render()},
  openPerson:d=>{closeAllSheets();S.pid=d.id;S.view='person';render()},
  newTx:d=>{if(!S.loaded.p){toast('Ma\'lumotlar yuklanmoqda…');return}txForm({type:d.type,pid:d.pid||(S.view==='person'?S.pid:null)})},
  txType:d=>{TX.type=d.v;$('#tx-seg').innerHTML=segHtml();syncDue()},
- txCur:(d,el)=>{TX.cur=TX.cur==='USD'?'':'USD';el.textContent=TX.cur==='USD'?'$':"so'm";planPreview();convHint()},
+ txCur:(d,el)=>{if(TX.cur!=='USD'&&!need('usd'))return;TX.cur=TX.cur==='USD'?'':'USD';el.textContent=TX.cur==='USD'?'$':"so'm";planPreview();convHint()},
  mic:async(d,el)=>{const inp=$('#qk');if(!inp)return;const PH="Tez yozish: «Akmalga 500 ming berdim»";
   if(S.rec){try{S.rec.stop()}catch(e){}return}
   const fallback=msg=>{S.rec=null;clearTimeout(S.recT);el.classList.remove('on');inp.placeholder=PH;inp.focus();toast(msg||"Klaviaturadagi 🎤 tugmasini bosib gapiring")};
@@ -1226,8 +1256,8 @@ const A={
    else fallback(err==='not-allowed'||err==='service-not-allowed'?"Ovozli yozish bu ilovada yopiq. Klaviaturadagi 🎤 tugmasini bosib gapiring":"Ovozni tanib bo'lmadi. Klaviaturadagi 🎤 tugmasini bosib gapiring")};
   try{r.start()}catch(e){return fallback()}
   S.recT=setTimeout(()=>{try{r.stop()}catch(_){}},10000)},
- remind:d=>{const p=S.people[d.id];if(!p)return;smsSheet('Eslatma (SMS)',`${esc(p.name)}ga qarz haqida muloyim eslatma. Matnni xohlaganingizcha o'zgartiring.`,remindText(p),p.id,'remind')},
- shareConfirm:async(d,el)=>{const t=S.tx[d.id];if(!t)return;const p=S.people[t.pid]||{name:''};el.disabled=true;const old=el.innerHTML;el.textContent='Havola tayyorlanmoqda…';
+ remind:d=>{if(!need('remind'))return;const p=S.people[d.id];if(!p)return;smsSheet('Eslatma (SMS)',`${esc(p.name)}ga qarz haqida muloyim eslatma. Matnni xohlaganingizcha o'zgartiring.`,remindText(p),p.id,'remind')},
+ shareConfirm:async(d,el)=>{if(!need('confirm'))return;const t=S.tx[d.id];if(!t)return;const p=S.people[t.pid]||{name:''};el.disabled=true;const old=el.innerHTML;el.textContent='Havola tayyorlanmoqda…';
   try{await QCHAIN;const j=await api('shareTx',{id:d.id});S.confirms[d.id]={status:j.status,token:j.token};saveCache();
    const amt=amtTxt(t);const me=S.acc.name;const desc=t.type==='lend'?`${me} sizga ${amt} qarz berdi`:t.type==='borrow'?`${me} sizdan ${amt} qarz oldi`:t.type==='got'?`siz ${me}ga ${amt} qaytardingiz`:`${me} sizga ${amt} qaytardi`;
    const amtR=tr(amt),descR=t.type==='lend'?`${me} дал(а) вам в долг ${amtR}`:t.type==='borrow'?`${me} взял(а) у вас в долг ${amtR}`:t.type==='got'?`вы вернули ${me} ${amtR}`:`${me} вернул(а) вам ${amtR}`;
@@ -1238,9 +1268,9 @@ const A={
   if(!ph){const v=normPhone(($('#sms-phone')||{}).value);if(v.length<9||v.length>15){$('#sms-err').textContent="Telefon raqamni to'g'ri kiriting";return}ph=v;patch.phone=v}
   personUpdate(p,patch,smsLog(c.kind)+(patch.phone?' · telefon qo\'shildi':''));
   openSms(ph,text);closeSheet();const row=$('#rem-'+p.id);if(row)row.querySelector('.rem-btns').innerHTML='<span class="done-pill">✓ Yuborildi</span>';render()},
- remCenter:()=>{const rl=remindList();if(!rl.length){toast("Hozircha eslatish kerak bo'lgan odam yo'q");return}
+ remCenter:()=>{if(!need('remind'))return;const rl=remindList();if(!rl.length){toast("Hozircha eslatish kerak bo'lgan odam yo'q");return}
   openSheet('Eslatma yuborish vaqti',`<p class="hint" style="margin:0 0 4px">Qarzini qaytarish vaqti kelganlar. SMS yuborilsinmi?</p><div>${rl.map(remRowHtml).join('')}</div><button class="link" style="margin-top:10px" data-act="remSettings">Eslatma sozlamalari</button>`,'rem')},
- remSms:(d,el)=>{const p=S.people[d.id];if(!p)return;const ph=normPhone(p.phone||'');
+ remSms:(d,el)=>{if(!need('remind'))return;const p=S.people[d.id];if(!p)return;const ph=normPhone(p.phone||'');
   if(!ph){smsSheet('Eslatma (SMS)',`${esc(p.name)}ning raqami yo'q. Raqamni kiriting — saqlanadi va eslatma darhol yuboriladi.`,remindText(p),p.id,'remind');return}
   personUpdate(p,{},smsLog('remind'));openSms(ph,remindText(p));el.parentElement.innerHTML='<span class="done-pill">✓ Yuborildi</span>';render()},
  remSnooze:(d,el)=>{const t=new Date();t.setDate(t.getDate()+1);t.setHours(6,0,0,0);LS.set('oldiberdi_snooze_'+d.id,String(t.getTime()));const row=$('#rem-'+d.id);if(row)row.remove();render();if(!document.querySelector('.rem-row'))closeSheet()},
@@ -1290,7 +1320,7 @@ const A={
  reloadApp:(d,el)=>{el.disabled=true;el.textContent='Yuklanmoqda…';let done=false;const go=()=>{if(done)return;done=true;location.reload()};const c=navigator.serviceWorker&&navigator.serviceWorker.controller;if(!c)return go();const ch=new MessageChannel();ch.port1.onmessage=go;c.postMessage('refresh',[ch.port2]);setTimeout(go,6000)}
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(!f)return;if(el.tagName==='BUTTON'&&el.type!=='submit')e.preventDefault();f(el.dataset,el,e)});
-document.addEventListener('change',e=>{if(e.target.id==='rem-auto'){LS.set('oldiberdi_remauto',e.target.checked?'on':'off');render()}if(e.target.id==='tx-plan-on'&&TX){TX.planOn=e.target.checked;const b=$('#tx-plan-box');if(b)b.hidden=!TX.planOn;syncDue()}});
+document.addEventListener('change',e=>{if(e.target.id==='rem-auto'){LS.set('oldiberdi_remauto',e.target.checked?'on':'off');render()}if(e.target.id==='tx-plan-on'&&TX&&e.target.checked&&!TX.planOn&&locked('plan')){e.target.checked=false;premSheet('plan');return}if(e.target.id==='tx-plan-on'&&TX){TX.planOn=e.target.checked;const b=$('#tx-plan-box');if(b)b.hidden=!TX.planOn;syncDue()}});
 document.addEventListener('submit',e=>{e.preventDefault();const k=e.target.dataset.form;({quick:doQuick,login:doLogin,register:doRegister,tx:saveTx,person:savePerson,profile:saveProfile,pass:savePass})[k]?.(e.target)});
 document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.input==='pq'){S.pq=t.value;render._focus='pq';render()}
