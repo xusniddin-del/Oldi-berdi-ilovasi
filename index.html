@@ -360,6 +360,12 @@ a.btn{text-decoration:none}
 .prem-list li.hl{background:var(--pos-bg);border-radius:12px}.prem-list .pi{color:var(--brand);flex:none;margin-top:2px}.prem-list .pi svg{width:18px;height:18px}.prem-list span{display:flex;flex-direction:column}.prem-list small{color:var(--muted);font-size:12.5px}
 .prem-price{text-align:center;font-size:24px;font-weight:900;color:var(--brand);margin:4px 0}
 .lock-row{display:inline-flex;align-items:center;gap:6px;border:1px dashed #e0b44c;background:#fffaf0;color:#7a5200;border-radius:99px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px}.lock-row svg{width:14px;height:14px}
+.sec-mini{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 8px}
+.plan-btn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:2px solid var(--line);background:var(--surface);border-radius:16px;padding:14px 16px;margin-bottom:10px;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.plan-btn:first-of-type{border-color:var(--brand);background:var(--pos-bg)}.plan-btn span{display:flex;flex-direction:column}.plan-btn b{font-size:17px}.plan-btn small{color:var(--muted);font-size:12.5px}
+.plan-btn .pr{font-size:20px;font-weight:900;color:var(--brand);flex-direction:row;align-items:baseline;gap:4px;white-space:nowrap}.plan-btn:disabled{opacity:.7}
+.pay-wait{display:flex;align-items:center;gap:12px;width:100%;border:1px dashed var(--brand);background:var(--pos-bg);color:var(--fg);border-radius:16px;padding:12px 14px;margin-top:12px;font:inherit;text-align:left;cursor:pointer}.pay-wait span{display:flex;flex-direction:column}.pay-wait small{color:var(--muted)}
+.pay-wait .spin{width:22px;height:22px;flex:none;border-color:var(--line);border-top-color:var(--brand)}
 </style>
 </head>
 <body>
@@ -367,8 +373,8 @@ a.btn{text-decoration:none}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=16;
-const WHATS_NEW=["Premium tarif: oylik hisobot, Excel, SMS eslatmalar, ishonch reytingi, dollar, bo'lib to'lash, ikki tomonlama tasdiq va rus tili","Profil → Premium bo'limidan qanday olishni ko'ring"];
+const APP_VERSION=17;
+const WHATS_NEW=["Premium'ni endi ilovaning o'zida to'lash mumkin: Click, Payme, Uzum va bank kartalari","To'lovdan keyin Premium o'zi yoqiladi — kutish shart emas"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -476,7 +482,7 @@ const RU={
 /* report */
 "Berildi":"Дано","Qaytdi":"Вернули","Olindi":"Взято","Qaytarildi":"Возвращено","Qaytish foizi":"Доля возврата","Oxirgi 6 oy":"Последние 6 месяцев","Berilgan":"Дано","Qaytgan":"Вернули","Eng katta qarzdorlar":"Крупнейшие должники","Hozirgi holat":"Текущее состояние",
 "Odamlar bo'yicha":"По людям","Bu oyda yozuv yo'q":"В этом месяце записей нет","Excel'ga yuklab olish":"Скачать в Excel","Fayl tayyorlanmoqda…":"Готовим файл…","Excel fayl yuklab olindi":"Файл Excel скачан","Faylni yaratib bo'lmadi. Internetni tekshiring.":"Не удалось создать файл. Проверьте интернет.",
-"Oldingi oy":"Предыдущий месяц","Keyingi oy":"Следующий месяц","Bu oy":"Этот месяц","Yozuvlar soni":"Записей","Qoldiq":"Остаток","Ism":"Имя","Bu oyda berildi":"Дано в этом месяце","Bu oyda qaytdi":"Вернули в этом месяце","Grafiklar va Excel fayl":"Графики и файл Excel","Hech kim qarzdor emas":"Никто не должен","Ko'rsatkich":"Показатель","Oy":"Месяц","oy":"мес.","Holat":"Статус","Ishonch":"Надёжность","Barcha yozuvlar":"Все записи","Grafik":"График","Muddati o'tgan":"Просрочено","Hisobot":"Отчёт","Telefon":"Телефон","Boshqa odam":"Другой человек","Valyutani almashtirish":"Сменить валюту","Oxirgi raqamni o'chirish":"Удалить последнюю цифру","Tasdiqlangan":"Подтверждено","Barmoq izi bilan ochish":"Вход по отпечатку","Masalan: Xusniddin":"Например: Хусниддин","Premium funksiya":"Функция Premium","Premium faol":"Premium активен","Premium'ga o'tish":"Перейти на Premium","Hisobot, Excel, SMS eslatma, dollar va boshqalar":"Отчёт, Excel, SMS-напоминания, доллар и другое","Muddatsiz":"Бессрочно","Premium yoqildi! Rahmat":"Premium включён! Спасибо","Telegram orqali olish":"Получить через Telegram","To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.":"После оплаты разработчик включит Premium в вашем аккаунте. Переустанавливать приложение не нужно.","Ishonch reytingi — Premium":"Рейтинг надёжности — Premium","Grafiklar, eng katta qarzdorlar":"Графики, крупнейшие должники","Hisobotni .xlsx qilib yuklab olish":"Скачать отчёт в .xlsx","Kimga eslatish kerakligini ilova o'zi topadi":"Приложение само находит, кому напомнить","Kim o'z vaqtida qaytarishini ko'rsatadi":"Показывает, кто возвращает вовремя","Dollar va MB kursi":"Доллар и курс ЦБ","Dollarda qarz yozish, so'mga avtomatik hisoblash":"Долги в долларах с пересчётом в сумы","Nasiya grafigi va kechikishlar":"График рассрочки и просрочки","Qarzdor SMS havola orqali tasdiqlaydi":"Должник подтверждает по ссылке из SMS","Ilovani rus tilida ishlatish":"Пользоваться приложением на русском","Excel fayl":"Файл Excel","SMS eslatmalar":"SMS-напоминания","Ishonch reytingi":"Рейтинг надёжности","Ikki tomonlama tasdiq":"Двустороннее подтверждение","Rus tili":"Русский язык","Bo'lib to'lash":"Рассрочка","Ikki tomonlama tasdiq — Premium funksiya":"Двустороннее подтверждение — функция Premium"
+"Oldingi oy":"Предыдущий месяц","Keyingi oy":"Следующий месяц","Bu oy":"Этот месяц","Yozuvlar soni":"Записей","Qoldiq":"Остаток","Ism":"Имя","Bu oyda berildi":"Дано в этом месяце","Bu oyda qaytdi":"Вернули в этом месяце","Grafiklar va Excel fayl":"Графики и файл Excel","Hech kim qarzdor emas":"Никто не должен","Ko'rsatkich":"Показатель","Oy":"Месяц","oy":"мес.","Holat":"Статус","Ishonch":"Надёжность","Barcha yozuvlar":"Все записи","Grafik":"График","Muddati o'tgan":"Просрочено","Hisobot":"Отчёт","Telefon":"Телефон","Boshqa odam":"Другой человек","Valyutani almashtirish":"Сменить валюту","Oxirgi raqamni o'chirish":"Удалить последнюю цифру","Tasdiqlangan":"Подтверждено","Barmoq izi bilan ochish":"Вход по отпечатку","Masalan: Xusniddin":"Например: Хусниддин","Premium funksiya":"Функция Premium","Premium faol":"Premium активен","Premium'ga o'tish":"Перейти на Premium","Hisobot, Excel, SMS eslatma, dollar va boshqalar":"Отчёт, Excel, SMS-напоминания, доллар и другое","Muddatsiz":"Бессрочно","Premium yoqildi! Rahmat":"Premium включён! Спасибо","Telegram orqali olish":"Получить через Telegram","To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.":"После оплаты разработчик включит Premium в вашем аккаунте. Переустанавливать приложение не нужно.","Ishonch reytingi — Premium":"Рейтинг надёжности — Premium","Grafiklar, eng katta qarzdorlar":"Графики, крупнейшие должники","Hisobotni .xlsx qilib yuklab olish":"Скачать отчёт в .xlsx","Kimga eslatish kerakligini ilova o'zi topadi":"Приложение само находит, кому напомнить","Kim o'z vaqtida qaytarishini ko'rsatadi":"Показывает, кто возвращает вовремя","Dollar va MB kursi":"Доллар и курс ЦБ","Dollarda qarz yozish, so'mga avtomatik hisoblash":"Долги в долларах с пересчётом в сумы","Nasiya grafigi va kechikishlar":"График рассрочки и просрочки","Qarzdor SMS havola orqali tasdiqlaydi":"Должник подтверждает по ссылке из SMS","Ilovani rus tilida ishlatish":"Пользоваться приложением на русском","Excel fayl":"Файл Excel","SMS eslatmalar":"SMS-напоминания","Ishonch reytingi":"Рейтинг надёжности","Ikki tomonlama tasdiq":"Двустороннее подтверждение","Rus tili":"Русский язык","Bo'lib to'lash":"Рассрочка","Premium'ni uzaytirish":"Продлить Premium","Tarifni tanlang":"Выберите тариф","1 yil":"1 год","1 oy":"1 месяц","30 kun":"30 дней","12 oy":"12 месяцев","Click, Payme, Uzum yoki bank kartasi orqali. To'lovdan keyin Premium o'zi yoqiladi.":"Через Click, Payme, Uzum или банковскую карту. После оплаты Premium включится сам.","Savol bo'lsa — Telegram":"Есть вопрос — Telegram","To'lov sahifasi ochilmoqda…":"Открываем страницу оплаты…","To'lov hali tushmadi. Bir necha soniyadan keyin yana tekshiring.":"Оплата ещё не поступила. Проверьте через несколько секунд.","To'lov tekshirilmoqda":"Проверяем оплату","To'lagan bo'lsangiz, shu yerni bosing":"Если вы оплатили, нажмите сюда","Onlayn to'lov hali ulanmagan":"Онлайн-оплата ещё не подключена","Bu tarif hozircha yopiq":"Этот тариф пока закрыт","Ikki tomonlama tasdiq — Premium funksiya":"Двустороннее подтверждение — функция Premium"
 };
 const RU_RX=[
  [/(\d{1,2})-(yanvar|fevral|mart|aprel|may|iyun|iyul|avgust|sentabr|oktabr|noyabr|dekabr)/g,(m,d,mo)=>d+' '+RU_MON_G[MON.indexOf(mo)]],
@@ -489,7 +495,7 @@ const RU_RX=[
  [/(\d+) oy · (.+?) dan/g,'$1 мес. · с $2'],[/Versiya (\d+)\. Nima yangi:/g,'Версия $1. Что нового:'],
  [/«(.+?)» kontaktda yo'q — yangi yaratish/g,'«$1» нет в контактах — создать'],[/«(.+?)» ni yaratish/g,'Создать «$1»'],[/«(.+?)» allaqachon bor\. Baribir yaratish uchun yana bosing\./g,'«$1» уже есть. Нажмите ещё раз, чтобы всё равно создать.'],
  [/^(.+?) tarixini ochish$/g,'История: $1'],[/^Shu rasmni (.+?) profiliga qo'yish$/g,'Сделать фото профиля: $1'],[/^(.+?) o'chirilsinmi\?$/g,'Удалить $1?'],
- [/^«(.+?)» — Premium funksiya$/g,(m,x)=>'«'+(RU[x]||x)+'» — функция Premium'],[/^Premium faol · (.+?) gacha$/g,'Premium активен до $1'],[/^(.+?) gacha$/g,'до $1'],[/^Xush kelibsiz, (.+)!$/g,'Добро пожаловать, $1!'],[/^(\d+) ta odam qo'shildi$/g,'Добавлено: $1'],[/^(.+?) qo'shildi$/g,'$1 — добавлен(а)'],
+ [/^«(.+?)» — Premium funksiya$/g,(m,x)=>'«'+(RU[x]||x)+'» — функция Premium'],[/^Premium faol · (.+?) gacha$/g,'Premium активен до $1'],[/^(.+?) gacha$/g,'до $1'],[/^(\d+) oy bepul$/g,'$1 мес. бесплатно'],[/^Xush kelibsiz, (.+)!$/g,'Добро пожаловать, $1!'],[/^(\d+) ta odam qo'shildi$/g,'Добавлено: $1'],[/^(.+?) qo'shildi$/g,'$1 — добавлен(а)'],
  [/PIN noto'g'ri\. Yana (\d+) ta urinish qoldi/g,'Неверный PIN. Осталось попыток: $1'],[/5 marta xato kiritildi\. Raqam va parol bilan kiring\./g,'5 неверных попыток. Войдите по номеру и паролю.'],
  [/^(.+?)ga qarz haqida muloyim eslatma\. Matnni xohlaganingizcha o'zgartiring\.$/g,'Вежливое напоминание о долге для $1. Текст можно изменить.'],
  [/^(.+?)ning raqami yo'q\. Raqamni kiriting — saqlanadi va eslatma darhol yuboriladi\.$/g,'У $1 нет номера. Введите его — он сохранится, и напоминание уйдёт сразу.'],
@@ -602,10 +608,24 @@ function need(f){if(locked(f)){premSheet(f);return false}return true}
 function premSheet(f){const ph=S.acc?fphone(S.acc.phone):'';const msg=`Assalomu alaykum! Oldi-Berdi Premium olmoqchiman.\nAkkaunt raqamim: ${ph}`;const dph=normPhone(DEV.phone);
  const p=S.acc&&S.acc.premium||{};
  openSheet('Oldi-Berdi Premium',`${isPrem()?`<div class="prem-hit on">${I.check}<b>Premium faol${p.until?' · '+fdate(p.until)+' gacha':''}</b></div>`:f&&PREM_INFO[f]?`<div class="prem-hit">${I.lock}<b>«${PREM_INFO[f][0]}» — Premium funksiya</b></div>`:''}
- <ul class="prem-list">${PREM.features.filter(k=>PREM_INFO[k]).map(k=>`<li class="${k===f?'hl':''}"><span class="pi">${I.check}</span><span><b>${PREM_INFO[k][0]}</b><small>${PREM_INFO[k][1]}</small></span></li>`).join('')}</ul>
- ${isPrem()?'':`${PREM.price?`<div class="prem-price" data-notr>${esc(PREM.price)}</div>`:''}<p class="hint" style="text-align:center">To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.</p>
+ ${isPrem()&&!p.until?'':payOnline()?payPlans(isPrem()):`${PREM.price?`<div class="prem-price" data-notr>${esc(PREM.price)}</div>`:''}<p class="hint" style="text-align:center">To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.</p>
  <a class="btn btn-primary" style="width:100%" href="https://t.me/${esc(DEV.telegram)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">${I.send} Telegram orqali olish</a>
- ${dph?`<a class="btn btn-ghost" style="width:100%;margin-top:10px" href="tel:+${dph}">${I.phone} Qo'ng'iroq qilish</a>`:''}`}`,'prem')}
+ ${dph?`<a class="btn btn-ghost" style="width:100%;margin-top:10px" href="tel:+${dph}">${I.phone} Qo'ng'iroq qilish</a>`:''}`}
+ <ul class="prem-list">${PREM.features.filter(k=>PREM_INFO[k]).map(k=>`<li class="${k===f?'hl':''}"><span class="pi">${I.check}</span><span><b>${PREM_INFO[k][0]}</b><small>${PREM_INFO[k][1]}</small></span></li>`).join('')}</ul>`,'prem')}
+function payOnline(){if(!S.prices){try{S.prices=JSON.parse(LS.get('oldiberdi_prices')||'null')}catch(e){}}return S.api>=5&&S.prices&&S.prices.online&&(S.prices.month>0||S.prices.year>0)}
+function payPlans(ext){const P=S.prices,save=P.month>0&&P.year>0?Math.floor((P.month*12-P.year)/P.month):0;
+ const b=(k,l,sub)=>P[k]>0?`<button class="plan-btn" data-act="payStart" data-v="${k}"><span><b>${l}</b><small>${sub}</small></span><span class="pr num">${fmt(P[k])} <small>so'm</small></span></button>`:'';
+ return `<div class="sec-mini">${ext?"Premium'ni uzaytirish":"Tarifni tanlang"}</div>${b('year','1 yil',save>0?`${save} oy bepul`:'12 oy')}${b('month','1 oy','30 kun')}
+ <p class="hint" style="text-align:center;margin:10px 0 0">Click, Payme, Uzum yoki bank kartasi orqali. To'lovdan keyin Premium o'zi yoqiladi.</p>
+ <p class="hint" style="text-align:center;margin:6px 0 0"><a href="https://t.me/${esc(DEV.telegram)}" target="_blank" rel="noopener">Savol bo'lsa — Telegram</a></p>`}
+function payPending(){try{const x=JSON.parse(LS.get('oldiberdi_paybill')||'null');if(x&&Date.now()-x.at<36*3600e3)return x;LS.del('oldiberdi_paybill')}catch(e){}return null}
+let PAYCHK=false;
+async function checkPay(manual){const x=payPending();if(!x||PAYCHK||!S.acc||S.api<5)return;PAYCHK=true;
+ try{const j=await api('payCheck',{bill:x.bill});if(j.acc)setAcc(j.acc);
+  if(j.paid){LS.del('oldiberdi_paybill');closeAllSheets();render();setTimeout(()=>toast(tr('Premium yoqildi! Rahmat')),200)}
+  else if(/expired|cancel|fail/i.test(j.state||'')){LS.del('oldiberdi_paybill')}
+  else if(manual)toast(tr("To'lov hali tushmadi. Bir necha soniyadan keyin yana tekshiring."))}
+ catch(e){if(manual)toast(writeErr(e))}finally{PAYCHK=false}}
 /* background saves: the screen changes at once, the server catches up in order */
 let QCHAIN=Promise.resolve();
 function bg(label,task,undo){S.pending=(S.pending||0)+1;showSaving();QCHAIN=QCHAIN.then(()=>task()).catch(e=>{if(undo)undo();compute();saveCache();if(!isTyping())render();toast(label+': '+writeErr(e))}).finally(()=>{S.pending--;showSaving()})}
@@ -736,16 +756,17 @@ function applySync(j,fromCache){
  if(!fromCache){S.api=j.api||1;LS.set('oldiberdi_api',String(S.api))}
  if(j.rate&&j.rate.usd){S.rate=j.rate;LS.set('oldiberdi_rate',JSON.stringify(j.rate))}
  if(j.acc&&!fromCache)setAcc(j.acc);
+ if(j.prices){S.prices=j.prices;LS.set('oldiberdi_prices',JSON.stringify(j.prices))}
  S.loaded={p:true,t:true};compute();
  if(!fromCache){S.stale=false;saveCache()}
 }
 function saveCache(){if(!S.acc)return;try{localStorage.setItem('oldiberdi_cache',JSON.stringify({acc:{id:S.acc.id},people:Object.values(S.people),tx:Object.values(S.tx),confirms:S.confirms}))}catch(e){}}
 async function sync(){if(!S.acc||S.syncing)return;S.syncing=true;
- try{if(S.pending)return;const j=await api('sync');if(!S.acc||S.pending)return;applySync(j);if(!isTyping())render();refreshOpenSheets();maybeRemindPrompt()}
+ try{if(S.pending)return;const j=await api('sync');if(!S.acc||S.pending)return;applySync(j);if(payPending())checkPay();if(!isTyping())render();refreshOpenSheets();maybeRemindPrompt()}
  catch(e){if(S.acc&&!S.loaded.p){S.stale=true;if(!isTyping())render()}}
  finally{S.syncing=false}}
 function checkVersion(){fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(v=>{const n=+v.version||0;const was=S.newVer;S.newVer=n>APP_VERSION?n:0;if(!!was!==!!S.newVer&&!isTyping())render()}).catch(()=>{})}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.acc&&!S.locked)sync()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.acc&&!S.locked){sync();if(payPending())setTimeout(()=>checkPay(),1500)}});
 function maybeNew(){if(!S.showNew||S.locked||S.setup)return;S.showNew=false;LS.set('oldiberdi_seen_ver',String(APP_VERSION));
  setTimeout(()=>openSheet('Ilova yangilandi',`<p class="hint" style="margin-top:0">Versiya ${APP_VERSION}. Nima yangi:</p><ul class="new-list">${WHATS_NEW.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><button class="btn btn-primary" data-act="closeSheet">Tushunarli</button>`),600);
 }
@@ -870,7 +891,7 @@ function vHistory(){
 function vProfile(){const a=S.acc;
  return `<div class="pad"><div class="topbar"><h1>Profil</h1></div>
  <div class="card prof-card">${avatar(a,84)}<h2 style="margin:10px 0 0;font-size:20px">${esc(a.name)}</h2><span class="hint num">${fphone(a.phone)}</span><span class="mode-pill ${Store.cloud?'':'off'}" style="background:var(--surface-2);color:var(--muted)"><i></i>${Store.cloud?'Onlayn: istalgan telefondan kirish mumkin':'Faqat shu qurilmada saqlanmoqda'}</span></div>
- ${isPrem()?`<button class="prem-card on" data-act="prem"><span class="pi">${I.check}</span><span class="mid"><b>Premium faol</b><small>${a.premium.until?fdate(a.premium.until)+' gacha':'Muddatsiz'}</small></span></button>`:`<button class="prem-card" data-act="prem"><span class="pi">★</span><span class="mid"><b>Premium'ga o'tish</b><small>Hisobot, Excel, SMS eslatma, dollar va boshqalar</small></span><span class="go">${I.right}</span></button>`}
+ ${payPending()&&!isPrem()?`<button class="pay-wait" data-act="payCheck"><span class="spin"></span><span><b>To'lov tekshirilmoqda</b><small>To'lagan bo'lsangiz, shu yerni bosing</small></span></button>`:''}${isPrem()?`<button class="prem-card on" data-act="prem"><span class="pi">${I.check}</span><span class="mid"><b>Premium faol</b><small>${a.premium.until?fdate(a.premium.until)+' gacha':'Muddatsiz'}</small></span></button>`:`<button class="prem-card" data-act="prem"><span class="pi">★</span><span class="mid"><b>Premium'ga o'tish</b><small>Hisobot, Excel, SMS eslatma, dollar va boshqalar</small></span><span class="go">${I.right}</span></button>`}
  <div class="card list menu">
   <button class="item" data-act="editProfile">${I.edit}<div class="mid">Ma'lumotlarni o'zgartirish<div class="t2">Ism, telefon, rasm</div></div></button>
   <button class="item" data-act="changePass">${I.lock}<div class="mid">Parolni o'zgartirish</div></button>
@@ -1231,6 +1252,10 @@ const A={
  eye:(d,el)=>{const i=el.parentElement.querySelector('input');const show=i.type==='password';i.type=show?'text':'password';i.classList.add('pw');el.classList.toggle('on',show);el.innerHTML=show?I.eyeOff:I.eye;el.setAttribute('aria-label',show?'Parolni yashirish':"Parolni ko'rsatish")},
  go:d=>{if(d.v==='report'&&locked('report')){closeAllSheets();premSheet('report');return}closeAllSheets();S.view=d.v;render()},
  prem:d=>{closeAllSheets();premSheet(d.v)},
+ payStart:async(d,el)=>{el.disabled=true;const old=el.innerHTML;el.innerHTML=`<span style="flex:1;text-align:center">${tr("To'lov sahifasi ochilmoqda…")}</span>`;
+  try{const j=await api('payCreate',{plan:d.v,returnUrl:location.origin+location.pathname.replace(/index\.html$/,'')+'?pay=1'});LS.set('oldiberdi_paybill',JSON.stringify({bill:j.bill,at:Date.now()}));location.href=j.url}
+  catch(e){toast(writeErr(e));el.disabled=false;el.innerHTML=old}},
+ payCheck:()=>checkPay(true),
  rm:d=>{S.rm=ymShift(S.rm||today().slice(0,7),+d.v);render()},
  xlsx:(d,el)=>{if(need('excel'))exportXlsx(el)},
  setLang:d=>{setLang(d.v);if(sheets.length)closeAllSheets()},
@@ -1342,6 +1367,7 @@ document.addEventListener('change',async e=>{const t=e.target;const k=t.dataset.
  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
  await bioCheck();
  if(!API_URL){$('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Ilova hali serverga ulanmagan.</p></div><div class="pad"><div class="auth-card"><b>Sozlash kerak</b><p class="hint">GitHub'dagi <b>config.js</b> faylini oching va Google Apps Script'dan olgan havolani qo'shtirnoq ichiga yozing.</p></div></div></div>`;return}
+ if(new URLSearchParams(location.search).get('pay')){try{history.replaceState(null,'',location.pathname)}catch(e){}}
  const cParam=new URLSearchParams(location.search).get('c');
  if(cParam){renderConfirm(cParam);return}
  let a=null;try{a=JSON.parse(LS.get('oldiberdi_acc')||'null')}catch(e){}
