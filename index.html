@@ -373,6 +373,20 @@ a.item{color:inherit;text-decoration:none}
 .tg-main .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.tg-main b{font-size:15px}.tg-main small{font-size:12.5px;color:var(--muted)}
 .tg-go{background:var(--pos-bg);color:var(--brand);font-weight:800;font-size:13px;padding:7px 14px;border-radius:99px;flex:none}
 .tg-x{position:absolute;top:50%;right:6px;transform:translateY(-50%);width:28px;height:28px;border:0;background:transparent;color:var(--muted);opacity:.7;cursor:pointer;display:grid;place-items:center;border-radius:50%}.tg-x svg{width:15px;height:15px}
+.freq-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface-2);border-radius:12px;padding:4px;margin-bottom:10px}
+.freq-seg button{border:0;background:none;font:inherit;font-weight:700;font-size:14px;padding:8px;border-radius:9px;color:var(--muted);cursor:pointer}.freq-seg button.on{background:var(--surface);color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.plan-sum{font-size:13.5px;padding:8px 10px;background:var(--pos-bg);border-radius:10px;margin:6px 0 4px}
+.plan-box .plan-list{max-height:300px;overflow:auto}
+.inst-card{padding:4px 0}.inst-row{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);align-items:flex-start}.inst-row:last-child{border-bottom:0}
+.inst-row .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.inst-row small{color:var(--muted);font-size:12.5px}.inst-row small.late{color:var(--neg);font-weight:700}
+.inst-btns{display:flex;gap:8px;margin-top:8px}.inst-btns .btn{flex:1}.inst-st{font-size:13px;color:var(--neg);font-weight:700;margin-top:6px}.inst-st .link{margin-left:6px}
+.inst-row.missed{background:#fff7f6}
+.trial-card{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);color:var(--fg);text-decoration:none}
+.trial-card.warn{border-color:#f0b44c;background:#fffaf0}.tc-ic{font-size:26px;flex:none}.trial-card .mid{flex:1;min-width:0;display:flex;flex-direction:column}.trial-card b{font-size:15px}.trial-card small{color:var(--muted);font-size:12.5px}
+.tc-go{background:var(--brand);color:#fff;font-weight:800;font-size:12.5px;padding:7px 12px;border-radius:99px;flex:none}
+.blocked{min-height:100vh;background:var(--bg)}.bl-top{background:linear-gradient(160deg,var(--brand),var(--brand-deep));color:#fff;text-align:center;padding-top:48px;padding-bottom:70px}
+.bl-top svg{width:56px;height:56px}.bl-ic{font-size:44px;margin:10px 0 4px}.bl-top h1{font-size:26px;margin:0 0 8px}.bl-top p{opacity:.9;margin:0 auto;max-width:320px;line-height:1.45}
+.blocked .auth-card{margin-top:-46px}
 </style>
 </head>
 <body>
@@ -380,8 +394,8 @@ a.item{color:inherit;text-decoration:none}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=25;
-const WHATS_NEW=["Premium endi Telegram botimiz orqali olinadi: «Premium olish» tugmasini bosing","To'lovdan keyin Premium ilovada o'zi yoqiladi","Bosh sahifada Telegram bot kartasi"];
+const APP_VERSION=26;
+const WHATS_NEW=["Kunlik to'lov grafigi: masalan 2 400 000 so'm / 30 kun = har kuni 80 000 so'm","To'lov kuni ilovada va Telegram botda «To'ladi / To'lamadi» so'raladi — to'lamaguncha har kuni eslatiladi","Yangi foydalanuvchilarga 15 kunlik bepul Premium sinov"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -489,7 +503,7 @@ const RU={
 /* report */
 "Berildi":"Дано","Qaytdi":"Вернули","Olindi":"Взято","Qaytarildi":"Возвращено","Qaytish foizi":"Доля возврата","Oxirgi 6 oy":"Последние 6 месяцев","Berilgan":"Дано","Qaytgan":"Вернули","Eng katta qarzdorlar":"Крупнейшие должники","Hozirgi holat":"Текущее состояние",
 "Odamlar bo'yicha":"По людям","Bu oyda yozuv yo'q":"В этом месяце записей нет","Excel'ga yuklab olish":"Скачать в Excel","Fayl tayyorlanmoqda…":"Готовим файл…","Excel fayl yuklab olindi":"Файл Excel скачан","Faylni yaratib bo'lmadi. Internetni tekshiring.":"Не удалось создать файл. Проверьте интернет.",
-"Oldingi oy":"Предыдущий месяц","Keyingi oy":"Следующий месяц","Bu oy":"Этот месяц","Yozuvlar soni":"Записей","Qoldiq":"Остаток","Ism":"Имя","Bu oyda berildi":"Дано в этом месяце","Bu oyda qaytdi":"Вернули в этом месяце","Grafiklar va Excel fayl":"Графики и файл Excel","Hech kim qarzdor emas":"Никто не должен","Ko'rsatkich":"Показатель","Oy":"Месяц","oy":"мес.","Holat":"Статус","Ishonch":"Надёжность","Barcha yozuvlar":"Все записи","Grafik":"График","Muddati o'tgan":"Просрочено","Hisobot":"Отчёт","Telefon":"Телефон","Boshqa odam":"Другой человек","Valyutani almashtirish":"Сменить валюту","Oxirgi raqamni o'chirish":"Удалить последнюю цифру","Tasdiqlangan":"Подтверждено","Barmoq izi bilan ochish":"Вход по отпечатку","Masalan: Xusniddin":"Например: Хусниддин","Premium funksiya":"Функция Premium","Premium faol":"Premium активен","Premium'ga o'tish":"Перейти на Premium","Hisobot, Excel, SMS eslatma, dollar va boshqalar":"Отчёт, Excel, SMS-напоминания, доллар и другое","Muddatsiz":"Бессрочно","Premium yoqildi! Rahmat":"Premium включён! Спасибо","Telegram orqali olish":"Получить через Telegram","To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.":"После оплаты разработчик включит Premium в вашем аккаунте. Переустанавливать приложение не нужно.","Ishonch reytingi — Premium":"Рейтинг надёжности — Premium","Grafiklar, eng katta qarzdorlar":"Графики, крупнейшие должники","Hisobotni .xlsx qilib yuklab olish":"Скачать отчёт в .xlsx","Kimga eslatish kerakligini ilova o'zi topadi":"Приложение само находит, кому напомнить","Kim o'z vaqtida qaytarishini ko'rsatadi":"Показывает, кто возвращает вовремя","Dollar va MB kursi":"Доллар и курс ЦБ","Dollarda qarz yozish, so'mga avtomatik hisoblash":"Долги в долларах с пересчётом в сумы","Nasiya grafigi va kechikishlar":"График рассрочки и просрочки","Qarzdor SMS havola orqali tasdiqlaydi":"Должник подтверждает по ссылке из SMS","Ilovani rus tilida ishlatish":"Пользоваться приложением на русском","Excel fayl":"Файл Excel","SMS eslatmalar":"SMS-напоминания","Ishonch reytingi":"Рейтинг надёжности","Ikki tomonlama tasdiq":"Двустороннее подтверждение","Rus tili":"Русский язык","Bo'lib to'lash":"Рассрочка","Premium'ni uzaytirish":"Продлить Premium","Tarifni tanlang":"Выберите тариф","1 yil":"1 год","1 oy":"1 месяц","30 kun":"30 дней","12 oy":"12 месяцев","Click, Payme, Uzum yoki bank kartasi orqali. To'lovdan keyin Premium o'zi yoqiladi.":"Через Click, Payme, Uzum или банковскую карту. После оплаты Premium включится сам.","Savol bo'lsa — Telegram":"Есть вопрос — Telegram","To'lov sahifasi ochilmoqda…":"Открываем страницу оплаты…","To'lov hali tushmadi. Bir necha soniyadan keyin yana tekshiring.":"Оплата ещё не поступила. Проверьте через несколько секунд.","To'lov tekshirilmoqda":"Проверяем оплату","To'lagan bo'lsangiz, shu yerni bosing":"Если вы оплатили, нажмите сюда","Onlayn to'lov hali ulanmagan":"Онлайн-оплата ещё не подключена","Bu tarif hozircha yopiq":"Этот тариф пока закрыт","Telegram bot":"Telegram-бот","Telegram botimiz":"Наш Telegram-бот","Yangiliklar va eslatmalar":"Новости и напоминания","Premium imkoniyatlari":"Возможности Premium","Premium olish":"Получить Premium","To'lov Telegram botimiz orqali. To'lovdan keyin Premium ilovada o'zi yoqiladi.":"Оплата через наш Telegram-бот. После оплаты Premium включится в приложении сам.","✓ Ulangan":"✓ Подключён","✓ Ulangan · yangiliklar shu yerda":"✓ Подключён · новости здесь","Ochish":"Открыть","Ulash":"Подключить","Yangiliklarni Telegram'da kuzatish":"Следить за новостями в Telegram","Botni Profil → Telegram bot orqali ochishingiz mumkin":"Бота можно открыть в Профиль → Telegram-бот","✓ Ulangan · eslatma va to'lovlar":"✓ Подключён · напоминания и оплата","To'lov, eslatma va yordam — botda":"Оплата, напоминания и помощь — в боте","Ikki tomonlama tasdiq — Premium funksiya":"Двустороннее подтверждение — функция Premium"
+"Oldingi oy":"Предыдущий месяц","Keyingi oy":"Следующий месяц","Bu oy":"Этот месяц","Yozuvlar soni":"Записей","Qoldiq":"Остаток","Ism":"Имя","Bu oyda berildi":"Дано в этом месяце","Bu oyda qaytdi":"Вернули в этом месяце","Grafiklar va Excel fayl":"Графики и файл Excel","Hech kim qarzdor emas":"Никто не должен","Ko'rsatkich":"Показатель","Oy":"Месяц","oy":"мес.","Holat":"Статус","Ishonch":"Надёжность","Barcha yozuvlar":"Все записи","Grafik":"График","Muddati o'tgan":"Просрочено","Hisobot":"Отчёт","Telefon":"Телефон","Boshqa odam":"Другой человек","Valyutani almashtirish":"Сменить валюту","Oxirgi raqamni o'chirish":"Удалить последнюю цифру","Tasdiqlangan":"Подтверждено","Barmoq izi bilan ochish":"Вход по отпечатку","Masalan: Xusniddin":"Например: Хусниддин","Premium funksiya":"Функция Premium","Premium faol":"Premium активен","Premium'ga o'tish":"Перейти на Premium","Hisobot, Excel, SMS eslatma, dollar va boshqalar":"Отчёт, Excel, SMS-напоминания, доллар и другое","Muddatsiz":"Бессрочно","Premium yoqildi! Rahmat":"Premium включён! Спасибо","Telegram orqali olish":"Получить через Telegram","To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.":"После оплаты разработчик включит Premium в вашем аккаунте. Переустанавливать приложение не нужно.","Ishonch reytingi — Premium":"Рейтинг надёжности — Premium","Grafiklar, eng katta qarzdorlar":"Графики, крупнейшие должники","Hisobotni .xlsx qilib yuklab olish":"Скачать отчёт в .xlsx","Kimga eslatish kerakligini ilova o'zi topadi":"Приложение само находит, кому напомнить","Kim o'z vaqtida qaytarishini ko'rsatadi":"Показывает, кто возвращает вовремя","Dollar va MB kursi":"Доллар и курс ЦБ","Dollarda qarz yozish, so'mga avtomatik hisoblash":"Долги в долларах с пересчётом в сумы","Nasiya grafigi va kechikishlar":"График рассрочки и просрочки","Qarzdor SMS havola orqali tasdiqlaydi":"Должник подтверждает по ссылке из SMS","Ilovani rus tilida ishlatish":"Пользоваться приложением на русском","Excel fayl":"Файл Excel","SMS eslatmalar":"SMS-напоминания","Ishonch reytingi":"Рейтинг надёжности","Ikki tomonlama tasdiq":"Двустороннее подтверждение","Rus tili":"Русский язык","Bo'lib to'lash":"Рассрочка","Premium'ni uzaytirish":"Продлить Premium","Tarifni tanlang":"Выберите тариф","1 yil":"1 год","1 oy":"1 месяц","30 kun":"30 дней","12 oy":"12 месяцев","Click, Payme, Uzum yoki bank kartasi orqali. To'lovdan keyin Premium o'zi yoqiladi.":"Через Click, Payme, Uzum или банковскую карту. После оплаты Premium включится сам.","Savol bo'lsa — Telegram":"Есть вопрос — Telegram","To'lov sahifasi ochilmoqda…":"Открываем страницу оплаты…","To'lov hali tushmadi. Bir necha soniyadan keyin yana tekshiring.":"Оплата ещё не поступила. Проверьте через несколько секунд.","To'lov tekshirilmoqda":"Проверяем оплату","To'lagan bo'lsangiz, shu yerni bosing":"Если вы оплатили, нажмите сюда","Onlayn to'lov hali ulanmagan":"Онлайн-оплата ещё не подключена","Bu tarif hozircha yopiq":"Этот тариф пока закрыт","Telegram bot":"Telegram-бот","Telegram botimiz":"Наш Telegram-бот","Yangiliklar va eslatmalar":"Новости и напоминания","Premium imkoniyatlari":"Возможности Premium","Oylik":"Ежемесячно","Kunlik":"Ежедневно","Necha kunga":"На сколько дней","Necha oyga":"На сколько месяцев","To'lov kunlari":"Дни платежей","Bugungi to'lovlar":"Платежи на сегодня","Grafik bo'yicha to'lov kuni kelganlar. To'ladimi?":"По графику наступил день платежа. Оплатил?","✓ To'ladi":"✓ Оплатил","✕ To'lamadi":"✕ Не оплатил","SMS yuborish":"Отправить SMS","Siz bloklandingiz":"Вы заблокированы","Ma'lumotlaringiz saqlanib qoladi":"Ваши данные сохранятся","To'lovdan keyin hammasi o'z joyida":"После оплаты всё на месте","Premium o'zi yoqiladi":"Premium включится сам","To'lovdan keyin 30 soniya ichida":"В течение 30 секунд после оплаты","To'lov Telegram botimiz orqali: Click, Payme, Uzum yoki karta.":"Оплата через наш Telegram-бот: Click, Payme, Uzum или карта.","Dasturchiga yozish":"Написать разработчику","Chiqish":"Выйти","Premium · sinov muddati":"Premium · пробный период","Siz bloklandingiz — Premium oling":"Вы заблокированы — оформите Premium","Premium olish":"Получить Premium","To'lov Telegram botimiz orqali. To'lovdan keyin Premium ilovada o'zi yoqiladi.":"Оплата через наш Telegram-бот. После оплаты Premium включится в приложении сам.","✓ Ulangan":"✓ Подключён","✓ Ulangan · yangiliklar shu yerda":"✓ Подключён · новости здесь","Ochish":"Открыть","Ulash":"Подключить","Yangiliklarni Telegram'da kuzatish":"Следить за новостями в Telegram","Botni Profil → Telegram bot orqali ochishingiz mumkin":"Бота можно открыть в Профиль → Telegram-бот","✓ Ulangan · eslatma va to'lovlar":"✓ Подключён · напоминания и оплата","To'lov, eslatma va yordam — botda":"Оплата, напоминания и помощь — в боте","Ikki tomonlama tasdiq — Premium funksiya":"Двустороннее подтверждение — функция Premium"
 };
 const RU_RX=[
  [/(\d{1,2})-(yanvar|fevral|mart|aprel|may|iyun|iyul|avgust|sentabr|oktabr|noyabr|dekabr)/g,(m,d,mo)=>d+' '+RU_MON_G[MON.indexOf(mo)]],
@@ -502,7 +516,7 @@ const RU_RX=[
  [/(\d+) oy · (.+?) dan/g,'$1 мес. · с $2'],[/Versiya (\d+)\. Nima yangi:/g,'Версия $1. Что нового:'],
  [/«(.+?)» kontaktda yo'q — yangi yaratish/g,'«$1» нет в контактах — создать'],[/«(.+?)» ni yaratish/g,'Создать «$1»'],[/«(.+?)» allaqachon bor\. Baribir yaratish uchun yana bosing\./g,'«$1» уже есть. Нажмите ещё раз, чтобы всё равно создать.'],
  [/^(.+?) tarixini ochish$/g,'История: $1'],[/^Shu rasmni (.+?) profiliga qo'yish$/g,'Сделать фото профиля: $1'],[/^(.+?) o'chirilsinmi\?$/g,'Удалить $1?'],
- [/^«(.+?)» — Premium funksiya$/g,(m,x)=>'«'+(RU[x]||x)+'» — функция Premium'],[/^Premium faol · (.+?) gacha$/g,'Premium активен до $1'],[/^(.+?) gacha$/g,'до $1'],[/^(\d+) oy bepul$/g,'$1 мес. бесплатно'],[/^Xush kelibsiz, (.+)!$/g,'Добро пожаловать, $1!'],[/^(\d+) ta odam qo'shildi$/g,'Добавлено: $1'],[/^(.+?) qo'shildi$/g,'$1 — добавлен(а)'],
+ [/^«(.+?)» — Premium funksiya$/g,(m,x)=>'«'+(RU[x]||x)+'» — функция Premium'],[/^Premium faol · (.+?) gacha$/g,'Premium активен до $1'],[/^(.+?) gacha$/g,'до $1'],[/^(\d+) oy bepul$/g,'$1 мес. бесплатно'],[/^Sinov muddati: (\d+) kun qoldi$/g,'Пробный период: осталось $1 дн.'],[/^Sinov muddati: (\d+) kun qoldi · keyin ilova bloklanadi$/g,'Пробный период: осталось $1 дн. · затем приложение заблокируется'],[/^(.+?) gacha · keyin ilova bloklanadi$/g,'до $1 · затем приложение заблокируется'],[/^(\d+)\/(\d+)-to'lov · (.+?) · /g,'Платёж $1/$2 · $3 · '],[/Kechikkan: (\d+) ta to'lov/g,'Просрочено: $1 платеж.'],[/^Har kuni /g,'Каждый день '],[/^Har oy /g,'Каждый месяц '],[/ × (\d+) kun · oxirgisi /g,' × $1 дн. · последний '],[/ × (\d+) oy · oxirgisi /g,' × $1 мес. · последний '],[/^To'ladi: (.+) yozib qo'yildi$/g,'Оплатил: $1 — записано'],[/❌ To'lamadi · ertaga yana eslatiladi/g,'❌ Не оплатил · напомним завтра'],[/^(\d+) kun qoldi · /g,'осталось $1 дн. · '],[/bugun/g,'сегодня'],[/^Xush kelibsiz, (.+)!$/g,'Добро пожаловать, $1!'],[/^(\d+) ta odam qo'shildi$/g,'Добавлено: $1'],[/^(.+?) qo'shildi$/g,'$1 — добавлен(а)'],
  [/PIN noto'g'ri\. Yana (\d+) ta urinish qoldi/g,'Неверный PIN. Осталось попыток: $1'],[/5 marta xato kiritildi\. Raqam va parol bilan kiring\./g,'5 неверных попыток. Войдите по номеру и паролю.'],
  [/^(.+?)ga qarz haqida muloyim eslatma\. Matnni xohlaganingizcha o'zgartiring\.$/g,'Вежливое напоминание о долге для $1. Текст можно изменить.'],
  [/^(.+?)ning raqami yo'q\. Raqamni kiriting — saqlanadi va eslatma darhol yuboriladi\.$/g,'У $1 нет номера. Введите его — он сохранится, и напоминание уйдёт сразу.'],
@@ -605,6 +619,46 @@ async function api(action,data){
  if(!j.ok){if(j.error==='AUTH'){if(S.acc){logout();toast('Sessiya tugadi, qayta kiring')}throw new Error('Qayta kiring')}throw new Error(j.error||'Xatolik yuz berdi')}
  return j}
 const DEV=Object.assign({telegram:'mot_075',phone:''},window.OLDIBERDI_DEV||{});
+/* ============ installment reminders (To'ladi / To'lamadi) ============ */
+function isDaily(plan){return Array.isArray(plan)&&plan.length>1&&addDays(plan[0].d,1)===plan[1].d}
+function dueInstList(){const td=today(),out=[];
+ for(const t of Object.values(S.tx)){if(t.type!=='lend')continue;const L=S.alloc[t.id];if(!L||!L.inst.length||L.left<=0.5)continue;
+  const idx=L.inst.findIndex(i=>!i.paidDate);if(idx<0||L.inst[idx].d>td)continue;
+  let late=0,lateSum=0;L.inst.forEach(i=>{if(!i.paidDate&&i.d<td){late++;lateSum+=i.a}});
+  const key=t.id+':'+idx,mk=(S.marks||{})[key];
+  out.push({t,L,idx,inst:L.inst[idx],late,lateSum,key,missed:!!(mk&&mk.s==='missed'&&mk.d===td),p:S.people[t.pid]||{name:"O'chirilgan odam",id:t.pid}})}
+ return out.sort((a,b)=>a.inst.d.localeCompare(b.inst.d))}
+function instAmt(t,a){return isUSD(t)?'$'+fmt(a):money(a)}
+function instRowHtml(x){const d=x.inst.d===today()?'bugun':fdate(x.inst.d);
+ return `<div class="inst-row${x.missed?' missed':''}">${avatar(x.p,42)}<div class="mid"><b>${esc(x.p.name)}</b><small>${x.idx+1}/${x.L.inst.length}-to'lov · ${d} · <b class="num">${instAmt(x.t,x.inst.a)}</b></small>${x.late>0?`<small class="late">Kechikkan: ${x.late} ta to'lov · ${instAmt(x.t,x.lateSum)}</small>`:''}
+ ${x.missed?`<div class="inst-st">❌ To'lamadi · ertaga yana eslatiladi <button class="link" data-act="remind" data-id="${x.p.id}">SMS yuborish</button></div>`:`<div class="inst-btns"><button class="btn btn-primary btn-sm" data-act="instPaid" data-k="${x.key}">✓ To'ladi</button><button class="btn btn-ghost btn-sm" data-act="instMiss" data-k="${x.key}">✕ To'lamadi</button></div>`}</div></div>`}
+function instCard(){const l=dueInstList();if(!l.length)return '';const open=l.filter(x=>!x.missed).length;
+ return `<div class="sec-head"><h2>To'lov kunlari</h2>${open?`<span class="badge warn">${open}</span>`:''}</div><div class="card inst-card">${l.map(instRowHtml).join('')}</div>`}
+function instFind(key){return dueInstList().find(x=>x.key===key)}
+function instPaid(key){const x=instFind(key);if(!x)return;const id=uid(),now=Date.now();
+ const item={id,pid:x.t.pid,type:'got',amount:x.inst.a,cur:isUSD(x.t)?'USD':'',plan:[],date:today(),due:'',note:`${x.idx+1}-to'lov (grafik)`,photo:'',createdAt:now,updatedAt:now,edits:[]};
+ S.tx[id]=item;S.marks=S.marks||{};S.marks[key]={s:'paid',d:today()};compute();saveCache();render();refreshOpenSheets();toast(`To'ladi: ${instAmt(x.t,x.inst.a)} yozib qo'yildi`);
+ bg('Yozuv saqlanmadi',async()=>{const j=await api('saveTx',{item});if(S.tx[id])S.tx[id]=j.item;compute();saveCache();if(S.api>=6)api('instMark',{key,status:'paid'}).catch(()=>{})},()=>{delete S.tx[id]})}
+function instMiss(key){const x=instFind(key);if(!x)return;S.marks=S.marks||{};S.marks[key]={s:'missed',d:today()};saveCache();render();refreshOpenSheets();
+ if(S.api>=6)bg("O'zgarish saqlanmadi",()=>api('instMark',{key,status:'missed'}));
+ closeAllSheets();setTimeout(()=>{toast("To'lamadi deb belgilandi. Mijozga SMS eslatma yuboring 👇");A.remind({id:x.p.id})},250)}
+function instSheet(){const l=dueInstList();if(!l.length)return;openSheet("Bugungi to'lovlar",`<p class="hint" style="margin-top:0">Grafik bo'yicha to'lov kuni kelganlar. To'ladimi?</p><div class="inst-card" data-inst>${l.map(instRowHtml).join('')}</div>`,'inst')}
+function refreshInstSheet(){const b=document.querySelector('[data-inst]');if(!b)return;const l=dueInstList();if(!l.length){closeAllSheets();return}b.innerHTML=l.map(instRowHtml).join('')}
+function maybeInstPrompt(){if(!S.acc||S.locked||S.setup||sheets.length||!S.loaded.t||isBlocked())return;const td=today();if(LS.get('oldiberdi_instday')===td)return;
+ if(!dueInstList().some(x=>!x.missed))return;LS.set('oldiberdi_instday',td);instSheet()}
+
+/* ============ 15-day trial / block ============ */
+function isBlocked(){return S.api>=6&&!!(S.acc&&S.acc.premium&&S.acc.premium.blocked)}
+function trialLeft(){const p=S.acc&&S.acc.premium;if(!p||!p.trial||!p.until)return -1;return Math.round((new Date(p.until)-new Date(today()))/864e5)+1}
+function trialBanner(){const n=trialLeft();if(n<0)return '';
+ return `<a class="trial-card${n<=5?' warn':''}" href="https://t.me/${esc(botName())}?start=premium" target="_blank" rel="noopener"><span class="tc-ic">🎁</span><span class="mid"><b>Sinov muddati: ${n} kun qoldi</b><small>${fdate(S.acc.premium.until)} gacha · keyin ilova bloklanadi</small></span><span class="tc-go">Premium olish</span></a>`}
+function renderBlocked(){const p=S.acc.premium||{};
+ $('#app').innerHTML=`<div class="blocked"><div class="bl-top pad">${LOGO}<div class="bl-ic">⛔</div><h1>Siz bloklandingiz</h1><p>${p.until?'Premium muddati tugadi.':'15 kunlik sinov muddati tugadi.'} Ilovadan foydalanishni davom ettirish uchun Premium oling.</p></div>
+ <div class="pad"><div class="auth-card"><ul class="prem-list" style="margin-top:0"><li><span class="pi">${I.check}</span><span><b>Ma'lumotlaringiz saqlanib qoladi</b><small>To'lovdan keyin hammasi o'z joyida</small></span></li><li><span class="pi">${I.check}</span><span><b>Premium o'zi yoqiladi</b><small>To'lovdan keyin 30 soniya ichida</small></span></li></ul>
+ <a class="btn btn-primary" style="width:100%" href="https://t.me/${esc(botName())}?start=premium" target="_blank" rel="noopener">★ Premium olish</a>
+ <p class="hint" style="text-align:center;margin:10px 0 14px">To'lov Telegram botimiz orqali: Click, Payme, Uzum yoki karta.</p>
+ <div style="display:flex;gap:10px"><a class="btn btn-ghost" style="flex:1" href="https://t.me/${esc(DEV.telegram)}" target="_blank" rel="noopener">Dasturchiga yozish</a><button class="btn btn-ghost" style="flex:1" data-act="logout">Chiqish</button></div></div></div></div>`}
+
 /* ============ premium ============ */
 const PREM=Object.assign({price:'',features:['report','excel','remind','trust','usd','plan','confirm','ru']},window.OLDIBERDI_PREMIUM||{});
 const PREM_INFO={report:['Oylik hisobot',"Grafiklar, eng katta qarzdorlar"],excel:['Excel fayl','Hisobotni .xlsx qilib yuklab olish'],remind:['SMS eslatmalar',"Kimga eslatish kerakligini ilova o'zi topadi"],trust:['Ishonch reytingi',"Kim o'z vaqtida qaytarishini ko'rsatadi"],usd:['Dollar va MB kursi','Dollarda qarz yozish, so\'mga avtomatik hisoblash'],plan:["Bo'lib to'lash",'Nasiya grafigi va kechikishlar'],confirm:['Ikki tomonlama tasdiq','Qarzdor SMS havola orqali tasdiqlaydi'],ru:['Rus tili','Ilovani rus tilida ishlatish']};
@@ -613,10 +667,10 @@ function locked(f){return !!S.acc&&PREM.features.includes(f)&&!isPrem()}
 function lk(f){return locked(f)?`<span class="lock-tag">${I.lock}Premium</span>`:''}
 function need(f){if(locked(f)){premSheet(f);return false}return true}
 function premSheet(f){const p=S.acc&&S.acc.premium||{};
- openSheet('Oldi-Berdi Premium',`${isPrem()?`<div class="prem-hit on">${I.check}<b>Premium faol${p.until?' · '+fdate(p.until)+' gacha':''}</b></div>`:f&&PREM_INFO[f]?`<div class="prem-hit">${I.lock}<b>«${PREM_INFO[f][0]}» — Premium funksiya</b></div>`:''}
+ openSheet('Oldi-Berdi Premium',`${p.trial?`<div class="prem-hit">🎁<b>Sinov muddati: ${trialLeft()} kun qoldi · keyin ilova bloklanadi</b></div>`:isPrem()?`<div class="prem-hit on">${I.check}<b>Premium faol${p.until?' · '+fdate(p.until)+' gacha':''}</b></div>`:f&&PREM_INFO[f]?`<div class="prem-hit">${I.lock}<b>«${PREM_INFO[f][0]}» — Premium funksiya</b></div>`:''}
  <div class="sec-mini">Premium imkoniyatlari</div>
  <ul class="prem-list">${PREM.features.filter(k=>PREM_INFO[k]).map(k=>`<li class="${k===f?'hl':''}"><span class="pi">${I.check}</span><span><b>${PREM_INFO[k][0]}</b><small>${PREM_INFO[k][1]}</small></span></li>`).join('')}</ul>
- ${isPrem()&&!p.until?'':`<a class="btn btn-primary" style="width:100%" href="https://t.me/${esc(botName())}?start=premium" target="_blank" rel="noopener">★ ${isPrem()?"Premium'ni uzaytirish":'Premium olish'}</a>
+ ${isPrem()&&!p.until?'':`<a class="btn btn-primary" style="width:100%" href="https://t.me/${esc(botName())}?start=premium" target="_blank" rel="noopener">★ ${isPrem()&&!p.trial?"Premium'ni uzaytirish":'Premium olish'}</a>
  <p class="hint" style="text-align:center;margin:10px 0 0">To'lov Telegram botimiz orqali. To'lovdan keyin Premium ilovada o'zi yoqiladi.</p>`}`,'prem')}
 function tgCard(){if(!S.acc||LS.get('oldiberdi_tgcard')==='off')return '';const on=!!S.acc.tg;
  return `<div class="tg-card"><a class="tg-main" href="https://t.me/${esc(botName())}?start=app" target="_blank" rel="noopener"><span class="tg-ic"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" fill="#ffd34d"/><circle cx="24" cy="24" r="11" fill="none" stroke="#e0a500" stroke-width="2"/><path d="M8 14l6-6M8 8h6v6M40 34l-6 6M40 40h-6v-6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="29" text-anchor="middle" font-size="13" font-weight="800" fill="#9a6b00" font-family="sans-serif">S</text></svg></span><span class="mid"><b>Telegram botimiz</b><small>${on?'✓ Ulangan':'Yangiliklar va eslatmalar'}</small></span><span class="tg-go">${on?'Ochish':'Ulash'}</span></a><button class="tg-x" data-act="tgHide" aria-label="Yopish">${I.x}</button></div>`}
@@ -744,7 +798,7 @@ async function doLogin(f){
  try{const j=await api('login',{phone,pass});S.token=j.token;LS.set('oldiberdi_token',j.token);startSession(j.acc,false,j)}
  catch(e){err.textContent=e.message}finally{btn.disabled=false;btn.textContent='Kirish'}
 }
-function writeErr(e){return (e&&e.message)||"Saqlab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."}
+function writeErr(e){if(e&&e.message==='BLOCKED'){setTimeout(()=>sync(),300);return 'Siz bloklandingiz — Premium oling'}return (e&&e.message)||"Saqlab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."}
 function startSession(a,restore,data){
  S.acc=null;setAcc(a);
  S.locked=!!(restore&&a.pinHash);S.setup=a.pinHash?null:{step:'pin1',mode:'new'};S.pinBuf='';S.pinErr='';S.pinTries=0;
@@ -762,6 +816,7 @@ function applySync(j,fromCache){
  S.people={};(j.people||[]).forEach(p=>S.people[p.id]=p);
  S.tx={};(j.tx||[]).forEach(t=>S.tx[t.id]=t);
  if(j.confirms)S.confirms=j.confirms;
+ if(j.marks)S.marks=j.marks;
  if(!fromCache){S.api=j.api||1;LS.set('oldiberdi_api',String(S.api))}
  if(j.rate&&j.rate.usd){S.rate=j.rate;LS.set('oldiberdi_rate',JSON.stringify(j.rate))}
  if(j.acc&&!fromCache)setAcc(j.acc);
@@ -769,13 +824,14 @@ function applySync(j,fromCache){
  S.loaded={p:true,t:true};compute();
  if(!fromCache){S.stale=false;saveCache()}
 }
-function saveCache(){if(!S.acc)return;try{localStorage.setItem('oldiberdi_cache',JSON.stringify({acc:{id:S.acc.id},people:Object.values(S.people),tx:Object.values(S.tx),confirms:S.confirms}))}catch(e){}}
+function saveCache(){if(!S.acc)return;try{localStorage.setItem('oldiberdi_cache',JSON.stringify({acc:{id:S.acc.id},people:Object.values(S.people),tx:Object.values(S.tx),confirms:S.confirms,marks:S.marks}))}catch(e){}}
 async function sync(){if(!S.acc||S.syncing)return;S.syncing=true;
- try{if(S.pending)return;const j=await api('sync');if(!S.acc||S.pending)return;applySync(j);if(payPending())checkPay();if(!isTyping())render();refreshOpenSheets();maybeRemindPrompt()}
+ try{if(S.pending)return;const j=await api('sync');if(!S.acc||S.pending)return;applySync(j);if(payPending())checkPay();if(!isTyping())render();refreshOpenSheets();refreshInstSheet();maybeRemindPrompt();openRemindParam()}
  catch(e){if(S.acc&&!S.loaded.p){S.stale=true;if(!isTyping())render()}}
  finally{S.syncing=false}}
 function checkVersion(){fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(v=>{const n=+v.version||0;const was=S.newVer;S.newVer=n>APP_VERSION?n:0;if(!!was!==!!S.newVer&&!isTyping())render()}).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.acc&&!S.locked){sync();if(payPending())setTimeout(()=>checkPay(),1500)}});
+function openRemindParam(){const id=S.remindParam;if(!id||S.locked||S.setup||isBlocked())return;if(!S.people[id]){if(!S.loaded.p)setTimeout(openRemindParam,1500);return}S.remindParam=null;closeAllSheets();A.remind({id})}
 function maybeNew(){if(!S.showNew||S.locked||S.setup)return;S.showNew=false;LS.set('oldiberdi_seen_ver',String(APP_VERSION));
  setTimeout(()=>openSheet('Ilova yangilandi',`<p class="hint" style="margin-top:0">Versiya ${APP_VERSION}. Nima yangi:</p><ul class="new-list">${WHATS_NEW.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${S.acc&&S.acc.tg?'':`<a class="btn btn-ghost" style="width:100%;margin-bottom:10px" href="https://t.me/${esc(botName())}?start=app" target="_blank" rel="noopener">${I.send} Yangiliklarni Telegram'da kuzatish</a>`}<button class="btn btn-primary" data-act="closeSheet">Tushunarli</button>`),600);
 }
@@ -798,7 +854,7 @@ function renderSetup(){const st=S.setup;
  const t={cur:['Hozirgi PIN kod','Avval hozirgi PIN kodingizni kiriting'],pin1:[st.mode==='new'?"PIN kod o'rnating":'Yangi PIN kod',"Ilovaga begonalar kirmasligi uchun 4 xonali kod o'ylab toping"],pin2:['PIN kodni takrorlang','Tasdiqlash uchun yana bir marta kiriting']}[st.step];
  $('#app').innerHTML=`<div class="lock"><div class="lock-top pad"><div class="lock-ic">${I.shield}</div><h2>${t[0]}</h2><p>${t[1]}</p>${pinDots()}</div>${pinPad(false)}<div class="lock-foot">${st.mode==='change'?'<button data-act="pinCancel">Bekor qilish</button>':'<span style="font-size:12.5px;opacity:.8">PIN kod shifrlangan holda saqlanadi</span>'}</div></div>`}
 async function pinDone(){const pin=S.pinBuf;
- if(S.locked){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash){S.locked=false;S.pinBuf='';S.pinTries=0;render();maybeNew();maybeRemindPrompt()}else{S.pinTries=(S.pinTries||0)+1;S.pinBuf='';if(S.pinTries>=5){logout();toast("5 marta xato kiritildi. Raqam va parol bilan kiring.");return}S.pinErr=`PIN noto'g'ri. Yana ${5-S.pinTries} ta urinish qoldi`;render()}return}
+ if(S.locked){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash){S.locked=false;S.pinBuf='';S.pinTries=0;render();maybeNew();maybeRemindPrompt();openRemindParam()}else{S.pinTries=(S.pinTries||0)+1;S.pinBuf='';if(S.pinTries>=5){logout();toast("5 marta xato kiritildi. Raqam va parol bilan kiring.");return}S.pinErr=`PIN noto'g'ri. Yana ${5-S.pinTries} ta urinish qoldi`;render()}return}
  const st=S.setup;if(!st)return;
  if(st.step==='cur'){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash)st.step='pin1';else S.pinErr="Hozirgi PIN noto'g'ri";S.pinBuf='';render();return}
  if(st.step==='pin1'){if(/^(\d)\1{3}$/.test(pin)||pin==='1234'||pin==='4321'){S.pinErr='Bu PIN juda oson. Boshqasini tanlang';S.pinBuf='';render();return}st.first=pin;st.step='pin2';S.pinBuf='';render();return}
@@ -816,6 +872,7 @@ function render(){
  if(!S.acc)return;
  if(S.locked)return renderLock();
  if(S.setup)return renderSetup();
+ if(isBlocked()){closeAllSheets();return renderBlocked()}
  const y=window.scrollY;const keep=render._last===S.view+'|'+S.pid;
  const v=S.view;
  let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():v==='report'?vReport():vProfile();
@@ -843,6 +900,8 @@ function vHome(){
  ${usdOn()&&Object.values(S.tx).some(isUSD)?`<span class="rate-chip num">1 $ = ${fmt(rate())} so'm · MB kursi${S.rate&&S.rate.date?' · '+esc(S.rate.date):''}</span>`:''}
  <div class="bal-split"><button class="tile p" data-act="peopleFilter" data-v="owe"><span>Menga qarzdorlar</span><b class="num">${money(owe)}</b><small>${oweN} kishi</small></button><button class="tile n" data-act="peopleFilter" data-v="debt"><span>Mening qarzlarim</span><b class="num">${money(debt)}</b><small>${debtN} kishi</small></button></div></div>
  ${(()=>{const rl=remindList();return rl.length?`<button class="rem-card" data-act="remCenter"><span class="qi">${I.bell}</span><span class="mid"><b>Eslatish kerak · ${rl.length} kishi ${lk('remind')}</b><small>${rl.slice(0,3).map(x=>esc(x.p.name)).join(', ')}${rl.length>3?' va boshqalar':''}</small></span><span class="go">${I.left}</span></button>`:''})()}
+ ${trialBanner()}
+ ${instCard()}
  ${tgCard()}
  ${quickBtns()}
  <form class="quick-in" data-form="quick" autocomplete="off"><div class="qk-wrap"><input id="qk" aria-label="Tez yozish" placeholder="Tez yozish: «Akmalga 500 ming berdim»"><button class="qk-go" aria-label="Davom etish">${I.send}</button></div></form>
@@ -901,7 +960,7 @@ function vHistory(){
 function vProfile(){const a=S.acc;
  return `<div class="pad"><div class="topbar"><h1>Profil</h1></div>
  <div class="card prof-card">${avatar(a,84)}<h2 style="margin:10px 0 0;font-size:20px">${esc(a.name)}</h2><span class="hint num">${fphone(a.phone)}</span><span class="mode-pill ${Store.cloud?'':'off'}" style="background:var(--surface-2);color:var(--muted)"><i></i>${Store.cloud?'Onlayn: istalgan telefondan kirish mumkin':'Faqat shu qurilmada saqlanmoqda'}</span></div>
- ${isPrem()?`<button class="prem-card on" data-act="prem"><span class="pi">${I.check}</span><span class="mid"><b>Premium faol</b><small>${a.premium.until?fdate(a.premium.until)+' gacha':'Muddatsiz'}</small></span></button>`:`<button class="prem-card" data-act="prem"><span class="pi">★</span><span class="mid"><b>Premium'ga o'tish</b><small>Hisobot, Excel, SMS eslatma, dollar va boshqalar</small></span><span class="go">${I.right}</span></button>`}
+ ${isPrem()?`<button class="prem-card on" data-act="prem"><span class="pi">${I.check}</span><span class="mid"><b>${a.premium.trial?'Premium · sinov muddati':'Premium faol'}</b><small>${a.premium.trial?trialLeft()+' kun qoldi · '+fdate(a.premium.until)+' gacha':a.premium.until?fdate(a.premium.until)+' gacha':'Muddatsiz'}</small></span></button>`:`<button class="prem-card" data-act="prem"><span class="pi">★</span><span class="mid"><b>Premium'ga o'tish</b><small>Hisobot, Excel, SMS eslatma, dollar va boshqalar</small></span><span class="go">${I.right}</span></button>`}
  <div class="card list menu">
   <button class="item" data-act="editProfile">${I.edit}<div class="mid">Ma'lumotlarni o'zgartirish<div class="t2">Ism, telefon, rasm</div></div></button>
   <button class="item" data-act="changePass">${I.lock}<div class="mid">Parolni o'zgartirish</div></button>
@@ -988,14 +1047,14 @@ let TX=null;
 function txForm(opts={}){
  const ed=opts.id?S.tx[opts.id]:null;
  TX=ed?{...ed,id:opts.id}:{type:opts.type||'lend',pid:opts.pid||null,amount:opts.amount||'',date:today(),due:'',note:'',photo:'',cur:opts.cur||''};
- TX.cur=usdOn()?(TX.cur||''):'';TX.planOn=!!(TX.plan&&TX.plan.length);TX.months=TX.planOn?TX.plan.length:3;TX.first=TX.planOn?TX.plan[0].d:addMonths(TX.date||today(),1);
+ TX.cur=usdOn()?(TX.cur||''):'';TX.planOn=!!(TX.plan&&TX.plan.length);TX.freq=TX.planOn&&isDaily(TX.plan)?'d':'m';TX.months=TX.planOn?TX.plan.length:(TX.freq==='d'?30:3);TX.first=TX.planOn?TX.plan[0].d:addMonths(TX.date||today(),1);
  const w=openSheet(ed?'Yozuvni tahrirlash':'Yangi yozuv',`<form data-form="tx">
  <div class="seg" id="tx-seg">${segHtml()}</div>
  <div class="field"><span class="lbl">Kim bilan</span><div id="tx-person">${personPickHtml()}</div></div>
  <div class="field"><label for="tx-amount">Summa</label><div class="inp-wrap"><input class="inp amount-inp num" id="tx-amount" inputmode="decimal" autocomplete="off" placeholder="0" value="${TX.amount?fmt(TX.amount):''}" data-amount data-plan>${usdOn()?`<button type="button" class="cur-tag cur-btn" id="tx-cur" data-act="txCur" aria-label="Valyutani almashtirish">${TX.cur==='USD'?'$':"so'm"}${locked('usd')?' '+I.lock:''}</button>`:`<span class="cur-tag">${esc(cur())}</span>`}</div><span class="hint" id="tx-conv"></span></div>
  <div class="row2"><div class="field"><label for="tx-date">Sana</label><input class="inp" type="date" id="tx-date" value="${esc(TX.date)}"></div><div class="field" id="tx-due-f"><label for="tx-due">Muddat</label><input class="inp" type="date" id="tx-due" value="${esc(TX.due||'')}"></div></div>
  ${S.api>=2?`<div class="field" id="tx-plan-f"><label class="chk"><input type="checkbox" id="tx-plan-on" ${TX.planOn?'checked':''}> Bo'lib to'lash (nasiya grafigi) ${lk('plan')}</label>
-  <div class="plan-box" id="tx-plan-box" ${TX.planOn?'':'hidden'}><div class="row2"><div class="field" style="margin:0"><label for="tx-months">Necha oyga</label><input class="inp num" id="tx-months" type="number" inputmode="numeric" min="2" max="36" value="${TX.months}" data-plan></div><div class="field" style="margin:0"><label for="tx-first">1-to'lov sanasi</label><input class="inp" type="date" id="tx-first" value="${esc(TX.first)}" data-plan></div></div><div class="plan-list" id="tx-plan-prev"></div></div></div>`:''}
+  <div class="plan-box" id="tx-plan-box" ${TX.planOn?'':'hidden'}><div class="freq-seg" role="group" aria-label="To'lov turi"><button type="button" class="${TX.freq!=='d'?'on':''}" data-act="planFreq" data-v="m">Oylik</button><button type="button" class="${TX.freq==='d'?'on':''}" data-act="planFreq" data-v="d">Kunlik</button></div><div class="row2"><div class="field" style="margin:0"><label for="tx-months" id="tx-months-l">${TX.freq==='d'?'Necha kunga':'Necha oyga'}</label><input class="inp num" id="tx-months" type="number" inputmode="numeric" min="2" max="${TX.freq==='d'?100:36}" value="${TX.months}" data-plan></div><div class="field" style="margin:0"><label for="tx-first">1-to'lov sanasi</label><input class="inp" type="date" id="tx-first" value="${esc(TX.first)}" data-plan></div></div><div class="plan-list" id="tx-plan-prev"></div></div></div>`:''}
  <div class="field"><label for="tx-note">Izoh</label><textarea class="inp" id="tx-note" placeholder="Masalan: 2 qop un, naqd pul…">${esc(TX.note)}</textarea></div>
  <div class="field"><span class="lbl">Rasm (mijoz, chek yoki mahsulot)</span>${photoPickHtml('tx',TX.photo)}<span class="hint">Odamning profil rasmi bo'lmasa, shu rasm profiliga ham qo'yiladi.</span></div>
  <div class="err" id="tx-err"></div>
@@ -1006,11 +1065,12 @@ function txForm(opts={}){
 }
 function segHtml(){return Object.entries(T).map(([k,m])=>`<button type="button" class="${TX.type===k?'on':''}" data-act="txType" data-v="${k}"><span class="ticon ${m.cls}" style="width:34px;height:34px;border-radius:11px">${I[m.icon]}</span><span>${m.short}<small>${m.hint}</small></span></button>`).join('')}
 function syncDue(){const loan=TX.type==='lend'||TX.type==='borrow';const f=$('#tx-due-f');if(f)f.style.visibility=loan&&!TX.planOn?'visible':'hidden';const pf=$('#tx-plan-f');if(pf)pf.hidden=!loan;planPreview();convHint()}
-function buildPlan(){const amount=parseAmt(($('#tx-amount')||{}).value);const n=Math.max(2,Math.min(36,parseInt(($('#tx-months')||{}).value)||0));const first=($('#tx-first')||{}).value||addMonths(today(),1);
+function buildPlan(){const amount=parseAmt(($('#tx-amount')||{}).value);const dly=TX.freq==='d';const n=Math.max(2,Math.min(dly?100:36,parseInt(($('#tx-months')||{}).value)||0));const first=($('#tx-first')||{}).value||(dly?addDays(today(),1):addMonths(today(),1));
  if(!(amount>0))return [];const step=TX.cur==='USD'?1:1000;let a=Math.floor(amount/n/step)*step;if(a<=0)a=Math.round(amount/n*100)/100;const out=[];
- for(let i=0;i<n;i++)out.push({d:addMonths(first,i),a:i<n-1?a:Math.round((amount-a*(n-1))*100)/100});return out}
+ for(let i=0;i<n;i++)out.push({d:dly?addDays(first,i):addMonths(first,i),a:i<n-1?a:Math.round((amount-a*(n-1))*100)/100});return out}
 function planPreview(){const box=$('#tx-plan-prev');if(!box)return;if(!TX.planOn){box.innerHTML='';return}const pl=buildPlan();const u=TX.cur==='USD';
- box.innerHTML=pl.length?pl.map((x,i)=>`<div class="plan-row"><span>${i+1}. ${fdate(x.d)}</span><b class="num">${u?'$'+fmt(x.a):fmt(x.a)+' '+esc(cur())}</b></div>`).join(''):'<span class="hint">Summani kiriting — grafik shu yerda chiqadi</span>'}
+ const row=(x,i)=>`<div class="plan-row"><span>${i+1}. ${fdate(x.d)}</span><b class="num">${u?'$'+fmt(x.a):fmt(x.a)+' '+esc(cur())}</b></div>`;
+ box.innerHTML=pl.length?`<div class="plan-sum">${TX.freq==='d'?`Har kuni <b class="num">${u?'$'+fmt(pl[0].a):fmt(pl[0].a)+' '+esc(cur())}</b> × ${pl.length} kun`:`Har oy <b class="num">${u?'$'+fmt(pl[0].a):fmt(pl[0].a)+' '+esc(cur())}</b> × ${pl.length} oy`} · oxirgisi ${fdate(pl[pl.length-1].d)}</div>`+(pl.length>8?pl.slice(0,3).map(row).join('')+'<div class="plan-row" style="justify-content:center;color:var(--muted)">⋯</div>'+pl.slice(-2).map((x,k)=>row(x,pl.length-2+k)).join(''):pl.map(row).join('')):'<span class="hint">Summani kiriting — grafik shu yerda chiqadi</span>'}
 function convHint(){const h=$('#tx-conv');if(!h)return;const a=parseAmt(($('#tx-amount')||{}).value);h.textContent=TX.cur==='USD'&&a>0?`≈ ${fmt(a*rate())} so'm (1$ = ${fmt(rate())} so'm)`:''}
 function personPickHtml(){
  if(TX.pid&&S.people[TX.pid]){const p=S.people[TX.pid];const b=S.bal[p.id]||0;return `<div class="picked">${avatar(p,40)}<div class="mid"><b>${esc(p.name)} ${trustBadge(p.id,true)}</b><span class="hint">${b?(b>0?'Sizga qarzdor: ':'Siz qarzdorsiz: ')+money(b):'Hisob teng'}</span></div><button type="button" class="icon-btn" data-act="txUnpick" aria-label="Boshqa odam">${I.x}</button></div>`}
@@ -1035,7 +1095,7 @@ async function saveTx(){
  const isNew=!TX.id;const id=TX.id||uid();const now=Date.now();
  const prev=isNew?null:S.tx[id];
  const loan=TX.type==='lend'||TX.type==='borrow';const plan=loan&&TX.planOn?buildPlan():[];
- if(loan&&TX.planOn&&plan.length<2)return err.textContent="Grafik uchun summa va oylar sonini kiriting (2–36 oy)";
+ if(loan&&TX.planOn&&plan.length<2)return err.textContent=TX.freq==='d'?"Grafik uchun summa va kunlar sonini kiriting (2–100 kun)":"Grafik uchun summa va oylar sonini kiriting (2–36 oy)";
  const data={pid:TX.pid,type:TX.type,amount,cur:TX.cur||'',plan,date:$('#tx-date').value||today(),due:loan?(plan.length?plan[plan.length-1].d:($('#tx-due').value||'')):'',note:$('#tx-note').value.trim(),photo:TX.photo||'',createdAt:prev?.createdAt||now,updatedAt:now,edits:(prev?.edits||[]).slice(-19)};
  if(prev){const ch=[];if(prev.amount!==amount)ch.push(`summa ${fmt(prev.amount)} → ${fmt(amount)}`);if(prev.type!==data.type)ch.push(`tur: ${T[prev.type].short} → ${T[data.type].short}`);if(prev.pid!==data.pid)ch.push('odam almashtirildi');if(prev.date!==data.date)ch.push('sana');if((prev.note||'')!==data.note)ch.push('izoh');if((prev.photo||'')!==data.photo)ch.push('rasm');if((prev.due||'')!==data.due)ch.push('muddat');if((prev.cur||'')!==data.cur)ch.push('valyuta');if(JSON.stringify(prev.plan||[])!==JSON.stringify(data.plan))ch.push('grafik');if(!ch.length){closeSheet();return}data.edits.push({at:now,t:ch.join(', ')})}
  const item={id,...data};const needAva=!!data.photo&&!!S.people[data.pid]&&!S.people[data.pid].photo;
@@ -1093,7 +1153,7 @@ function remindList(){const td=today(),tm=addDays(td,1),out=[];const now=Date.no
  }
  return out.sort((a,b)=>a.rank-b.rank||(S.bal[b.p.id]||0)-(S.bal[a.p.id]||0))}
 function remRowHtml(x){const ph=normPhone(x.p.phone||'');return `<div class="rem-row" id="rem-${x.p.id}">${avatar(x.p,42)}<div class="mid"><b>${esc(x.p.name)}</b><small class="why ${x.why}">${x.label}</small><small class="num">${money(S.bal[x.p.id]||0)}${ph?'':' · raqam yo\'q'}</small></div><div class="rem-btns"><button class="btn btn-primary btn-sm" data-act="remSms" data-id="${x.p.id}">${ph?'SMS yuborish':'Raqam kiritish'}</button><button class="btn btn-ghost btn-sm" data-act="remSnooze" data-id="${x.p.id}">Keyinroq</button></div></div>`}
-function maybeRemindPrompt(){if(!S.acc||locked('remind')||S.locked||S.setup||sheets.length||S.view!=='home'||!S.loaded.t)return;if(LS.get('oldiberdi_remauto')==='off')return;if(LS.get('oldiberdi_remprompt')===today())return;if(!remindList().length)return;LS.set('oldiberdi_remprompt',today());setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup)A.remCenter()},900)}
+function maybeRemindPrompt(){maybeInstPrompt();if(!S.acc||locked('remind')||S.locked||S.setup||sheets.length||S.view!=='home'||!S.loaded.t)return;if(LS.get('oldiberdi_remauto')==='off')return;if(LS.get('oldiberdi_remprompt')===today())return;if(!remindList().length)return;LS.set('oldiberdi_remprompt',today());setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup)A.remCenter()},900)}
 function remindText(p){if(isRu())return remindTextRu(p);const b=S.bal[p.id]||0;const od=overdueOf(p.id);let next=null,due=null;
  for(const x of Object.values(S.tx)){if(x.pid!==p.id||x.type!=='lend')continue;const L=S.alloc[x.id];if(!L||L.left<=0.5)continue;const i=nextInst(L);if(i&&(!next||i.d<next.d))next={d:i.d,a:L.t.cur==='USD'?'$'+fmt(i.a):fmt(i.a)+' '+cur()};if(!L.inst.length&&x.due&&(!due||x.due<due))due=x.due}
  let s=`Assalomu alaykum, ${p.name}!\n\nYodingizga solib qo'ymoqchi edim: sizda ${money(b)} qarz bor`;
@@ -1267,6 +1327,10 @@ const A={
   try{const j=await api('payCreate',{plan:d.v,returnUrl:location.origin+location.pathname.replace(/index\.html$/,'')+'?pay=1'});LS.set('oldiberdi_paybill',JSON.stringify({bill:j.bill,at:Date.now()}));location.href=j.url}
   catch(e){toast(writeErr(e));el.disabled=false;el.innerHTML=old}},
  payCheck:()=>checkPay(true),
+ planFreq:d=>{if(!TX)return;const was=TX.freq;TX.freq=d.v;document.querySelectorAll('.freq-seg button').forEach(b=>b.classList.toggle('on',b.dataset.v===d.v));const l=$('#tx-months-l');if(l)l.textContent=tr(d.v==='d'?'Necha kunga':'Necha oyga');const n=$('#tx-months');if(n){n.max=d.v==='d'?100:36;if(was!==d.v)n.value=d.v==='d'?30:3}const f=$('#tx-first');if(f&&was!==d.v){const base=($('#tx-date')||{}).value||today();f.value=d.v==='d'?addDays(base,1):addMonths(base,1)}planPreview()},
+ instPaid:d=>instPaid(d.k),
+ instMiss:d=>instMiss(d.k),
+ logout:()=>logout(),
  tgHide:()=>{LS.set('oldiberdi_tgcard','off');render();toast(tr('Botni Profil → Telegram bot orqali ochishingiz mumkin'))},
  rm:d=>{S.rm=ymShift(S.rm||today().slice(0,7),+d.v);render()},
  xlsx:(d,el)=>{if(need('excel'))exportXlsx(el)},
@@ -1379,6 +1443,7 @@ document.addEventListener('change',async e=>{const t=e.target;const k=t.dataset.
  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
  await bioCheck();
  if(!API_URL){$('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Ilova hali serverga ulanmagan.</p></div><div class="pad"><div class="auth-card"><b>Sozlash kerak</b><p class="hint">GitHub'dagi <b>config.js</b> faylini oching va Google Apps Script'dan olgan havolani qo'shtirnoq ichiga yozing.</p></div></div></div>`;return}
+ {const rp=new URLSearchParams(location.search).get('remind');if(rp){S.remindParam=rp;try{history.replaceState(null,'',location.pathname)}catch(e){}}}
  if(new URLSearchParams(location.search).get('pay')){try{history.replaceState(null,'',location.pathname)}catch(e){}}
  const cParam=new URLSearchParams(location.search).get('c');
  if(cParam){renderConfirm(cParam);return}
