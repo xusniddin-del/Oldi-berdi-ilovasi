@@ -33,14 +33,15 @@ const TABLES = {
   Reminders: ['key', 'acc', 'pid', 'txId', 'idx', 'due', 'amount', 'status', 'markDay', 'chat', 'msg', 'text', 'updatedAt'],
   Payments: ['bill', 'acc', 'phone', 'tarif', 'days', 'amount', 'status', 'createdAt', 'paidAt', 'until'],
   Lists:    ['id', 'acc', 'name', 'items', 'createdAt', 'updatedAt'],
-  Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt']
+  Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt'],
+  Kids:     ['id', 'acc', 'name', 'photo', 'pinSalt', 'pinHash', 'data', 'createdAt', 'updatedAt']
 };
 const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true };
 /* Docs turlari va ular uchun kerakli tarif: '' — bepul, 'prem' — Premium, 'biz' — Biznes */
 const DOC_KINDS = { toy: 'prem', toyg: 'prem', loan: 'prem', gap: 'prem', yigin: '', biz: 'biz' };
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, kidSave: 1, kidDelete: 1, kidTx: 1, kidLogin: 1, kidAddTx: 1, kidGoals: 1, kidProfile: 1, kidLogout: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -266,9 +267,10 @@ function data_(accId) {
     tx: all_('Tx').filter(function (t) { return t.acc === accId; }).map(clean_),
     lists: all_('Lists').filter(function (l) { return l.acc === accId; }).map(clean_),
     docs: all_('Docs').filter(function (x) { return x.acc === accId; }).map(clean_),
+    kids: all_('Kids').filter(function (k) { return k.acc === accId; }).map(kidPub_),
     confirms: confirms,
     rate: rate_(),
-    api: 9,
+    api: 10,
     marks: marks_(accId),
     prices: prices_(),
     version: meta_('version')
@@ -372,6 +374,40 @@ function payVerify_(billId) {
   return { paid: true, until: row.until };
 }
 
+/* ---------- farzandlar (bola akkauntlari) ---------- */
+const KID_MAX = 6, KID_TX_MAX = 300, KID_GOALS_MAX = 10;
+function kidData_(k) { const d = k.data && typeof k.data === 'object' && !Array.isArray(k.data) ? k.data : {}; return { tx: Array.isArray(d.tx) ? d.tx : [], goals: Array.isArray(d.goals) ? d.goals : [] }; }
+function kidBal_(d) { return d.tx.reduce(function (z, t) { return z + (t.t === 'out' ? -1 : 1) * (Number(t.a) || 0); }, 0); }
+function kidPub_(k) { const d = kidData_(k); return { id: k.id, name: k.name, photo: k.photo, data: d, balance: kidBal_(d), createdAt: k.createdAt, updatedAt: k.updatedAt }; }
+function kidAuth_(r) {
+  const t = String(r.token || '');
+  const s = t && all_('Sessions').filter(function (x) { return x.token === t; })[0];
+  if (!s || String(s.acc).indexOf('kid:') !== 0) throw new Error('AUTH');
+  const k = all_('Kids').filter(function (x) { return 'kid:' + x.id === s.acc; })[0];
+  if (!k) throw new Error('AUTH');
+  return k;
+}
+function kidOfParent_(a, id) {
+  const k = all_('Kids').filter(function (x) { return x.id === String(id || '') && x.acc === a.id; })[0];
+  if (!k) throw new Error('Farzand topilmadi');
+  return k;
+}
+function kidPinOk_(pin) { return /^\d{4}$/.test(String(pin || '')); }
+function kidPushTx_(k, t, a, note, by) {
+  const amt = Math.round((Number(a) || 0) * 100) / 100;
+  if (!(amt > 0) || amt > 100000000) throw new Error('Summani to\'g\'ri kiriting');
+  const d = kidData_(k);
+  if (t === 'out' && amt > kidBal_(d) + 0.001) throw new Error("Xazinada buncha pul yo'q");
+  d.tx.push({ id: uid_(), t: t === 'out' ? 'out' : 'in', a: amt, n: str_(note, 60).trim(), by: by, at: Date.now() });
+  if (d.tx.length > KID_TX_MAX) {   // eski yozuvlarni bitta qoldiq yozuviga yig'amiz
+    const old = d.tx.splice(0, d.tx.length - KID_TX_MAX + 1);
+    const b = kidBal_({ tx: old });
+    if (b !== 0) d.tx.unshift({ id: uid_(), t: b > 0 ? 'in' : 'out', a: Math.abs(b), n: 'Oldingi qoldiq', by: 'sys', at: old[old.length - 1].at });
+  }
+  k.data = d; k.updatedAt = Date.now();
+  put_('Kids', k, k._row);
+}
+
 /* ---------- API ---------- */
 const API = {
   register: function (r) {
@@ -385,7 +421,7 @@ const API = {
     put_('Accounts', a);
     try { notifyAdmin_('🆕 Yangi foydalanuvchi: <b>' + h_(name) + '</b> (+' + phone + ')'); } catch (e) {}
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
   login: function (r) {
     const phone = normPhone_(r.phone);
@@ -395,7 +431,7 @@ const API = {
     if (!checkPw_(a, String(r.pass || ''))) { loginFail_(phone); throw new Error("Parol noto'g'ri"); }
     CacheService.getScriptCache().remove('lf_' + phone);
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
   logout: function (r) {
     const rows = all_('Sessions').filter(function (x) { return x.token === String(r.token || ''); }).map(function (x) { return x._row; });
@@ -404,7 +440,7 @@ const API = {
   },
   sync: function (r) {
     const a = auth_(r), d = data_(a.id);
-    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
   saveProfile: function (r) {
     const a = auth_(r);
@@ -533,6 +569,84 @@ const API = {
   deleteDoc: function (r) {
     const a = auth_(r), id = String(r.id || '');
     delRows_('Docs', all_('Docs').filter(function (x) { return x.id === id && x.acc === a.id; }).map(function (x) { return x._row; }));
+    return {};
+  },
+  /* ota-ona: farzand qo'shish yoki o'zgartirish (ism, 4 xonali PIN) */
+  kidSave: function (r) {
+    const a = auth_(r), id = String(r.id || ''), name = str_(r.name, 40).trim(), pin = String(r.pin || '');
+    if (name.length < 1) throw new Error('Farzandingiz ismini yozing');
+    const mine = all_('Kids').filter(function (x) { return x.acc === a.id; });
+    let k = id ? mine.filter(function (x) { return x.id === id; })[0] : null;
+    if (id && !k) throw new Error('Farzand topilmadi');
+    if (!k) {
+      if (!premium_(a).on) throw new Error('Bu Premium funksiya');
+      if (mine.length >= KID_MAX) throw new Error("Ko'pi bilan " + KID_MAX + " ta farzand qo'shish mumkin");
+      if (!kidPinOk_(pin)) throw new Error('PIN kod 4 ta raqamdan iborat bo\'lsin');
+    }
+    if (pin) {
+      if (!kidPinOk_(pin)) throw new Error('PIN kod 4 ta raqamdan iborat bo\'lsin');
+      if (mine.some(function (x) { return (!k || x.id !== k.id) && pwHashV2_(x.pinSalt, pin) === x.pinHash; })) throw new Error('Bu PIN boshqa farzandingizda bor. Boshqasini tanlang');
+    }
+    const now = Date.now();
+    if (!k) k = { id: uid_(), acc: a.id, name: name, photo: '', pinSalt: '', pinHash: '', data: { tx: [], goals: [] }, createdAt: now, updatedAt: now };
+    k.name = name;
+    if (pin) { k.pinSalt = uid_(); k.pinHash = pwHashV2_(k.pinSalt, pin); }
+    if (r.photo !== undefined) k.photo = photo_(a.id, r.photo);
+    k.updatedAt = now;
+    put_('Kids', k, k._row || 0);
+    if (pin && k._row) delRows_('Sessions', all_('Sessions').filter(function (x) { return x.acc === 'kid:' + k.id; }).map(function (x) { return x._row; }));
+    return { kid: kidPub_(k) };
+  },
+  kidDelete: function (r) {
+    const a = auth_(r), k = kidOfParent_(a, r.id);
+    delRows_('Sessions', all_('Sessions').filter(function (x) { return x.acc === 'kid:' + k.id; }).map(function (x) { return x._row; }));
+    delRows_('Kids', [k._row]);
+    return {};
+  },
+  /* ota-ona farzandiga pul berdi yoki oldi */
+  kidTx: function (r) {
+    const a = auth_(r), k = kidOfParent_(a, r.id);
+    kidPushTx_(k, r.t, r.a, r.n, 'parent');
+    return { kid: kidPub_(k) };
+  },
+  /* bola: ota-onasining telefon raqami va o'z PIN kodi bilan kiradi */
+  kidLogin: function (r) {
+    const phone = normPhone_(r.phone), pin = String(r.pin || '');
+    if (!kidPinOk_(pin)) throw new Error('PIN kod 4 ta raqamdan iborat');
+    const a = all_('Accounts').filter(function (x) { return x.phone === phone; })[0];
+    if (!a) throw new Error("Bu raqam ro'yxatdan o'tmagan");
+    const g = 'kf_' + phone, c = CacheService.getScriptCache();
+    if (Number(c.get(g) || 0) >= LOGIN_MAX_FAILS) throw new Error("Juda ko'p xato urinish. 15 daqiqadan keyin qayta urinib ko'ring.");
+    const k = all_('Kids').filter(function (x) { return x.acc === a.id && pwHashV2_(x.pinSalt, pin) === x.pinHash; })[0];
+    if (!k) { c.put(g, String(Number(c.get(g) || 0) + 1), LOGIN_BLOCK_SEC); throw new Error("PIN kod noto'g'ri"); }
+    c.remove(g);
+    return { kid: kidPub_(k), token: newSession_('kid:' + k.id) };
+  },
+  kidSync: function (r) { return { kid: kidPub_(kidAuth_(r)) }; },
+  kidAddTx: function (r) { const k = kidAuth_(r); kidPushTx_(k, r.t, r.a, r.n, 'kid'); return { kid: kidPub_(k) }; },
+  kidGoals: function (r) {
+    const k = kidAuth_(r), d = kidData_(k);
+    d.goals = (Array.isArray(r.goals) ? r.goals : []).slice(0, KID_GOALS_MAX).map(function (x) {
+      x = x || {}; return { id: str_(x.id, 40) || uid_(), n: str_(x.n, 40).trim(), target: Math.max(0, Math.round(Number(x.target) || 0)) };
+    }).filter(function (x) { return x.n && x.target > 0; });
+    k.data = d; k.updatedAt = Date.now(); put_('Kids', k, k._row);
+    return { kid: kidPub_(k) };
+  },
+  kidProfile: function (r) {
+    const k = kidAuth_(r);
+    if (r.name !== undefined) { const n = str_(r.name, 40).trim(); if (!n) throw new Error('Ismingizni yozing'); k.name = n; }
+    if (r.photo !== undefined) k.photo = photo_(k.acc, r.photo);
+    k.updatedAt = Date.now(); put_('Kids', k, k._row);
+    return { kid: kidPub_(k) };
+  },
+  kidPhoto: function (r) {
+    const k = kidAuth_(r), id = String(r.id || '');
+    if (k.photo !== 'd:' + id) throw new Error("Ruxsat yo'q");
+    const b = DriveApp.getFileById(id).getBlob();
+    return { data: 'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(b.getBytes()) };
+  },
+  kidLogout: function (r) {
+    delRows_('Sessions', all_('Sessions').filter(function (x) { return x.token === String(r.token || '') && String(x.acc).indexOf('kid:') === 0; }).map(function (x) { return x._row; }));
     return {};
   },
   /* two-sided confirmation: the other person opens a link and confirms the record */
