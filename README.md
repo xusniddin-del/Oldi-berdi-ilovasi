@@ -5,7 +5,7 @@ Ma'lumotlar: Google Sheets (Apps Script orqali). Ilova: GitHub Pages.
 ## 1. Google Sheets (server)
 1. sheets.google.com → Bo'sh jadval → nomini "Oldi-Berdi baza" qiling.
 2. Kengaytmalar (Extensions) → Apps Script.
-3. Code.gs ichidagi hamma narsani o'chirib, shu papkadagi Code.gs faylini to'liq qo'ying → Saqlash (💾).
+3. Code.gs ichidagi hamma narsani o'chirib, `server/Code.gs` faylini to'liq qo'ying → Saqlash (💾).
 4. Yuqoridagi ro'yxatdan `setup` ni tanlab ▶ Run bosing → ruxsat bering
    ("Advanced → Go to ... (unsafe)" chiqsa ham bosing — bu sizning o'z skriptingiz).
 5. Deploy → New deployment → ⚙ → Web app:
