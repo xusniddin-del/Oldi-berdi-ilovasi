@@ -458,6 +458,45 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 .ptr svg{width:22px;height:22px}
 .ptr.spin svg{animation:ptrspin .8s linear infinite}
 @keyframes ptrspin{to{transform:rotate(360deg)}}
+
+/* kids: parent side + child app */
+.tool.wide{grid-column:1/-1;flex-direction:row;align-items:center;min-height:0;gap:12px}
+.tool.wide .tw{display:flex;flex-direction:column;gap:2px;min-width:0}
+.tl-ic.c5{background:#efe9fb;color:#6a48e0}
+.kid{min-height:100vh;background:var(--bg)}
+.kid-top{background:linear-gradient(160deg,#4b2fb8,#7c4df0 60%,#9b6bff);color:#fff;padding-top:22px;padding-bottom:22px;border-radius:0 0 30px 30px}
+.kid-hi{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.kid-hi span{opacity:.85;font-size:15px}
+.kid-hi b{display:block;font-size:27px;letter-spacing:-.02em;overflow-wrap:anywhere}
+.kid-ava{border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.55);flex:none}
+.kid-chest{display:flex;align-items:center;gap:14px;margin-top:18px;background:rgba(255,255,255,.14);border-radius:24px;padding:14px 16px}
+.kid-chest svg{width:96px;height:80px;flex:none}
+.kid-chest span{font-size:14px;opacity:.9}
+.kid-chest b{display:block;font-size:30px;font-weight:900;color:#ffd34d;line-height:1.15}
+.kid-chest b small{font-size:15px;color:inherit;opacity:.85}
+.kid-chest.par{background:linear-gradient(160deg,#4b2fb8,#7c4df0);color:#fff;margin:6px 0 4px}
+.kid-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.kid-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px;border-radius:24px;font-weight:800;font-size:16px;color:var(--fg);background:var(--surface);border:2px solid var(--line)}
+.kid-btn span{width:56px;height:56px;border-radius:19px;display:grid;place-items:center}
+.kid-btn span svg{width:28px;height:28px}
+.kid-btn.add span{background:var(--pos-bg);color:var(--pos)}.kid-btn.out span{background:var(--neg-bg);color:var(--neg)}
+.kid-goal{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:14px 16px;margin-bottom:10px;color:var(--fg);font:inherit}
+.kid-goal.done{border:2px solid #f5b301;background:var(--warn-bg)}
+.kg-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.kg-top b{font-size:16px;overflow-wrap:anywhere}
+.kg-top span{font-weight:800;color:#6a48e0;white-space:nowrap}
+.kid-goal.done .kg-top span{color:var(--warn)}
+.kg-bar{height:12px;border-radius:9px;background:var(--surface-2);margin:10px 0 6px;overflow:hidden}
+.kg-bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#ffd34d,#f59e0b)}
+.kid-goal small{color:var(--muted);font-size:12.5px}
+.kid-tx{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:900;flex:none}
+.kid-tx.in{background:var(--pos-bg);color:var(--pos)}.kid-tx.out{background:var(--neg-bg);color:var(--neg)}
+.chips-q{display:flex;flex-wrap:wrap;gap:8px;margin:-6px 0 14px}
+.kid-how{padding:14px 16px;margin-top:14px}
+.kid-how ol{margin:8px 0 0;padding-left:20px;color:var(--muted);font-size:14px;line-height:1.6}
+.pin-inp{letter-spacing:.6em;font-size:24px;text-align:center;font-weight:800}
+.tabs.t3{grid-template-columns:1fr 1fr 1fr}
+.tabs.t3 button{padding:10px 4px;font-size:14px}
 </style>
 </head>
 <body>
@@ -465,8 +504,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=31;
-const WHATS_NEW=["Ekranni tepadan pastga tortsangiz, ma'lumotlar yangilanadi — ilova qayta ochilmaydi va PIN kod so'ralmaydi","Ilovani yopib qayta ochganda PIN kod avvalgidek so'raladi"];
+const APP_VERSION=32;
+const WHATS_NEW=["👧 Farzandlar xazinasi: bolangizga ism va 4 xonali PIN bilan alohida kirish yarating (Premium)","Bola o'z xazinasiga pul qo'shadi, sarflaydi va orzusi uchun yig'adi — siz hammasini kuzatasiz","Tepadan tortsangiz ma'lumotlar yangilanadi, PIN qayta so'ralmaydi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -574,7 +613,7 @@ const RU={
 /* report */
 "Berildi":"Дано","Qaytdi":"Вернули","Olindi":"Взято","Qaytarildi":"Возвращено","Qaytish foizi":"Доля возврата","Oxirgi 6 oy":"Последние 6 месяцев","Berilgan":"Дано","Qaytgan":"Вернули","Eng katta qarzdorlar":"Крупнейшие должники","Hozirgi holat":"Текущее состояние",
 "Odamlar bo'yicha":"По людям","Bu oyda yozuv yo'q":"В этом месяце записей нет","Excel'ga yuklab olish":"Скачать в Excel","Fayl tayyorlanmoqda…":"Готовим файл…","Excel fayl yuklab olindi":"Файл Excel скачан","Faylni yaratib bo'lmadi. Internetni tekshiring.":"Не удалось создать файл. Проверьте интернет.",
-"Oldingi oy":"Предыдущий месяц","Keyingi oy":"Следующий месяц","Bu oy":"Этот месяц","Yozuvlar soni":"Записей","Qoldiq":"Остаток","Ism":"Имя","Bu oyda berildi":"Дано в этом месяце","Bu oyda qaytdi":"Вернули в этом месяце","Grafiklar va Excel fayl":"Графики и файл Excel","Hech kim qarzdor emas":"Никто не должен","Ko'rsatkich":"Показатель","Oy":"Месяц","oy":"мес.","Holat":"Статус","Ishonch":"Надёжность","Barcha yozuvlar":"Все записи","Grafik":"График","Muddati o'tgan":"Просрочено","Hisobot":"Отчёт","Telefon":"Телефон","Boshqa odam":"Другой человек","Valyutani almashtirish":"Сменить валюту","Oxirgi raqamni o'chirish":"Удалить последнюю цифру","Tasdiqlangan":"Подтверждено","Barmoq izi bilan ochish":"Вход по отпечатку","Masalan: Xusniddin":"Например: Хусниддин","Premium funksiya":"Функция Premium","Premium faol":"Premium активен","Premium'ga o'tish":"Перейти на Premium","Hisobot, Excel, SMS eslatma, dollar va boshqalar":"Отчёт, Excel, SMS-напоминания, доллар и другое","Muddatsiz":"Бессрочно","Premium yoqildi! Rahmat":"Premium включён! Спасибо","Telegram orqali olish":"Получить через Telegram","To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.":"После оплаты разработчик включит Premium в вашем аккаунте. Переустанавливать приложение не нужно.","Ishonch reytingi — Premium":"Рейтинг надёжности — Premium","Grafiklar, eng katta qarzdorlar":"Графики, крупнейшие должники","Hisobotni .xlsx qilib yuklab olish":"Скачать отчёт в .xlsx","Kimga eslatish kerakligini ilova o'zi topadi":"Приложение само находит, кому напомнить","Kim o'z vaqtida qaytarishini ko'rsatadi":"Показывает, кто возвращает вовремя","Dollar va MB kursi":"Доллар и курс ЦБ","Dollarda qarz yozish, so'mga avtomatik hisoblash":"Долги в долларах с пересчётом в сумы","Nasiya grafigi va kechikishlar":"График рассрочки и просрочки","Qarzdor SMS havola orqali tasdiqlaydi":"Должник подтверждает по ссылке из SMS","Ilovani rus tilida ishlatish":"Пользоваться приложением на русском","Excel fayl":"Файл Excel","SMS eslatmalar":"SMS-напоминания","Ishonch reytingi":"Рейтинг надёжности","Ikki tomonlama tasdiq":"Двустороннее подтверждение","Rus tili":"Русский язык","Bo'lib to'lash":"Рассрочка","Premium'ni uzaytirish":"Продлить Premium","Tarifni tanlang":"Выберите тариф","1 yil":"1 год","1 oy":"1 месяц","30 kun":"30 дней","12 oy":"12 месяцев","Click, Payme, Uzum yoki bank kartasi orqali. To'lovdan keyin Premium o'zi yoqiladi.":"Через Click, Payme, Uzum или банковскую карту. После оплаты Premium включится сам.","Savol bo'lsa — Telegram":"Есть вопрос — Telegram","To'lov sahifasi ochilmoqda…":"Открываем страницу оплаты…","To'lov hali tushmadi. Bir necha soniyadan keyin yana tekshiring.":"Оплата ещё не поступила. Проверьте через несколько секунд.","To'lov tekshirilmoqda":"Проверяем оплату","To'lagan bo'lsangiz, shu yerni bosing":"Если вы оплатили, нажмите сюда","Onlayn to'lov hali ulanmagan":"Онлайн-оплата ещё не подключена","Bu tarif hozircha yopiq":"Этот тариф пока закрыт","Telegram bot":"Telegram-бот","Telegram botimiz":"Наш Telegram-бот","Yangiliklar va eslatmalar":"Новости и напоминания","Premium imkoniyatlari":"Возможности Premium","Oylik":"Ежемесячно","Kunlik":"Ежедневно","Necha kunga":"На сколько дней","Necha oyga":"На сколько месяцев","To'lov kunlari":"Дни платежей","Bugungi to'lovlar":"Платежи на сегодня","Grafik bo'yicha to'lov kuni kelganlar. To'ladimi?":"По графику наступил день платежа. Оплатил?","✓ To'ladi":"✓ Оплатил","✕ To'lamadi":"✕ Не оплатил","SMS yuborish":"Отправить SMS","Siz bloklandingiz":"Вы заблокированы","Ma'lumotlaringiz saqlanib qoladi":"Ваши данные сохранятся","To'lovdan keyin hammasi o'z joyida":"После оплаты всё на месте","Premium o'zi yoqiladi":"Premium включится сам","To'lovdan keyin 30 soniya ichida":"В течение 30 секунд после оплаты","To'lov Telegram botimiz orqali: Click, Payme, Uzum yoki karta.":"Оплата через наш Telegram-бот: Click, Payme, Uzum или карта.","Dasturchiga yozish":"Написать разработчику","Chiqish":"Выйти","Premium · sinov muddati":"Premium · пробный период","Premium sinov":"Пробный Premium","kun qoldi":"дн. осталось","gacha · keyin ilova bepul rejimda ishlayveradi":"· затем приложение продолжит работать бесплатно","Batafsil":"Подробнее","Premium'ni 15 kun bepul sinab ko'rasizmi?":"Попробовать Premium 15 дней бесплатно?","Majburiy emas — ilova baribir bepul ishlaydi":"Не обязательно — приложение и так бесплатное","Ha, sinab ko'raman":"Да, попробовать","Yo'q, rahmat":"Нет, спасибо","Premium'ni bepul sinab ko'ring":"Попробуйте Premium бесплатно","15 kun — barcha Premium imkoniyatlar bepul":"15 дней — все функции Premium бесплатно","Oldi-Berdi bepul ilova: qarzlarni yozish, ro'yxat va qoldiqlar doim bepul. Xohlasangiz, Premium imkoniyatlarni 15 kun bepul sinab ko'rishingiz mumkin. Sinov tugagach hech narsa bloklanmaydi va hech qanday to'lov olinmaydi.":"Oldi-Berdi — бесплатное приложение: запись долгов, список и остатки всегда бесплатны. По желанию можно попробовать Premium 15 дней бесплатно. После пробного периода ничего не блокируется и никаких списаний нет.","Ha, 15 kun bepul sinab ko'raman":"Да, попробовать 15 дней бесплатно","Yo'q, hozircha bepul versiya yetadi":"Нет, пока хватит бесплатной версии","keyin bepul rejim":"затем бесплатный режим","15 kun bepul sinab ko'rish":"Попробовать 15 дней бесплатно","Majburiy emas. Sinov tugagach ilova bepul ishlayveradi.":"Не обязательно. После пробного периода приложение продолжит работать бесплатно.","🎁 Premium sinov boshlandi — 15 kun bepul!":"🎁 Пробный Premium начат — 15 дней бесплатно!","Sinov allaqachon ishlatilgan":"Пробный период уже использован","Yaxshi! Premium'ni Profil bo'limidan istalgan vaqt sinab ko'rishingiz mumkin":"Хорошо! Попробовать Premium можно в любое время в разделе Профиль","Siz bloklandingiz — Premium oling":"Вы заблокированы — оформите Premium","Premium olish":"Получить Premium","Xizmatlar":"Сервисы","Bozorlik":"Покупки","To'yona":"Подарки на свадьбу","Kreditlar":"Кредиты","Gap · yig'in":"Гап · сбор","Kim qancha olib keldi":"Кто сколько подарил","To'lov kalendari":"Календарь платежей","Pul yig'ish bepul":"Сбор денег бесплатно","Ro'yxat tuzing":"Составьте список","To'yona daftari":"Тетрадь свадебных подарков","Mening to'ylarim":"Мои свадьбы","Men borgan to'ylar":"Где я был(а)","Ism bo'yicha qidirish":"Поиск по имени","Sizga olib kelgan":"Принёс(ла) вам","Siz olib borgansiz":"Вы подарили","Topilmadi":"Не найдено","Bu ism bilan yozuv yo'q.":"Нет записей с этим именем.","Hali to'y yozilmagan":"Свадеб пока нет","O'z to'yingizni qo'shing va kelganlarning to'yonasini yozing.":"Добавьте своё торжество и запишите подарки гостей.","To'y qo'shish":"Добавить свадьбу","Hali yozuv yo'q":"Записей пока нет","Kimning to'yiga qancha olib borganingizni yozing.":"Записывайте, кому и сколько вы подарили.","Mehmonlar":"Гости","Sana":"Дата","Summa":"Сумма","Hali hech kim yozilmagan":"Пока никого нет","Yangi to'y":"Новая свадьба","To'yni tahrirlash":"Редактировать","To'yni o'chirish":"Удалить свадьбу","Kimning to'yi":"Чья свадьба","Men borgan to'y":"Я подарил(а)","Yangi kredit":"Новый кредит","Kreditni tahrirlash":"Редактировать кредит","Kimdan / qayerdan":"Кредитор","Oylik to'lov":"Ежемесячный платёж","To'lov kuni":"День платежа","Birinchi to'lov oyi":"Месяц первого платежа","Necha oy":"Сколько месяцев","Bu oy":"В этом месяце","To'landi":"Оплачено","Jami qoldi":"Всего осталось","Navbatdagi to'lovlar":"Ближайшие платежи","Barcha kreditlar":"Все кредиты","To'ladim":"Оплатил(а)","Hali kredit yo'q":"Кредитов пока нет","Kredit qo'shish":"Добавить кредит","Kechikkan":"Просрочено","Hamma kreditlar bitta kalendarda":"Все кредиты в одном календаре","Gap va pul yig'ish":"Гап и сбор денег","Pul yig'ish":"Сбор денег","Bepul":"Бесплатно","Gaplar":"Гапы","Gap (gashtak)":"Гап (гаштак)","Gap ochish":"Открыть гап","Do'stlar bilan pul yig'ing":"Собирайте деньги с друзьями","Yangi gap":"Новый гап","Har kishi qancha to'laydi":"Сколько платит каждый","Maqsad (ixtiyoriy)":"Цель (необязательно)","Har kishidan":"С каждого","A'zo ismi":"Имя участника","A'zolar":"Участники","Hali a'zo yo'q":"Участников пока нет","Keyingi navbatga o'tish":"Перейти к следующей очереди","Bu navbat oladi":"Получает в эту очередь","To'lagan summasi":"Внесённая сумма","A'zoni o'chirish":"Удалить участника","A'zo":"Участник","Sozlamalar":"Настройки","Biznes":"Бизнес","Biznes tarif":"Тариф Бизнес","Do'kon nomi":"Название магазина","Qarzdorlar ro'yxati":"Список должников","Biznes'ni ulash":"Подключить Бизнес","Do'konlar va savdogarlar uchun":"Для магазинов и торговцев","Do'konlar va savdogarlar uchun tarif":"Тариф для магазинов и торговцев","Do'kon nomi, qarzdorlar ro'yxati":"Название магазина, список должников","Kredit to'lovi yaqin":"Скоро платёж по кредиту","Bugun":"Сегодня","Narxlar":"Цены","1 yil":"1 год","1 oy":"1 месяц","30 kun":"30 дней","To'lov Telegram botimiz orqali. To'lovdan keyin Premium ilovada o'zi yoqiladi.":"Оплата через наш Telegram-бот. После оплаты Premium включится в приложении сам.","✓ Ulangan":"✓ Подключён","✓ Ulangan · yangiliklar shu yerda":"✓ Подключён · новости здесь","Ochish":"Открыть","Ulash":"Подключить","Yangiliklarni Telegram'da kuzatish":"Следить за новостями в Telegram","Botni Profil → Telegram bot orqali ochishingiz mumkin":"Бота можно открыть в Профиль → Telegram-бот","✓ Ulangan · eslatma va to'lovlar":"✓ Подключён · напоминания и оплата","To'lov, eslatma va yordam — botda":"Оплата, напоминания и помощь — в боте","Ikki tomonlama tasdiq — Premium funksiya":"Двустороннее подтверждение — функция Premium"
+"Oldingi oy":"Предыдущий месяц","Keyingi oy":"Следующий месяц","Bu oy":"Этот месяц","Yozuvlar soni":"Записей","Qoldiq":"Остаток","Ism":"Имя","Bu oyda berildi":"Дано в этом месяце","Bu oyda qaytdi":"Вернули в этом месяце","Grafiklar va Excel fayl":"Графики и файл Excel","Hech kim qarzdor emas":"Никто не должен","Ko'rsatkich":"Показатель","Oy":"Месяц","oy":"мес.","Holat":"Статус","Ishonch":"Надёжность","Barcha yozuvlar":"Все записи","Grafik":"График","Muddati o'tgan":"Просрочено","Hisobot":"Отчёт","Telefon":"Телефон","Boshqa odam":"Другой человек","Valyutani almashtirish":"Сменить валюту","Oxirgi raqamni o'chirish":"Удалить последнюю цифру","Tasdiqlangan":"Подтверждено","Barmoq izi bilan ochish":"Вход по отпечатку","Masalan: Xusniddin":"Например: Хусниддин","Premium funksiya":"Функция Premium","Premium faol":"Premium активен","Premium'ga o'tish":"Перейти на Premium","Hisobot, Excel, SMS eslatma, dollar va boshqalar":"Отчёт, Excel, SMS-напоминания, доллар и другое","Muddatsiz":"Бессрочно","Premium yoqildi! Rahmat":"Premium включён! Спасибо","Telegram orqali olish":"Получить через Telegram","To'lovdan keyin dasturchi akkauntingizda Premium'ni yoqadi. Ilovani qayta o'rnatish shart emas.":"После оплаты разработчик включит Premium в вашем аккаунте. Переустанавливать приложение не нужно.","Ishonch reytingi — Premium":"Рейтинг надёжности — Premium","Grafiklar, eng katta qarzdorlar":"Графики, крупнейшие должники","Hisobotni .xlsx qilib yuklab olish":"Скачать отчёт в .xlsx","Kimga eslatish kerakligini ilova o'zi topadi":"Приложение само находит, кому напомнить","Kim o'z vaqtida qaytarishini ko'rsatadi":"Показывает, кто возвращает вовремя","Dollar va MB kursi":"Доллар и курс ЦБ","Dollarda qarz yozish, so'mga avtomatik hisoblash":"Долги в долларах с пересчётом в сумы","Nasiya grafigi va kechikishlar":"График рассрочки и просрочки","Qarzdor SMS havola orqali tasdiqlaydi":"Должник подтверждает по ссылке из SMS","Ilovani rus tilida ishlatish":"Пользоваться приложением на русском","Excel fayl":"Файл Excel","SMS eslatmalar":"SMS-напоминания","Ishonch reytingi":"Рейтинг надёжности","Ikki tomonlama tasdiq":"Двустороннее подтверждение","Rus tili":"Русский язык","Bo'lib to'lash":"Рассрочка","Premium'ni uzaytirish":"Продлить Premium","Tarifni tanlang":"Выберите тариф","1 yil":"1 год","1 oy":"1 месяц","30 kun":"30 дней","12 oy":"12 месяцев","Click, Payme, Uzum yoki bank kartasi orqali. To'lovdan keyin Premium o'zi yoqiladi.":"Через Click, Payme, Uzum или банковскую карту. После оплаты Premium включится сам.","Savol bo'lsa — Telegram":"Есть вопрос — Telegram","To'lov sahifasi ochilmoqda…":"Открываем страницу оплаты…","To'lov hali tushmadi. Bir necha soniyadan keyin yana tekshiring.":"Оплата ещё не поступила. Проверьте через несколько секунд.","To'lov tekshirilmoqda":"Проверяем оплату","To'lagan bo'lsangiz, shu yerni bosing":"Если вы оплатили, нажмите сюда","Onlayn to'lov hali ulanmagan":"Онлайн-оплата ещё не подключена","Bu tarif hozircha yopiq":"Этот тариф пока закрыт","Telegram bot":"Telegram-бот","Telegram botimiz":"Наш Telegram-бот","Yangiliklar va eslatmalar":"Новости и напоминания","Premium imkoniyatlari":"Возможности Premium","Oylik":"Ежемесячно","Kunlik":"Ежедневно","Necha kunga":"На сколько дней","Necha oyga":"На сколько месяцев","To'lov kunlari":"Дни платежей","Bugungi to'lovlar":"Платежи на сегодня","Grafik bo'yicha to'lov kuni kelganlar. To'ladimi?":"По графику наступил день платежа. Оплатил?","✓ To'ladi":"✓ Оплатил","✕ To'lamadi":"✕ Не оплатил","SMS yuborish":"Отправить SMS","Siz bloklandingiz":"Вы заблокированы","Ma'lumotlaringiz saqlanib qoladi":"Ваши данные сохранятся","To'lovdan keyin hammasi o'z joyida":"После оплаты всё на месте","Premium o'zi yoqiladi":"Premium включится сам","To'lovdan keyin 30 soniya ichida":"В течение 30 секунд после оплаты","To'lov Telegram botimiz orqali: Click, Payme, Uzum yoki karta.":"Оплата через наш Telegram-бот: Click, Payme, Uzum или карта.","Dasturchiga yozish":"Написать разработчику","Chiqish":"Выйти","Premium · sinov muddati":"Premium · пробный период","Premium sinov":"Пробный Premium","kun qoldi":"дн. осталось","gacha · keyin ilova bepul rejimda ishlayveradi":"· затем приложение продолжит работать бесплатно","Batafsil":"Подробнее","Premium'ni 15 kun bepul sinab ko'rasizmi?":"Попробовать Premium 15 дней бесплатно?","Majburiy emas — ilova baribir bepul ishlaydi":"Не обязательно — приложение и так бесплатное","Ha, sinab ko'raman":"Да, попробовать","Yo'q, rahmat":"Нет, спасибо","Premium'ni bepul sinab ko'ring":"Попробуйте Premium бесплатно","15 kun — barcha Premium imkoniyatlar bepul":"15 дней — все функции Premium бесплатно","Oldi-Berdi bepul ilova: qarzlarni yozish, ro'yxat va qoldiqlar doim bepul. Xohlasangiz, Premium imkoniyatlarni 15 kun bepul sinab ko'rishingiz mumkin. Sinov tugagach hech narsa bloklanmaydi va hech qanday to'lov olinmaydi.":"Oldi-Berdi — бесплатное приложение: запись долгов, список и остатки всегда бесплатны. По желанию можно попробовать Premium 15 дней бесплатно. После пробного периода ничего не блокируется и никаких списаний нет.","Ha, 15 kun bepul sinab ko'raman":"Да, попробовать 15 дней бесплатно","Yo'q, hozircha bepul versiya yetadi":"Нет, пока хватит бесплатной версии","keyin bepul rejim":"затем бесплатный режим","15 kun bepul sinab ko'rish":"Попробовать 15 дней бесплатно","Majburiy emas. Sinov tugagach ilova bepul ishlayveradi.":"Не обязательно. После пробного периода приложение продолжит работать бесплатно.","🎁 Premium sinov boshlandi — 15 kun bepul!":"🎁 Пробный Premium начат — 15 дней бесплатно!","Sinov allaqachon ishlatilgan":"Пробный период уже использован","Yaxshi! Premium'ni Profil bo'limidan istalgan vaqt sinab ko'rishingiz mumkin":"Хорошо! Попробовать Premium можно в любое время в разделе Профиль","Siz bloklandingiz — Premium oling":"Вы заблокированы — оформите Premium","Premium olish":"Получить Premium","Farzandlarim":"Мои дети","Farzandlar xazinasi":"Копилка детей","Farzand":"Ребёнок","Farzand qo'shish":"Добавить ребёнка","Ismi":"Имя","PIN kod":"PIN-код","Takrorlang":"Повторите","Pul berdim":"Дал(а) деньги","Oldim":"Взял(а)","Orzulari":"Мечты","Xazinasida":"В копилке","Bolalar xazinasi va orzulari":"Копилка и мечты детей","Farzandingiz qanday kiradi?":"Как войдёт ребёнок?","Bolangizni tejashga o'rgating":"Научите ребёнка копить","Farzandni o'chirish":"Удалить ребёнка","Yangi PIN (ixtiyoriy)":"Новый PIN (необязательно)","Xizmatlar":"Сервисы","Bozorlik":"Покупки","To'yona":"Подарки на свадьбу","Kreditlar":"Кредиты","Gap · yig'in":"Гап · сбор","Kim qancha olib keldi":"Кто сколько подарил","To'lov kalendari":"Календарь платежей","Pul yig'ish bepul":"Сбор денег бесплатно","Ro'yxat tuzing":"Составьте список","To'yona daftari":"Тетрадь свадебных подарков","Mening to'ylarim":"Мои свадьбы","Men borgan to'ylar":"Где я был(а)","Ism bo'yicha qidirish":"Поиск по имени","Sizga olib kelgan":"Принёс(ла) вам","Siz olib borgansiz":"Вы подарили","Topilmadi":"Не найдено","Bu ism bilan yozuv yo'q.":"Нет записей с этим именем.","Hali to'y yozilmagan":"Свадеб пока нет","O'z to'yingizni qo'shing va kelganlarning to'yonasini yozing.":"Добавьте своё торжество и запишите подарки гостей.","To'y qo'shish":"Добавить свадьбу","Hali yozuv yo'q":"Записей пока нет","Kimning to'yiga qancha olib borganingizni yozing.":"Записывайте, кому и сколько вы подарили.","Mehmonlar":"Гости","Sana":"Дата","Summa":"Сумма","Hali hech kim yozilmagan":"Пока никого нет","Yangi to'y":"Новая свадьба","To'yni tahrirlash":"Редактировать","To'yni o'chirish":"Удалить свадьбу","Kimning to'yi":"Чья свадьба","Men borgan to'y":"Я подарил(а)","Yangi kredit":"Новый кредит","Kreditni tahrirlash":"Редактировать кредит","Kimdan / qayerdan":"Кредитор","Oylik to'lov":"Ежемесячный платёж","To'lov kuni":"День платежа","Birinchi to'lov oyi":"Месяц первого платежа","Necha oy":"Сколько месяцев","Bu oy":"В этом месяце","To'landi":"Оплачено","Jami qoldi":"Всего осталось","Navbatdagi to'lovlar":"Ближайшие платежи","Barcha kreditlar":"Все кредиты","To'ladim":"Оплатил(а)","Hali kredit yo'q":"Кредитов пока нет","Kredit qo'shish":"Добавить кредит","Kechikkan":"Просрочено","Hamma kreditlar bitta kalendarda":"Все кредиты в одном календаре","Gap va pul yig'ish":"Гап и сбор денег","Pul yig'ish":"Сбор денег","Bepul":"Бесплатно","Gaplar":"Гапы","Gap (gashtak)":"Гап (гаштак)","Gap ochish":"Открыть гап","Do'stlar bilan pul yig'ing":"Собирайте деньги с друзьями","Yangi gap":"Новый гап","Har kishi qancha to'laydi":"Сколько платит каждый","Maqsad (ixtiyoriy)":"Цель (необязательно)","Har kishidan":"С каждого","A'zo ismi":"Имя участника","A'zolar":"Участники","Hali a'zo yo'q":"Участников пока нет","Keyingi navbatga o'tish":"Перейти к следующей очереди","Bu navbat oladi":"Получает в эту очередь","To'lagan summasi":"Внесённая сумма","A'zoni o'chirish":"Удалить участника","A'zo":"Участник","Sozlamalar":"Настройки","Biznes":"Бизнес","Biznes tarif":"Тариф Бизнес","Do'kon nomi":"Название магазина","Qarzdorlar ro'yxati":"Список должников","Biznes'ni ulash":"Подключить Бизнес","Do'konlar va savdogarlar uchun":"Для магазинов и торговцев","Do'konlar va savdogarlar uchun tarif":"Тариф для магазинов и торговцев","Do'kon nomi, qarzdorlar ro'yxati":"Название магазина, список должников","Kredit to'lovi yaqin":"Скоро платёж по кредиту","Bugun":"Сегодня","Narxlar":"Цены","1 yil":"1 год","1 oy":"1 месяц","30 kun":"30 дней","To'lov Telegram botimiz orqali. To'lovdan keyin Premium ilovada o'zi yoqiladi.":"Оплата через наш Telegram-бот. После оплаты Premium включится в приложении сам.","✓ Ulangan":"✓ Подключён","✓ Ulangan · yangiliklar shu yerda":"✓ Подключён · новости здесь","Ochish":"Открыть","Ulash":"Подключить","Yangiliklarni Telegram'da kuzatish":"Следить за новостями в Telegram","Botni Profil → Telegram bot orqali ochishingiz mumkin":"Бота можно открыть в Профиль → Telegram-бот","✓ Ulangan · eslatma va to'lovlar":"✓ Подключён · напоминания и оплата","To'lov, eslatma va yordam — botda":"Оплата, напоминания и помощь — в боте","Ikki tomonlama tasdiq — Premium funksiya":"Двустороннее подтверждение — функция Premium"
 };
 const RU_RX=[
  [/(\d{1,2})-(yanvar|fevral|mart|aprel|may|iyun|iyul|avgust|sentabr|oktabr|noyabr|dekabr)/g,(m,d,mo)=>d+' '+RU_MON_G[MON.indexOf(mo)]],
@@ -626,6 +665,8 @@ function langSwitch(){return `<div class="lang-sw" role="group" aria-label="Til 
 
 /* ============ icons ============ */
 const I={
+ minus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg>',
+ child:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>',
  gift:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>',
  bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/></svg>',
  shop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5 11v9h14v-9M10 20v-5h4v5"/></svg>',
@@ -736,8 +777,8 @@ function trialAskSheet(){openSheet(tr("Premium'ni bepul sinab ko'ring"),`<div cl
  <button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="trialNo">${tr("Yo'q, hozircha bepul versiya yetadi")}</button>`,'trialask')}
 function maybeTrialAsk(){if(!S.acc||S.locked||S.setup||sheets.length||!canTrial()||S.view!=='home')return;if(LS.get('oldiberdi_trialask_'+S.acc.id))return;LS.set('oldiberdi_trialask_'+S.acc.id,'1');setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup&&canTrial())trialAskSheet()},1200)}
 /* ============ premium ============ */
-const PREM=Object.assign({price:'',features:['shop','toy','loan','gap','report','excel','remind','trust','usd','plan','confirm','ru']},window.OLDIBERDI_PREMIUM||{});
-const PREM_INFO={toy:["To'yona daftari","Kim qancha olib keldi, kimga qancha olib bordingiz"],loan:['Kreditlar kalendari',"Bank krediti va nasiyalar: to'lov kunlari, oylik yuk"],gap:['Gap boshqaruvi',"A'zolar, navbat, kim to'ladi"],shop:["Bozorlik ro'yxati","Qog'ozsiz xaridlar ro'yxati va xarajat hisobi"],report:['Oylik hisobot',"Grafiklar, eng katta qarzdorlar"],excel:['Excel fayl','Hisobotni .xlsx qilib yuklab olish'],remind:['SMS eslatmalar',"Kimga eslatish kerakligini ilova o'zi topadi"],trust:['Ishonch reytingi',"Kim o'z vaqtida qaytarishini ko'rsatadi"],usd:['Dollar va MB kursi','Dollarda qarz yozish, so\'mga avtomatik hisoblash'],plan:["Bo'lib to'lash",'Nasiya grafigi va kechikishlar'],confirm:['Ikki tomonlama tasdiq','Qarzdor SMS havola orqali tasdiqlaydi'],ru:['Rus tili','Ilovani rus tilida ishlatish']};
+const PREM=Object.assign({price:'',features:['shop','toy','loan','gap','kids','report','excel','remind','trust','usd','plan','confirm','ru']},window.OLDIBERDI_PREMIUM||{});
+const PREM_INFO={kids:['Farzandlar xazinasi',"Bolangiz uchun alohida kirish: tejash va orzular"],toy:["To'yona daftari","Kim qancha olib keldi, kimga qancha olib bordingiz"],loan:['Kreditlar kalendari',"Bank krediti va nasiyalar: to'lov kunlari, oylik yuk"],gap:['Gap boshqaruvi',"A'zolar, navbat, kim to'ladi"],shop:["Bozorlik ro'yxati","Qog'ozsiz xaridlar ro'yxati va xarajat hisobi"],report:['Oylik hisobot',"Grafiklar, eng katta qarzdorlar"],excel:['Excel fayl','Hisobotni .xlsx qilib yuklab olish'],remind:['SMS eslatmalar',"Kimga eslatish kerakligini ilova o'zi topadi"],trust:['Ishonch reytingi',"Kim o'z vaqtida qaytarishini ko'rsatadi"],usd:['Dollar va MB kursi','Dollarda qarz yozish, so\'mga avtomatik hisoblash'],plan:["Bo'lib to'lash",'Nasiya grafigi va kechikishlar'],confirm:['Ikki tomonlama tasdiq','Qarzdor SMS havola orqali tasdiqlaydi'],ru:['Rus tili','Ilovani rus tilida ishlatish']};
 function isPrem(){const p=S.acc&&S.acc.premium;return !!(p&&p.on)}
 function locked(f){return !!S.acc&&PREM.features.includes(f)&&!isPrem()}
 function lk(f){return locked(f)?`<span class="lock-tag">${I.lock}Premium</span>`:''}
@@ -786,7 +827,7 @@ function refreshPhotos(){document.querySelectorAll('img[data-ph]').forEach(i=>{c
 function imgTag(v,alt){const src=phSrc(v);return `<img ${v&&v.startsWith('d:')?`data-ph="${esc(v)}"`:''} ${src?`src="${esc(src)}"`:''} alt="${esc(alt||'')}">`}
 
 /* ============ state ============ */
-const S={api:+(LS.get('oldiberdi_api')||1),confirms:{},rate:(()=>{try{return JSON.parse(LS.get('oldiberdi_rate')||'null')}catch(e){return null}})(),usd:{},alloc:{},trust:{},token:LS.get('oldiberdi_token'),acc:null,people:{},tx:{},lists:{},lid:null,docs:{},did:null,tt:'mine',tq:'',view:'home',pid:null,pq:'',pf:'all',hq:'',hf:'all',loaded:{p:false,t:false},stale:false,unsub:[],bal:{},authTab:'login'};
+const S={api:+(LS.get('oldiberdi_api')||1),confirms:{},rate:(()=>{try{return JSON.parse(LS.get('oldiberdi_rate')||'null')}catch(e){return null}})(),usd:{},alloc:{},trust:{},token:LS.get('oldiberdi_token'),acc:null,people:{},tx:{},lists:{},lid:null,docs:{},did:null,tt:'mine',tq:'',kids:{},kidId:null,view:'home',pid:null,pq:'',pf:'all',hq:'',hf:'all',loaded:{p:false,t:false},stale:false,unsub:[],bal:{},authTab:'login'};
 /* currency: a record may be in dollars; totals are shown in the main currency at the Central Bank rate */
 const USD_FALLBACK=12800;
 function rate(){return (S.rate&&S.rate.usd)||USD_FALLBACK}
@@ -843,9 +884,10 @@ const col=k=>`u/${S.acc.id}/${k}`;
 
 /* ============ auth ============ */
 function renderAuth(){
+ if(S.authTab==='kid')return renderKidAuth();
  const reg=S.authTab==='reg';
  $('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${langSwitch()}${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Qarz daftaringiz — doim cho'ntagingizda</p>${Store.cloud?'':'<div class="banner" style="display:inline-block;margin-top:14px">Internet bazasi ulanmagan: ma\'lumot faqat shu qurilmada saqlanadi</div>'}</div>
- <div class="pad"><div class="auth-card"><div class="tabs"><button data-act="authTab" data-v="login" class="${reg?'':'on'}">Kirish</button><button data-act="authTab" data-v="reg" class="${reg?'on':''}">Ro'yxatdan o'tish</button></div>
+ <div class="pad"><div class="auth-card"><div class="tabs t3"><button data-act="authTab" data-v="login" class="${reg?'':'on'}">Kirish</button><button data-act="authTab" data-v="reg" class="${reg?'on':''}">Ro'yxatdan o'tish</button><button data-act="authTab" data-v="kid">Farzand</button></div>
  <form data-form="${reg?'register':'login'}" autocomplete="on">
  ${reg?`<div class="field"><label for="a-name">Ismingiz</label><input class="inp" id="a-name" name="name" autocomplete="name" placeholder="Masalan: Xusniddin" required></div>`:''}
  <div class="field"><label for="a-phone">Telefon raqam</label><input class="inp" id="a-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" required></div>
@@ -882,7 +924,7 @@ function writeErr(e){if(e&&e.message==='BLOCKED'){setTimeout(()=>sync(),300);ret
 function startSession(a,restore,data){
  S.acc=null;setAcc(a);
  S.locked=!!(restore&&a.pinHash)&&!aliveRecently();S.setup=a.pinHash?null:{step:'pin1',mode:'new'};S.pinBuf='';S.pinErr='';S.pinTries=0;
- clearInterval(S.poll);S.people={};S.tx={};S.lists={};S.docs={};S.loaded={p:false,t:false};S.view='home';S.stale=false;
+ clearInterval(S.poll);S.people={};S.tx={};S.lists={};S.docs={};S.kids={};S.loaded={p:false,t:false};S.view='home';S.stale=false;
  if(data)applySync(data);else{try{const c=JSON.parse(LS.get('oldiberdi_cache')||'null');if(c&&c.acc&&c.acc.id===a.id)applySync(c,true)}catch(e){}}
  if(!data)sync();
  checkVersion();
@@ -897,6 +939,7 @@ function applySync(j,fromCache){
  S.tx={};(j.tx||[]).forEach(t=>S.tx[t.id]=t);
  if(j.confirms)S.confirms=j.confirms;
  if(j.marks)S.marks=j.marks;
+ if(Array.isArray(j.kids)){S.kids={};j.kids.forEach(k=>{S.kids[k.id]=k})}
  if(fromCache){if(Array.isArray(j.lists)){S.lists={};j.lists.forEach(l=>{S.lists[l.id]=l})}if(Array.isArray(j.docs)){S.docs={};j.docs.forEach(d=>{S.docs[d.id]=d})}}else{if(Array.isArray(j.lists))mergeLists(j.lists);if(Array.isArray(j.docs))mergeDocs(j.docs)}
  if(!fromCache){S.api=j.api||1;LS.set('oldiberdi_api',String(S.api))}
  if(j.rate&&j.rate.usd){S.rate=j.rate;LS.set('oldiberdi_rate',JSON.stringify(j.rate))}
@@ -905,7 +948,7 @@ function applySync(j,fromCache){
  S.loaded={p:true,t:true};compute();
  if(!fromCache){S.stale=false;saveCache()}
 }
-function saveCache(){if(!S.acc)return;try{localStorage.setItem('oldiberdi_cache',JSON.stringify({acc:{id:S.acc.id},people:Object.values(S.people),tx:Object.values(S.tx),confirms:S.confirms,marks:S.marks,lists:Object.values(S.lists||{}),docs:Object.values(S.docs||{})}))}catch(e){}}
+function saveCache(){if(!S.acc)return;try{localStorage.setItem('oldiberdi_cache',JSON.stringify({acc:{id:S.acc.id},people:Object.values(S.people),tx:Object.values(S.tx),confirms:S.confirms,marks:S.marks,lists:Object.values(S.lists||{}),docs:Object.values(S.docs||{}),kids:Object.values(S.kids||{})}))}catch(e){}}
 async function sync(){if(!S.acc||S.syncing)return;S.syncing=true;
  try{if(S.pending)return;const j=await api('sync');if(!S.acc||S.pending)return;applySync(j);if(payPending())checkPay();if(!isTyping())render();refreshOpenSheets();refreshInstSheet();maybeRemindPrompt();openRemindParam()}
  catch(e){if(S.acc&&!S.loaded.p){S.stale=true;if(!isTyping())render()}}
@@ -959,11 +1002,11 @@ const PTR={y0:null,d:0,busy:false,el:null};
 function ptrEl(){if(!PTR.el){PTR.el=document.createElement('div');PTR.el.className='ptr';PTR.el.setAttribute('aria-hidden','true');PTR.el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>';document.body.appendChild(PTR.el)}return PTR.el}
 function ptrShow(d){const el=ptrEl(),k=Math.min(1,d/70);el.style.opacity=String(k);el.style.transform=`translateY(${Math.min(d,90)-40}px) rotate(${d*3}deg)`}
 function ptrHide(){if(!PTR.el)return;PTR.el.classList.remove('spin');PTR.el.style.transition='opacity .2s,transform .2s';PTR.el.style.opacity='0';PTR.el.style.transform='translateY(-60px)';setTimeout(()=>{if(PTR.el)PTR.el.style.transition=''},250)}
-document.addEventListener('touchstart',e=>{PTR.y0=null;if(PTR.busy||!S.acc||S.locked||S.setup||sheets.length||e.touches.length!==1||window.scrollY>0)return;PTR.y0=e.touches[0].clientY;PTR.d=0},{passive:true});
+document.addEventListener('touchstart',e=>{PTR.y0=null;if(PTR.busy||(!S.acc&&!K.token)||S.locked||S.setup||sheets.length||e.touches.length!==1||window.scrollY>0)return;PTR.y0=e.touches[0].clientY;PTR.d=0},{passive:true});
 document.addEventListener('touchmove',e=>{if(PTR.y0===null)return;const d=(e.touches[0].clientY-PTR.y0)*0.5;if(d<=0||window.scrollY>0){PTR.d=0;ptrHide();return}PTR.d=d;ptrShow(d)},{passive:true});
 document.addEventListener('touchend',async()=>{if(PTR.y0===null)return;PTR.y0=null;if(PTR.d<70){ptrHide();return}
  PTR.busy=true;const el=ptrEl();el.style.transform='translateY(30px)';el.style.opacity='1';el.classList.add('spin');
- try{if(S.pending)await QCHAIN;await sync();checkVersion();if(payPending())checkPay()}finally{PTR.busy=false;ptrHide();toast(S.stale?"Internetga ulanib bo'lmadi":'Yangilandi')}},{passive:true});
+ try{if(K.token&&!S.acc){await kidSync()}else{if(S.pending)await QCHAIN;await sync();checkVersion();if(payPending())checkPay()}}finally{PTR.busy=false;ptrHide();toast(!S.acc&&K.token?(K.err?"Internetga ulanib bo'lmadi":'Yangilandi'):S.stale?"Internetga ulanib bo'lmadi":'Yangilandi')}},{passive:true});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){hiddenAt=Date.now();return}if(S.acc&&S.acc.pinHash&&!S.locked&&!S.setup&&hiddenAt&&Date.now()-hiddenAt>60000){S.locked=true;clearAlive();S.pinBuf='';S.pinErr='';closeAllSheets();render()}hiddenAt=0});
 
 /* ============ views ============ */
@@ -972,16 +1015,16 @@ function render(){
  if(S.locked)return renderLock();
  if(S.setup)return renderSetup();
 
- const y=window.scrollY;const keep=render._last===S.view+'|'+S.pid+'|'+S.lid+'|'+S.did;
+ const y=window.scrollY;const keep=render._last===S.view+'|'+S.pid+'|'+S.lid+'|'+S.did+'|'+S.kidId;
  const v=S.view;
- let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():v==='report'?vReport():v==='lists'?vLists():v==='list'?vList():v==='toyona'?vToyona():v==='toy'?vToy():v==='loans'?vLoans():v==='groups'?vGroups():v==='group'?vGroup():vProfile();
+ let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():v==='report'?vReport():v==='lists'?vLists():v==='list'?vList():v==='toyona'?vToyona():v==='toy'?vToy():v==='loans'?vLoans():v==='groups'?vGroups():v==='group'?vGroup():v==='kids'?vKids():v==='kid'?vKid():vProfile();
  $('#app').innerHTML=body+'<div class="spacer"></div>'+nav()+(S.newVer?`<div class="upd" role="status"><span>Ilovaning yangi versiyasi chiqdi</span><button class="btn" data-act="reloadApp">Yangilash</button></div>`:'');
  if(keep)window.scrollTo(0,y);else window.scrollTo(0,0);
- render._last=S.view+'|'+S.pid+'|'+S.lid+'|'+S.did;
+ render._last=S.view+'|'+S.pid+'|'+S.lid+'|'+S.did+'|'+S.kidId;
  // restore focus on search inputs
  if(render._focus){const el=document.getElementById(render._focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}render._focus=null}
 }
-function nav(){const b=(v,ic,l)=>`<button data-act="go" data-v="${v}" class="${S.view===v||(v==='people'&&S.view==='person')||(v==='history'&&S.view==='report')||(v==='home'&&['lists','list','toyona','toy','loans','groups','group'].includes(S.view))?'on':''}"><span class="ni">${I[ic]}</span>${l}</button>`;
+function nav(){const b=(v,ic,l)=>`<button data-act="go" data-v="${v}" class="${S.view===v||(v==='people'&&S.view==='person')||(v==='history'&&S.view==='report')||(v==='home'&&['lists','list','toyona','toy','loans','groups','group','kids','kid'].includes(S.view))?'on':''}"><span class="ni">${I[ic]}</span>${l}</button>`;
  return `<nav class="nav"><div class="nav-in">${b('home','home','Asosiy')}${b('people','users','Odamlar')}<div><button class="fab" data-act="newTx" aria-label="Yangi yozuv">${I.plus}</button></div>${b('history','clock','Tarix')}${b('profile','user','Profil')}</div></nav>`}
 function loadingNote(){if(S.stale)return `<div class="banner">Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.</div>`;if(!S.loaded.p||!S.loaded.t)return `<div class="empty"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div><p>Yuklanmoqda…</p></div>`;return ''}
 function txRow(t,showPerson=true){const p=S.people[t.pid]||{name:"O'chirilgan odam"};const m=T[t.type]||T.lend;
@@ -1068,6 +1111,7 @@ function vProfile(){const a=S.acc;
   <button class="item" data-act="changePin">${I.shield}<div class="mid">PIN kodni o'zgartirish<div class="t2">Ilovani ochishda so'raladi</div></div></button>
   ${BIO.ok?`<button class="item" data-act="toggleBio">${I.finger}<div class="mid">Barmoq izi<div class="t2">${bioGet()?"Yoqilgan · o'chirish uchun bosing":"O'chiq · yoqish uchun bosing"}</div></div></button>`:''}
   <button class="item" data-act="lockNow">${I.lock}<div class="mid">Ilovani hozir qulflash</div></button>
+  <button class="item" data-act="go" data-v="kids">${I.child}<div class="mid">Farzandlarim ${lk('kids')}<div class="t2">Bolalar xazinasi va orzulari</div></div></button>
   <button class="item" data-act="bizMenu">${I.shop}<div class="mid">Biznes ${isBiz()?'':`<span class="lock-tag">${I.lock}Biznes</span>`}<div class="t2">${isBiz()?"Do'kon nomi, qarzdorlar ro'yxati":"Do'konlar va savdogarlar uchun tarif"}</div></div></button>
   <button class="item" data-act="go" data-v="lists">${I.cart}<div class="mid">Bozorlik ro'yxati ${lk('shop')}<div class="t2">Xaridlar ro'yxati va xarajatlar</div></div></button>
   <button class="item" data-act="go" data-v="report">${I.chart}<div class="mid">Oylik hisobot ${lk('report')}<div class="t2">Grafiklar va Excel fayl</div></div></button>
@@ -1188,6 +1232,7 @@ function toolsGrid(){const ls=Object.values(S.lists||{});const open=ls.reduce((z
  ${t('toyona','gift',"To'yona",nt?`${nt} ta to'y`:'Kim qancha olib keldi','toy','c2')}
  ${t('loans','bank','Kreditlar',la.length?`${la.length} ta to'lov yaqin`:nl?`${nl} ta kredit`:"To'lov kalendari",'loan','c3')}
  ${t('groups','users',"Gap · yig'in",ng?`${ng} ta guruh`:"Pul yig'ish bepul",'','c4')}
+ ${(()=>{const ks=Object.values(S.kids||{});return `<button class="tool wide" data-act="go" data-v="kids"><span class="tl-ic c5">${I.child}</span><span class="tw"><b>Farzandlar xazinasi</b><small>${locked('kids')?`${I.lock} Premium`:ks.length?ks.map(k=>`<span data-notr>${esc(k.name)}</span>: ${fmt(k.balance)}`).join(' · '):"Bolangizni tejashga o'rgating"}</small></span></button>`})()}
  </div>`}
 
 /* ---------- loans & installments calendar ---------- */
@@ -1329,6 +1374,105 @@ function bizSettings(){openSheet('Biznes',`<form data-form="biz" autocomplete="o
 function saveBiz(f){if(!isBiz()){bizSheet();return}const d=docsOf('biz')[0]||newDoc('biz','Biznes',{});d.data={...d.data,shop:f.shop.value.trim().slice(0,60)};docTouch(d);closeAllSheets();toast('Saqlandi')}
 function debtListText(){const ds=Object.values(S.people).map(p=>({p,b:S.bal[p.id]||0})).filter(x=>x.b>0.5).sort((a,b)=>b.b-a.b),shop=bizShop();
  return `${shop?shop+'\n':''}Qarzdorlar ro'yxati · ${fdate(today())}\n\n${ds.map((x,k)=>{const od=overdueOf(x.p.id);return `${k+1}. ${x.p.name}${x.p.phone?' ('+fphone(x.p.phone)+')':''} — ${money(x.b)}${od?' · muddati '+fdate(od)+' da o\'tgan':''}`}).join('\n')}\n\nJami: ${money(sumOf(ds,x=>x.b))} (${ds.length} kishi)`}
+
+/* ============ farzandlar: parent side ============ */
+const CHEST='<svg viewBox="0 0 120 100" aria-hidden="true"><ellipse cx="60" cy="93" rx="48" ry="5" fill="rgba(0,0,0,.18)"/><path d="M14 50C14 22 106 22 106 50Z" fill="#c9771f"/><path d="M22 47C24 30 96 30 98 47Z" fill="#7a3f0e"/><circle cx="42" cy="40" r="10" fill="#ffd34d" stroke="#e0a500" stroke-width="2.5"/><circle cx="62" cy="34" r="10" fill="#ffd34d" stroke="#e0a500" stroke-width="2.5"/><circle cx="80" cy="41" r="9" fill="#ffd34d" stroke="#e0a500" stroke-width="2.5"/><circle cx="54" cy="44" r="8" fill="#ffe680" stroke="#e0a500" stroke-width="2.5"/><rect x="14" y="48" width="92" height="42" rx="7" fill="#b8691e"/><rect x="14" y="58" width="92" height="7" fill="#8a4d14"/><rect x="28" y="48" width="7" height="42" fill="#8a4d14"/><rect x="85" y="48" width="7" height="42" fill="#8a4d14"/><rect x="51" y="54" width="18" height="20" rx="4" fill="#ffd34d" stroke="#c79100" stroke-width="2"/><circle cx="60" cy="62" r="2.6" fill="#8a4d14"/><path d="M60 64v5" stroke="#8a4d14" stroke-width="2.4" stroke-linecap="round"/></svg>';
+function goalsOf(k){let left=+k.balance||0;return (k.data&&k.data.goals||[]).map(g=>{const have=Math.max(0,Math.min(g.target,left));left-=have;return {...g,have,pct:g.target?Math.min(100,Math.round(have/g.target*100)):0}})}
+function goalHtml(g,act){return `<${act?'button':'div'} class="kid-goal${g.pct>=100?' done':''}" ${act?`data-act="${act}" data-id="${g.id}"`:''}><div class="kg-top"><b data-notr>${esc(g.n)}</b><span class="num">${g.pct>=100?"Orzu ushaldi! 🎉":g.pct+'%'}</span></div><div class="kg-bar"><i style="width:${g.pct}%"></i></div><small><span class="num">${fmt(g.have)}</span> / <span class="num">${fmt(g.target)}</span> so'm${g.pct<100?` · yana <span class="num">${fmt(g.target-g.have)}</span>`:''}</small></${act?'button':'div'}>`}
+function kidTxHtml(tx,kidView){return tx.length?`<div class="card">${tx.map(t=>`<div class="ln-row"><span class="kid-tx ${t.t==='out'?'out':'in'}">${t.t==='out'?I.minus:I.plus}</span><div class="mid"><b data-notr>${esc(t.n||(t.t==='out'?'Sarflandi':"Qo'shildi"))}</b><small>${t.by==='parent'?(kidView?'Ota-onam':'Siz'):t.by==='sys'?'Qoldiq':(kidView?"O'zim":'Farzandingiz')} · ${fdt(t.at)}</small></div><b class="num ${t.t==='out'?'neg':'pos'}">${t.t==='out'?'−':'+'}${fmt(t.a)}</b></div>`).join('')}</div>`:`<div class="card empty"><b>Hali yozuv yo'q</b>Pul qo'shilsa yoki sarflansa, shu yerda ko'rinadi.</div>`}
+function vKids(){if(locked('kids'))return promoView('Farzandlar xazinasi',I.child,"Bolangizni tejashga o'rgating","Farzandingizga alohida kirish yarating: u o'z xazinasi va orzularini yuritadi, siz esa hammasini kuzatib turasiz.",[["Alohida kirish","Ism va 4 xonali PIN — bolangiz o'z sahifasiga kiradi"],["Xazina va orzular","Bola pul qo'shadi, sarflaydi, orzusi uchun yig'adi"],["Siz kuzatasiz","Qancha yig'di, nimaga sarfladi — hammasi ko'rinadi"],["Cho'ntak puli","Bir bosishda pul berganingizni yozasiz"]],'kids');
+ const ks=Object.values(S.kids||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+ return `<div class="pad"><div class="topbar">${backBtn('home')}<h1>Farzandlarim</h1><button class="icon-btn" data-act="kidNew" aria-label="Farzand qo'shish">${I.userplus}</button></div>
+ ${ks.length?`<div class="card list">${ks.map(k=>`<button class="item" data-act="kidOpen" data-id="${k.id}">${avatar(k,46)}<div class="mid"><div class="t1" data-notr>${esc(k.name)}</div><div class="t2">${(k.data.goals||[]).length} ta orzu${k.data.tx.length?' · '+fdt(k.data.tx[k.data.tx.length-1].at):''}</div></div><div class="r"><b class="num pos">${fmt(k.balance)}</b><div class="t2">so'm</div></div></button>`).join('')}</div>`
+ :`<div class="card empty"><div class="ei">${I.child}</div><b>Farzandingizni qo'shing</b>Ismini yozing va 4 xonali PIN kod o'ylab toping — bolangiz shu PIN bilan o'z xazinasiga kiradi.<div><button class="btn btn-primary btn-sm" style="margin-top:12px" data-act="kidNew">${I.userplus} Farzand qo'shish</button></div></div>`}
+ <div class="card kid-how"><b>Farzandingiz qanday kiradi?</b><ol><li>Ilovani o'z telefonida ochadi</li><li>Kirish oynasida «Farzand» bo'limini tanlaydi</li><li>Sizning raqamingiz <b class="num">${fphone(S.acc.phone)}</b> va o'z PIN kodini kiritadi</li></ol></div>
+ </div>`}
+function vKid(){const k=(S.kids||{})[S.kidId];if(!k){S.view='kids';return vKids()}
+ return `<div class="pad"><div class="topbar">${backBtn('kids')}<h1></h1><button class="icon-btn" data-act="kidEdit" aria-label="Sozlamalar">${I.edit}</button></div>
+ <div class="p-head"><div style="display:flex;justify-content:center">${avatar(k,88)}</div><h2 data-notr>${esc(k.name)}</h2></div>
+ <div class="kid-chest par">${CHEST}<div><span>Xazinasida</span><b class="num">${fmt(k.balance)} <small>so'm</small></b></div></div>
+ <div class="actions" style="margin-top:12px"><button class="btn btn-primary" data-act="kidGive" data-v="in">${I.plus} Pul berdim</button><button class="btn btn-ghost" data-act="kidGive" data-v="out">${I.minus} Oldim</button></div>
+ <div class="sec-head"><h2>Orzulari</h2></div>${goalsOf(k).map(g=>goalHtml(g)).join('')||`<p class="hint" style="margin:0">Hali orzu qo'shmagan</p>`}
+ <div class="sec-head"><h2>Tarix</h2><span class="hint">${k.data.tx.length} ta</span></div>${kidTxHtml(k.data.tx.slice().reverse().slice(0,50),false)}
+ </div>`}
+function kidForm(id){const k=id&&S.kids[id];
+ openSheet(k?'Sozlamalar':"Farzand qo'shish",`<form data-form="kid" data-id="${k?k.id:''}" autocomplete="off"><div class="field"><label for="kd-name">Ismi</label><input class="inp" id="kd-name" name="name" maxlength="40" placeholder="Masalan: Alijon" value="${esc(k?k.name:'')}"></div>
+ <div style="display:flex;gap:10px"><div class="field" style="flex:1"><label for="kd-pin">${k?'Yangi PIN (ixtiyoriy)':'PIN kod'}</label><input class="inp num pin-inp" id="kd-pin" name="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" placeholder="••••"></div><div class="field" style="flex:1"><label for="kd-pin2">Takrorlang</label><input class="inp num pin-inp" id="kd-pin2" name="pin2" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" placeholder="••••"></div></div>
+ <p class="hint" style="margin:-4px 0 12px">Farzandingiz shu 4 xonali PIN va sizning telefon raqamingiz bilan kiradi.</p>
+ <div class="err" id="kd-err"></div><button class="btn btn-primary" style="width:100%" id="kd-btn">Saqlash</button></form>
+ ${k?`<button class="btn btn-danger btn-sm" style="margin-top:14px" data-act="kidDel" data-id="${k.id}">${I.trash} Farzandni o'chirish</button>`:''}`,'kid');setTimeout(()=>{const i=$('#kd-name');if(i&&!k)i.focus()},300)}
+async function saveKid(f){const err=$('#kd-err'),btn=$('#kd-btn'),name=f.name.value.trim(),pin=f.pin.value.trim(),pin2=f.pin2.value.trim(),id=f.dataset.id;err.textContent='';
+ if(!name)return err.textContent='Ismini yozing';
+ if(!id||pin){if(!/^\d{4}$/.test(pin))return err.textContent="PIN kod 4 ta raqamdan iborat bo'lsin";if(/^(\d)\1{3}$/.test(pin)||pin==='1234'||pin==='4321')return err.textContent='Bu PIN juda oson. Boshqasini tanlang';if(pin!==pin2)return err.textContent='PIN kodlar bir xil emas'}
+ if(!id&&!need('kids'))return;btn.disabled=true;btn.textContent='Saqlanmoqda…';
+ try{const j=await api('kidSave',{id,name,pin});S.kids[j.kid.id]=j.kid;saveCache();closeAllSheets();
+  if(!id){S.kidId=j.kid.id;S.view='kid';render();openSheet('Tayyor!',`<p style="margin:0 0 10px"><b data-notr>${esc(name)}</b> endi o'z xazinasiga kira oladi.</p><div class="card kid-how" style="margin:0"><b>Farzandingizga ayting:</b><ol><li>Ilovani ochib, «Farzand» bo'limini tanlasin</li><li>Raqam: <b class="num">${fphone(S.acc.phone)}</b></li><li>PIN kod: siz o'ylagan 4 xonali kod</li></ol></div><button class="btn btn-primary" style="width:100%;margin-top:14px" data-act="closeSheet">Tushunarli</button>`,'kidok')}
+  else{render();toast(pin?"Saqlandi. Farzandingiz yangi PIN bilan qayta kiradi":'Saqlandi')}}
+ catch(e){err.textContent=writeErr(e);btn.disabled=false;btn.textContent='Saqlash'}}
+function kidGiveSheet(t){const k=S.kids[S.kidId];if(!k)return;const out=t==='out';
+ openSheet(out?'Farzandimdan oldim':'Farzandimga pul berdim',`<form data-form="kidGive" data-t="${out?'out':'in'}" autocomplete="off"><div class="field"><label for="kg-a">Summa</label><input class="inp num" id="kg-a" name="a" data-amount inputmode="decimal" placeholder="0"></div>
+ <div class="chips-q">${[5000,10000,20000,50000].map(v=>`<button type="button" class="chip" data-act="kgAmt" data-v="${v}">${fmt(v)}</button>`).join('')}</div>
+ <div class="field"><label for="kg-n">Izoh</label><input class="inp" id="kg-n" name="n" maxlength="60" placeholder="${out?'Masalan: maktab uchun':"Masalan: cho'ntak puli"}"></div>
+ <div class="chips-q">${(out?['Maktab uchun','Qarzni qaytardi']:["Cho'ntak puli",'Hayit puli','Mukofot','Tug\'ilgan kun']).map(v=>`<button type="button" class="chip" data-act="kgNote" data-v="${esc(v)}">${esc(v)}</button>`).join('')}</div>
+ <div class="err" id="kg-err"></div><button class="btn btn-primary" style="width:100%" id="kg-btn">Saqlash</button></form>`,'kidgive');setTimeout(()=>{const i=$('#kg-a');i&&i.focus()},300)}
+async function saveKidGive(f){const k=S.kids[S.kidId];if(!k)return;const a=parseAmt(f.a.value),err=$('#kg-err'),btn=$('#kg-btn');if(!(a>0)){err.textContent='Summani kiriting';return}
+ btn.disabled=true;try{const j=await api('kidTx',{id:k.id,t:f.dataset.t,a,n:f.n.value.trim()});S.kids[j.kid.id]=j.kid;saveCache();closeAllSheets();render();toast(f.dataset.t==='out'?'Yozib qo\'yildi':`${k.name}ning xazinasiga qo'shildi`)}catch(e){err.textContent=writeErr(e);btn.disabled=false}}
+
+/* ============ farzandlar: the child's own app ============ */
+const K={token:null,kid:null,poll:null,err:false};
+function kidSess(){try{return JSON.parse(LS.get('oldiberdi_kid')||'null')}catch(e){return null}}
+function kidStore(){LS.set('oldiberdi_kid',JSON.stringify({token:K.token,kid:K.kid}))}
+async function kapi(action,data){try{return await api(action,{...(data||{}),token:K.token})}catch(e){if(e.message==='Qayta kiring'){kidOut(true)}throw e}}
+function startKid(ks){K.token=ks.token;K.kid=ks.kid;renderKid();kidSync();clearInterval(K.poll);K.poll=setInterval(()=>{if(!document.hidden)kidSync()},30000)}
+async function kidSync(){if(!K.token)return;try{const j=await kapi('kidSync');K.kid=j.kid;K.err=false;kidStore();if(!sheets.length&&!isTyping())renderKid()}catch(e){K.err=true}}
+function kidOut(expired){if(!expired&&K.token)api('kidLogout',{token:K.token}).catch(()=>{});clearInterval(K.poll);K.token=null;K.kid=null;LS.del('oldiberdi_kid');closeAllSheets();S.authTab='kid';renderAuth();if(expired)toast('Qaytadan kiring')}
+function kidAvatar(k,size){const p=k.photo||'';if(p.startsWith('d:')){const c=PH[p]||LS.get('ph_'+p);if(c){PH[p]=c;return avatar({name:k.name,photo:c},size)}kidLoadPh(p);return avatar({name:k.name},size)}return avatar({name:k.name,photo:p},size)}
+function kidLoadPh(p){if(phWait[p])return;phWait[p]=kapi('kidPhoto',{id:p.slice(2)}).then(j=>{PH[p]=j.data;LS.set('ph_'+p,j.data);if(K.kid)renderKid()}).catch(()=>{setTimeout(()=>{delete phWait[p]},30000)})}
+function renderKidAuth(){
+ $('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${langSwitch()}<div style="width:120px;margin:0 auto">${CHEST}</div><h1>Xazina</h1><p>O'z pulingni yig', orzuingga yet!</p></div>
+ <div class="pad"><div class="auth-card"><div class="tabs t3"><button data-act="authTab" data-v="login">Kirish</button><button data-act="authTab" data-v="reg">Ro'yxatdan o'tish</button><button data-act="authTab" data-v="kid" class="on">Farzand</button></div>
+ <form data-form="kidLogin" autocomplete="off">
+ <div class="field"><label for="k-phone">Ota-onangizning telefon raqami</label><input class="inp" id="k-phone" name="phone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67" required></div>
+ <div class="field"><label for="k-pin">PIN kod</label><input class="inp num pin-inp" id="k-pin" name="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••" required></div>
+ <div class="err" id="k-err"></div><button class="btn btn-primary" id="k-btn" style="width:100%">Xazinamga kirish</button></form>
+ <p class="hint" style="text-align:center;margin:14px 0 0">PIN kodni ota-onang beradi. Ular o'z ilovasida «Profil → Farzandlarim» bo'limidan seni qo'shadi.</p>
+ </div></div></div>`}
+async function doKidLogin(f){const err=$('#k-err'),btn=$('#k-btn'),phone=normPhone(f.phone.value),pin=f.pin.value.trim();err.textContent='';
+ if(phone.length<9)return err.textContent="Telefon raqamni to'g'ri kiriting";if(!/^\d{4}$/.test(pin))return err.textContent='PIN kod 4 ta raqamdan iborat';
+ btn.disabled=true;btn.textContent='Kirilmoqda…';
+ try{const j=await api('kidLogin',{phone,pin});K.token=j.token;K.kid=j.kid;kidStore();startKid({token:j.token,kid:j.kid});toast(`Salom, ${j.kid.name}!`)}
+ catch(e){err.textContent=e.message;btn.disabled=false;btn.textContent='Xazinamga kirish'}}
+function renderKid(){const k=K.kid;if(!k)return;const gs=goalsOf(k);
+ $('#app').innerHTML=`<div class="kid"><section class="kid-top pad"><div class="kid-hi"><div><span>Salom,</span><b data-notr>${esc(k.name)}!</b></div><button class="kid-ava" data-act="kMe" aria-label="Mening sahifam">${kidAvatar(k,58)}</button></div>
+ <div class="kid-chest">${CHEST}<div><span>Xazinamda</span><b class="num">${fmt(k.balance)} <small>so'm</small></b></div></div></section>
+ <div class="pad">
+ <div class="kid-btns"><button class="kid-btn add" data-act="kAdd" data-v="in"><span>${I.plus}</span>Qo'shdim</button><button class="kid-btn out" data-act="kAdd" data-v="out"><span>${I.minus}</span>Sarfladim</button></div>
+ <div class="sec-head"><h2>Orzularim</h2>${gs.length?`<button class="link" data-act="kGoal">+ Yangi orzu</button>`:''}</div>
+ ${gs.length?gs.map(g=>goalHtml(g,'kGoal')).join(''):`<div class="card empty"><div class="ei">⭐</div><b>Orzuing bormi?</b>Velosiped, planshet yoki sovg'a — orzuingni qo'sh, xazinang to'lgan sari unga yaqinlashasan.<div><button class="btn btn-primary btn-sm" style="margin-top:12px" data-act="kGoal">+ Orzu qo'shish</button></div></div>`}
+ <div class="sec-head"><h2>Tarix</h2></div>${kidTxHtml(k.data.tx.slice().reverse().slice(0,40),true)}
+ <div class="spacer"></div></div></div>`}
+function kAddSheet(t){const out=t==='out';
+ openSheet(out?'Nimaga sarflading?':"Xazinaga qo'shish",`<form data-form="kTx" data-t="${out?'out':'in'}" autocomplete="off"><div class="field"><label for="kt-a">Qancha?</label><input class="inp num" id="kt-a" name="a" data-amount inputmode="decimal" placeholder="0" style="font-size:22px;font-weight:800"></div>
+ <div class="chips-q">${[1000,2000,5000,10000].map(v=>`<button type="button" class="chip" data-act="kgAmt" data-v="${v}" data-f="kt-a">${fmt(v)}</button>`).join('')}</div>
+ <div class="field"><label for="kt-n">${out?'Nimaga?':'Kim berdi?'}</label><input class="inp" id="kt-n" name="n" maxlength="60" placeholder="${out?'Masalan: shirinlik':'Masalan: buvim berdi'}"></div>
+ <div class="chips-q">${(out?['Shirinlik',"O'yinchoq",'Maktab uchun',"Sovg'a"]:['Dadam berdi','Oyim berdi','Buvim berdi','Hayit puli']).map(v=>`<button type="button" class="chip" data-act="kgNote" data-v="${esc(v)}" data-f="kt-n">${esc(v)}</button>`).join('')}</div>
+ <div class="err" id="kt-err"></div><button class="btn btn-primary" style="width:100%" id="kt-btn">${out?'Yozib qo\'yish':"Xazinaga qo'shish"}</button></form>`,'ktx');setTimeout(()=>{const i=$('#kt-a');i&&i.focus()},300)}
+async function saveKTx(f){const a=parseAmt(f.a.value),err=$('#kt-err'),btn=$('#kt-btn');if(!(a>0)){err.textContent='Summani yoz';return}
+ btn.disabled=true;try{const j=await kapi('kidAddTx',{t:f.dataset.t,a,n:f.n.value.trim()});K.kid=j.kid;kidStore();closeAllSheets();renderKid();toast(f.dataset.t==='out'?"Yozib qo'yildi":"Xazinangga qo'shildi! 🎉")}catch(e){err.textContent=writeErr(e);btn.disabled=false}}
+function kGoalSheet(id){const g=id&&(K.kid.data.goals||[]).find(x=>x.id===id);
+ openSheet(g?'Orzu':'Yangi orzu',`<form data-form="kGoal" data-id="${g?g.id:''}" autocomplete="off"><div class="field"><label for="kg-name">Orzuim</label><input class="inp" id="kg-name" name="n" maxlength="40" placeholder="Masalan: velosiped" value="${esc(g?g.n:'')}"></div>
+ <div class="field"><label for="kg-t">Narxi qancha?</label><input class="inp num" id="kg-t" name="target" data-amount inputmode="decimal" placeholder="0" value="${g?fmt(g.target):''}"></div>
+ <div class="err" id="kgo-err"></div><button class="btn btn-primary" style="width:100%">Saqlash</button></form>${g?`<button class="btn btn-danger btn-sm" style="margin-top:14px" data-act="kGoalDel" data-id="${g.id}">${I.trash} O'chirish</button>`:''}`,'kgoal');setTimeout(()=>{const i=$('#kg-name');if(i&&!g)i.focus()},300)}
+async function kSaveGoals(goals,ok){try{const j=await kapi('kidGoals',{goals:goals.map(x=>({id:x.id,n:x.n,target:x.target}))});K.kid=j.kid;kidStore();closeAllSheets();renderKid();if(ok)toast(ok)}catch(e){toast(writeErr(e))}}
+function saveKGoal(f){const n=f.n.value.trim(),t=parseAmt(f.target.value),err=$('#kgo-err');if(!n)return err.textContent='Orzuingni yoz';if(!(t>0))return err.textContent='Narxini yoz';
+ const gs=(K.kid.data.goals||[]).slice();if(!f.dataset.id&&gs.length>=10)return err.textContent="Ko'pi bilan 10 ta orzu";
+ kSaveGoals(f.dataset.id?gs.map(x=>x.id===f.dataset.id?{...x,n,target:t}:x):[...gs,{id:uid(),n,target:t}],f.dataset.id?'Saqlandi':"Orzu qo'shildi! ⭐")}
+function kMeSheet(){const k=K.kid;
+ openSheet('Mening sahifam',`<div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:14px"><div id="ph-kid">${kidAvatar(k,96)}</div><label class="btn btn-ghost btn-sm" style="cursor:pointer">${I.cam} Rasmni almashtirish<input type="file" accept="image/*" data-photo="kid" hidden></label></div>
+ <form data-form="kName" autocomplete="off"><div class="field"><label for="km-n">Ismim</label><input class="inp" id="km-n" name="n" maxlength="40" value="${esc(k.name)}"></div><button class="btn btn-primary" style="width:100%">Saqlash</button></form>
+ <button class="btn btn-ghost" style="width:100%;margin-top:14px;color:var(--neg)" data-act="kOut">${I.logout} Chiqish</button>`,'kme')}
+async function saveKName(f){const n=f.n.value.trim();if(!n)return;try{const j=await kapi('kidProfile',{name:n});K.kid=j.kid;kidStore();closeAllSheets();renderKid();toast('Saqlandi')}catch(e){toast(writeErr(e))}}
+async function kidPhotoSave(url){const ph=$('#ph-kid');if(ph)ph.innerHTML=avatar({photo:url,name:K.kid.name},96);try{const j=await kapi('kidProfile',{photo:url});if(j.kid.photo)PH[j.kid.photo]=url,LS.set('ph_'+j.kid.photo,url);K.kid=j.kid;kidStore();renderKid();toast('Rasm saqlandi')}catch(e){toast(writeErr(e))}}
 
 function ymShift(ym,k){const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-1+k,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 function ymName(ym,short){const [y,m]=ym.split('-').map(Number);const n=isRu()?RU_MON_N[m-1]:MON[m-1];const cap=n.charAt(0).toUpperCase()+n.slice(1);return short?cap.slice(0,3):cap+' '+y}
@@ -1682,6 +1826,18 @@ const A={
  planFreq:d=>{if(!TX)return;const was=TX.freq;TX.freq=d.v;document.querySelectorAll('.freq-seg button').forEach(b=>b.classList.toggle('on',b.dataset.v===d.v));const l=$('#tx-months-l');if(l)l.textContent=tr(d.v==='d'?'Necha kunga':'Necha oyga');const n=$('#tx-months');if(n){n.max=d.v==='d'?100:36;if(was!==d.v)n.value=d.v==='d'?30:3}const f=$('#tx-first');if(f&&was!==d.v){const base=($('#tx-date')||{}).value||today();f.value=d.v==='d'?addDays(base,1):addMonths(base,1)}planPreview()},
  instPaid:d=>instPaid(d.k),
  instMiss:d=>instMiss(d.k),
+ kidNew:()=>{if(need('kids'))kidForm()},
+ kidOpen:d=>{closeAllSheets();S.kidId=d.id;S.view='kid';render()},
+ kidEdit:()=>{if(S.kidId)kidForm(S.kidId)},
+ kidDel:d=>{const k=S.kids[d.id];if(!k)return;confirmSheet(`${k.name} o'chirilsinmi?`,"Farzandingiz endi kira olmaydi, xazinasi va orzulari o'chiriladi.","O'chirish",async()=>{try{await api('kidDelete',{id:k.id});delete S.kids[k.id];saveCache();S.kidId=null;S.view='kids';closeAllSheets();render();toast("O'chirildi")}catch(e){toast(writeErr(e))}})},
+ kidGive:d=>kidGiveSheet(d.v),
+ kgAmt:(d,el)=>{const i=$('#'+(d.f||'kg-a'));if(i){i.value=fmt(+d.v);i.focus()}},
+ kgNote:(d,el)=>{const i=$('#'+(d.f||'kg-n'));if(i)i.value=d.v},
+ kAdd:d=>kAddSheet(d.v),
+ kGoal:d=>kGoalSheet(d.id),
+ kGoalDel:d=>kSaveGoals((K.kid.data.goals||[]).filter(x=>x.id!==d.id),"O'chirildi"),
+ kMe:()=>kMeSheet(),
+ kOut:()=>confirmSheet('Chiqish',"Qaytib kirish uchun ota-onangning raqami va PIN kod kerak bo'ladi.",'Chiqish',async()=>kidOut(false)),
  tt:d=>{S.tt=d.v;render()},
  toyNew:()=>{if(!need('toy'))return;if((S.tt||'mine')==='gift'&&!S.tq)giftForm();else toyForm()},
  toyOpen:d=>{if(!need('toy'))return;closeAllSheets();S.did=d.id;S.view='toy';render()},
@@ -1820,7 +1976,7 @@ const A={
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(!f)return;if(el.tagName==='BUTTON'&&el.type!=='submit')e.preventDefault();f(el.dataset,el,e)});
 document.addEventListener('change',e=>{if(e.target.id==='rem-auto'){LS.set('oldiberdi_remauto',e.target.checked?'on':'off');render()}if(e.target.id==='tx-plan-on'&&TX&&e.target.checked&&!TX.planOn&&locked('plan')){e.target.checked=false;premSheet('plan');return}if(e.target.id==='tx-plan-on'&&TX){TX.planOn=e.target.checked;const b=$('#tx-plan-box');if(b)b.hidden=!TX.planOn;syncDue()}});
-document.addEventListener('submit',e=>{e.preventDefault();const k=e.target.dataset.form;({quick:doQuick,login:doLogin,register:doRegister,tx:saveTx,person:savePerson,profile:saveProfile,pass:savePass,item:addItem,listNew:saveListNew,itemEdit:saveItemEdit,listRename:saveListRename,toy:saveToy,toyItem:addToyItem,toyItemSave:saveToyItem,gift:saveGift,loan:saveLoan,grp:saveGrp,grpMember:addMember,gmSave:saveGm,biz:saveBiz})[k]?.(e.target)});
+document.addEventListener('submit',e=>{e.preventDefault();const k=e.target.dataset.form;({quick:doQuick,login:doLogin,register:doRegister,tx:saveTx,person:savePerson,profile:saveProfile,pass:savePass,item:addItem,listNew:saveListNew,itemEdit:saveItemEdit,listRename:saveListRename,toy:saveToy,toyItem:addToyItem,kid:saveKid,kidGive:saveKidGive,kidLogin:doKidLogin,kTx:saveKTx,kGoal:saveKGoal,kName:saveKName,toyItemSave:saveToyItem,gift:saveGift,loan:saveLoan,grp:saveGrp,grpMember:addMember,gmSave:saveGm,biz:saveBiz})[k]?.(e.target)});
 document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.input==='pq'){S.pq=t.value;render._focus='pq';render()}
  else if(t.dataset.input==='hq'){S.hq=t.value;render._focus='hq';render()}
@@ -1834,6 +1990,7 @@ document.addEventListener('change',async e=>{const t=e.target;const k=t.dataset.
  try{const url=await compressImage(t.files[0]);
   if(k==='tx'){TX.photo=url;t.closest('.photo-pick').outerHTML=photoPickHtml('tx',url)}
   else if(k==='person'){PD.photo=url;$('#ph-person').innerHTML=avatar({photo:url},88)}
+  else if(k==='kid'){kidPhotoSave(url)}
   else if(k==='profile'){PR.photo=url;$('#ph-profile').innerHTML=avatar({photo:url},88)}
  }catch(err){toast("Rasmni o'qib bo'lmadi")}});
 
@@ -1847,6 +2004,7 @@ document.addEventListener('change',async e=>{const t=e.target;const k=t.dataset.
  const cParam=new URLSearchParams(location.search).get('c');
  if(cParam){renderConfirm(cParam);return}
  let a=null;try{a=JSON.parse(LS.get('oldiberdi_acc')||'null')}catch(e){}
+ {const ks=kidSess();if(ks&&ks.token&&ks.kid){startKid(ks);return}}
  if(S.token&&a&&a.id){startSession(a,true);return}
  renderAuth();
 })();
