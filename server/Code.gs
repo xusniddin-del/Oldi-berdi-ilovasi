@@ -24,7 +24,7 @@
  */
 
 const TABLES = {
-  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd'],
+  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz'],
   Sessions: ['token', 'acc', 'createdAt'],
   People:   ['id', 'acc', 'name', 'phone', 'note', 'photo', 'log', 'createdAt', 'updatedAt'],
   Tx:       ['id', 'acc', 'pid', 'type', 'amount', 'date', 'due', 'note', 'photo', 'edits', 'createdAt', 'updatedAt', 'cur', 'plan'],
@@ -32,12 +32,15 @@ const TABLES = {
   Meta:     ['key', 'value'],
   Reminders: ['key', 'acc', 'pid', 'txId', 'idx', 'due', 'amount', 'status', 'markDay', 'chat', 'msg', 'text', 'updatedAt'],
   Payments: ['bill', 'acc', 'phone', 'tarif', 'days', 'amount', 'status', 'createdAt', 'paidAt', 'until'],
-  Lists:    ['id', 'acc', 'name', 'items', 'createdAt', 'updatedAt']
+  Lists:    ['id', 'acc', 'name', 'items', 'createdAt', 'updatedAt'],
+  Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt']
 };
-const JSON_FIELDS = { log: true, edits: true, plan: true, items: true };
+const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true };
+/* Docs turlari va ular uchun kerakli tarif: '' — bepul, 'prem' — Premium, 'biz' — Biznes */
+const DOC_KINDS = { toy: 'prem', toyg: 'prem', loan: 'prem', gap: 'prem', yigin: '', biz: 'biz' };
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -180,7 +183,25 @@ function str_(v, max) { return String(v === undefined || v === null ? '' : v).sl
 function pub_(a) {
   return { id: a.id, name: a.name, phone: a.phone, photo: a.photo, currency: a.currency || "so'm", pinSalt: a.pinSalt, pinHash: a.pinHash, createdAt: a.createdAt, premium: premium_(a), tg: !!a.tg };
 }
+/* Biznes tarif muddati: '' — yo'q, 'ha' — muddatsiz, aks holda sana */
+function bizUntil_(a) {
+  if (a.phone && a.phone === adminPhone_()) return 'ha';
+  const v = String(a.biz || '').trim().toLowerCase();
+  if (!v || v === '0' || v === "yo'q" || v === 'no') return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v >= today_() ? v : '';
+  return 'ha';
+}
+/* Biznes faol bo'lsa, Premium ham faol hisoblanadi */
 function premium_(a) {
+  const p = premiumBase_(a), b = bizUntil_(a);
+  if (!b) return p;
+  const unlimited = p.on && p.until === '' && !p.trial;
+  p.on = true; p.biz = true; p.bizUntil = b === 'ha' ? '' : b;
+  delete p.trial; delete p.canTrial;
+  if (b === 'ha' || unlimited) p.until = ''; else if (!p.until || p.until < b) p.until = b;
+  return p;
+}
+function premiumBase_(a) {
   if (a.phone && a.phone === adminPhone_()) return { on: true, until: '' };
   const td = today_(), v = String(a.premium || '').trim().toLowerCase();
   let paidUntil = '';
@@ -244,9 +265,10 @@ function data_(accId) {
     people: all_('People').filter(function (p) { return p.acc === accId; }).map(clean_),
     tx: all_('Tx').filter(function (t) { return t.acc === accId; }).map(clean_),
     lists: all_('Lists').filter(function (l) { return l.acc === accId; }).map(clean_),
+    docs: all_('Docs').filter(function (x) { return x.acc === accId; }).map(clean_),
     confirms: confirms,
     rate: rate_(),
-    api: 8,
+    api: 9,
     marks: marks_(accId),
     prices: prices_(),
     version: meta_('version')
@@ -272,7 +294,7 @@ function plan_(v) {
 const FLIP = { lend: 'borrow', borrow: 'lend', got: 'paid', paid: 'got' };
 
 /* ---------- online payment (TezCheck) ---------- */
-const PLANS = { month: { days: 30, key: 'price_month', def: 59000, title: 'Oldi-Berdi Premium — 1 oy' }, year: { days: 365, key: 'price_year', def: 588000, title: 'Oldi-Berdi Premium — 1 yil' } };
+const PLANS = { month: { days: 30, key: 'price_month', def: 59000, title: 'Oldi-Berdi Premium — 1 oy' }, year: { days: 365, key: 'price_year', def: 588000, title: 'Oldi-Berdi Premium — 1 yil' }, biz: { days: 30, key: 'price_biz', def: 99000, title: 'Oldi-Berdi Biznes — 1 oy', biz: true } };
 function prices_() {
   const p = PropertiesService.getScriptProperties();
   const on = !!(p.getProperty('TC_KEY') && p.getProperty('TC_DESK'));
@@ -322,6 +344,16 @@ function grant_(accId, days) {
   put_('Accounts', a, a._row);
   return a.premium;
 }
+function grantBiz_(accId, days) {
+  const a = all_('Accounts').filter(function (x) { return x.id === accId; })[0];
+  if (!a) return '';
+  const v = String(a.biz || '').trim().toLowerCase();
+  if (v && !/^\d{4}-\d{2}-\d{2}$/.test(v) && bizUntil_(a)) return 'ha';
+  const from = /^\d{4}-\d{2}-\d{2}$/.test(v) && v >= today_() ? v : today_();
+  a.biz = addDays_(from, days);
+  put_('Accounts', a, a._row);
+  return a.biz;
+}
 /* asks TezCheck whether the bill is paid; if so, gives Premium once */
 function payVerify_(billId) {
   const row = all_('Payments').filter(function (x) { return x.bill === billId; })[0];
@@ -330,12 +362,12 @@ function payVerify_(billId) {
   const j = tc_('/bills/' + encodeURIComponent(billId), {});
   const b = (j.data && j.data.bill) || {};
   if (!b.paid) { if (row.status !== b.state && b.state) { row.status = String(b.state); put_('Payments', row, row._row); } return { paid: false, state: b.state }; }
-  row.status = 'paid'; row.paidAt = Date.now(); row.until = grant_(row.acc, Number(row.days) || 30);
+  row.status = 'paid'; row.paidAt = Date.now(); row.until = PLANS[row.tarif] && PLANS[row.tarif].biz ? grantBiz_(row.acc, Number(row.days) || 30) : grant_(row.acc, Number(row.days) || 30);
   put_('Payments', row, row._row);
   try {
     const u = row.until === 'ha' ? 'muddatsiz' : fdate_(row.until) + ' gacha';
-    notify_(row.acc, '🎉 To\'lov qabul qilindi! <b>Premium yoqildi</b> — ' + u + '.\nIlovani oching, hamma funksiyalar ochiq. Rahmat! 💚');
-    notifyAdmin_('💰 <b>Yangi to\'lov</b>: ' + sum_(Number(row.amount) || 0) + '\n+' + row.phone + ' · ' + (row.tarif === 'year' ? '1 yil' : '1 oy') + ' · ' + u);
+    notify_(row.acc, '🎉 To\'lov qabul qilindi! <b>' + (row.tarif === 'biz' ? 'Biznes' : 'Premium') + ' yoqildi</b> — ' + u + '.\nIlovani oching, hamma funksiyalar ochiq. Rahmat! 💚');
+    notifyAdmin_('💰 <b>Yangi to\'lov</b>: ' + sum_(Number(row.amount) || 0) + '\n+' + row.phone + ' · ' + (row.tarif === 'year' ? '1 yil' : row.tarif === 'biz' ? 'Biznes 1 oy' : '1 oy') + ' · ' + u);
   } catch (e) {}
   return { paid: true, until: row.until };
 }
@@ -353,7 +385,7 @@ const API = {
     put_('Accounts', a);
     try { notifyAdmin_('🆕 Yangi foydalanuvchi: <b>' + h_(name) + '</b> (+' + phone + ')'); } catch (e) {}
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
   login: function (r) {
     const phone = normPhone_(r.phone);
@@ -363,7 +395,7 @@ const API = {
     if (!checkPw_(a, String(r.pass || ''))) { loginFail_(phone); throw new Error("Parol noto'g'ri"); }
     CacheService.getScriptCache().remove('lf_' + phone);
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
   logout: function (r) {
     const rows = all_('Sessions').filter(function (x) { return x.token === String(r.token || ''); }).map(function (x) { return x._row; });
@@ -372,7 +404,7 @@ const API = {
   },
   sync: function (r) {
     const a = auth_(r), d = data_(a.id);
-    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
   saveProfile: function (r) {
     const a = auth_(r);
@@ -476,6 +508,31 @@ const API = {
   deleteList: function (r) {
     const a = auth_(r), id = String(r.id || '');
     delRows_('Lists', all_('Lists').filter(function (x) { return x.id === id && x.acc === a.id; }).map(function (x) { return x._row; }));
+    return {};
+  },
+  /* Docs: to'yona, kreditlar, gap, pul yig'ish, biznes sozlamalari — bitta qatorda JSON */
+  saveDoc: function (r) {
+    const a = auth_(r), it = r.item || {}, kind = String(it.kind || '');
+    if (!DOC_KINDS.hasOwnProperty(kind)) throw new Error("Noto'g'ri tur");
+    const need = DOC_KINDS[kind], p = premium_(a);
+    if (need === 'prem' && !p.on) throw new Error('Bu Premium funksiya');
+    if (need === 'biz' && !p.biz) throw new Error('Bu Biznes tarif funksiyasi');
+    const id = str_(it.id, 40) || uid_();
+    const rows = all_('Docs');
+    const old = rows.filter(function (x) { return x.id === id; })[0];
+    if (old && old.acc !== a.id) throw new Error("Ruxsat yo'q");
+    if (!old && rows.filter(function (x) { return x.acc === a.id && x.kind === kind; }).length >= 50) throw new Error("Ko'pi bilan 50 ta bo'ladi");
+    const data = it.data && typeof it.data === 'object' ? it.data : {};
+    if (JSON.stringify(data).length > 45000) throw new Error('Ma\'lumot juda katta');
+    const now = Date.now();
+    const d = { id: id, acc: a.id, kind: kind, name: str_(it.name, 80).trim(), data: data,
+      createdAt: Number(it.createdAt) || (old && old.createdAt) || now, updatedAt: Number(it.updatedAt) || now };
+    put_('Docs', d, old ? old._row : 0);
+    return { item: clean_(d) };
+  },
+  deleteDoc: function (r) {
+    const a = auth_(r), id = String(r.id || '');
+    delRows_('Docs', all_('Docs').filter(function (x) { return x.id === id && x.acc === a.id; }).map(function (x) { return x._row; }));
     return {};
   },
   /* two-sided confirmation: the other person opens a link and confirms the record */
@@ -639,7 +696,7 @@ function botUpdate_(u) {
     if (rt && !/#u\d+/.test(String(rt.text || ''))) return botBroadcast_(chat, rt.message_id, null);   // reply "/xabar" to any post
     if (!m.text) return botBroadcast_(chat, m.message_id, text.replace(/^\/xabar\s*/, ''));        // photo/video with caption "/xabar …"
   }
-  if (admin && /^\/(stat|premium|xabar)\b/.test(text)) return botAdmin_(chat, text);
+  if (admin && /^\/(stat|premium|biznes|xabar)\b/.test(text)) return botAdmin_(chat, text);
   const cmd = text.split(/\s+/)[0].replace(/@.*$/, '').toLowerCase();
   if (cmd === '/start') {
     const pl = (text.split(/\s+/)[1] || '').toLowerCase();
@@ -681,7 +738,7 @@ function botPremium_(chat, a) {
   const p = premium_(a), pr = prices_();
   let t = '💎 <b>Oldi-Berdi Premium</b>\n\n';
   t += p.trial ? '🎁 Holat: <b>sinov muddati — ' + fdate_(p.until) + ' gacha</b>\nSinov tugagach ilova bepul rejimda ishlayveradi.\n\n' : p.on ? '✅ Holat: <b>faol' + (p.until ? ' — ' + fdate_(p.until) + ' gacha' : ' (muddatsiz)') + '</b>\n\n' : '🆓 Holat: <b>bepul rejim</b>\nAsosiy imkoniyatlar bepul. Premium qo\'shimcha imkoniyatlarni ochadi.\n\n';
-  t += 'Premium\'da:\n🛒 Bozorlik ro\'yxati\n📊 Oylik hisobot va grafiklar\n📥 Excel fayl\n💬 SMS eslatmalar\n⭐ Ishonch reytingi\n💵 Dollar va MB kursi\n🗓 Bo\'lib to\'lash\n🤝 Ikki tomonlama tasdiq\n🇷🇺 Rus tili\n⏰ Har kuni botda eslatma';
+  t += 'Premium\'da:\n🛒 Bozorlik ro\'yxati\n💍 To\'yona daftari\n🏦 Kredit va nasiyalar kalendari\n👥 Gap boshqaruvi\n📊 Oylik hisobot va grafiklar\n📥 Excel fayl\n💬 SMS eslatmalar\n⭐ Ishonch reytingi\n💵 Dollar va MB kursi\n🗓 Bo\'lib to\'lash\n🤝 Ikki tomonlama tasdiq\n🇷🇺 Rus tili\n⏰ Har kuni botda eslatma';
   const rows = [];
   if (p.canTrial) { rows.push([{ text: '🎁 ' + TRIAL_DAYS + ' kun bepul sinab ko\'rish', callback_data: 'trial' }]); t += '\n\nPremium\'ni <b>' + TRIAL_DAYS + ' kun bepul</b> sinab ko\'rishingiz mumkin — majburiy emas.'; }
   if (pr.online && !(p.on && !p.until)) {
@@ -689,6 +746,7 @@ function botPremium_(chat, a) {
     if (pr.year > 0) rows.push([{ text: '🔥 1 yil — ' + sum_(pr.year) + (pct ? ' (−' + pct + '%)' : ''), callback_data: 'buy:year' }]);
     if (save > 0) t += '\n\n🔥 <b>Yillik tarif foydali:</b> oyiga ' + sum_(Math.round(pr.year / 12)) + ' — <s>' + sum_(full) + '</s> o\'rniga <b>' + sum_(pr.year) + '</b>, ' + sum_(save) + ' tejaysiz.';
     if (pr.month > 0) rows.push([{ text: '1 oy — ' + sum_(pr.month), callback_data: 'buy:month' }]);
+    if (pr.biz > 0) { rows.push([{ text: '🏪 Biznes — ' + sum_(pr.biz) + ' / oy', callback_data: 'buy:biz' }]); t += '\n\n🏪 <b>Biznes tarif</b> (do\'konlar uchun): Premium\'dagi hammasi + do\'kon nomi eslatmalarda, qarzdorlar ro\'yxatini yuborish — oyiga ' + sum_(pr.biz) + '.'; }
     t += '\n\n' + (p.on && !p.trial ? 'Uzaytirish' : 'Sotib olish') + ' uchun tarifni tanlang 👇\n<i>Click, Payme, Uzum yoki karta orqali</i>';
   }
   send_(chat, t, rows.length ? { reply_markup: { inline_keyboard: rows } } : {});
@@ -802,6 +860,17 @@ function botAdmin_(chat, text) {
     else { const n = parseInt(v, 10); if (!(n > 0)) return send_(chat, 'Kun sonini yozing, masalan 30'); until = fdate_(grant_(a.id, n)); }
     if (v !== '0') notify_(a.id, '🎉 Sizga <b>Premium</b> yoqildi — ' + until + (v === 'ha' ? '' : ' gacha') + '!\nIlovani oching, hammasi ochiq.');
     return send_(chat, '✅ ' + h_(a.name) + ' (+' + a.phone + '): Premium — ' + until);
+  }
+  if (cmd === '/biznes') {
+    const ph = normPhone_(parts[1] || ''), v = String(parts[2] || '').toLowerCase();
+    const a = all_('Accounts').filter(function (x) { return x.phone === ph; })[0];
+    if (!a || !v) return send_(chat, 'Foydalanish:\n<code>/biznes 901234567 30</code> — 30 kun\n<code>/biznes 901234567 ha</code> — muddatsiz\n<code>/biznes 901234567 0</code> — o\'chirish' + (ph && !a ? '\n\n⚠️ +' + ph + ' topilmadi' : ''));
+    let until;
+    if (v === 'ha') { a.biz = 'ha'; put_('Accounts', a, a._row); until = 'muddatsiz'; }
+    else if (v === '0') { a.biz = ''; put_('Accounts', a, a._row); until = 'o\'chirildi'; }
+    else { const n = parseInt(v, 10); if (!(n > 0)) return send_(chat, 'Kun sonini yozing, masalan 30'); until = fdate_(grantBiz_(a.id, n)); }
+    if (v !== '0') notify_(a.id, '🏪 Sizga <b>Biznes</b> tarif yoqildi — ' + until + (v === 'ha' ? '' : ' gacha') + '!');
+    return send_(chat, '✅ ' + h_(a.name) + ' (+' + a.phone + '): Biznes — ' + until);
   }
   if (cmd === '/xabar') {
     const msg = text.replace(/^\/xabar\s*/, '');
