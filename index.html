@@ -386,6 +386,45 @@ a.item{color:inherit;text-decoration:none}
 .tc-go{background:var(--brand);color:#fff;font-weight:800;font-size:12.5px;padding:7px 12px;border-radius:99px;flex:none;border:0;font-family:inherit;cursor:pointer}
 button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}.trial-card.offer{align-items:flex-start;background:linear-gradient(135deg,#f1fbf5,#e2f5ea);border-color:#bfe6cf}
 .tc-btns{display:flex;gap:8px;margin-top:10px}.tc-no{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:12.5px;padding:7px 12px;border-radius:99px;font-family:inherit;cursor:pointer}
+
+/* shopping lists */
+.shop-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:14px;padding:12px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);color:var(--fg)}
+.shop-card .qi,.sl-ic{width:44px;height:44px;border-radius:14px;flex-shrink:0;display:grid;place-items:center;background:var(--teal-bg);color:var(--teal)}
+.shop-card .qi svg,.sl-ic svg{width:22px;height:22px}
+.shop-card .mid{flex:1;min-width:0}
+.shop-card b{display:block;font-size:15px}
+.shop-card small{color:var(--muted);font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shop-card .go{color:var(--muted);display:inline-flex}.shop-card .go svg{width:20px;height:20px}
+.sl-bar{height:5px;border-radius:9px;background:var(--surface-2);margin-top:6px;overflow:hidden}
+.sl-bar i{display:block;height:100%;background:var(--brand);border-radius:9px}
+.sl-add{display:flex;gap:8px;padding:10px;align-items:center;margin-top:4px}
+.sl-add .inp{padding:10px 12px;min-height:46px;font-size:16px}
+.sl-add #it-n{flex:1;min-width:0}.sl-add #it-p{width:104px;flex:none}
+.sl-add .btn{flex:none;width:46px;height:46px;padding:0;display:grid;place-items:center}
+.sl-add .btn svg{width:22px;height:22px}
+.sl-sum{display:grid;grid-template-columns:repeat(3,1fr);margin-top:10px}
+.sl-sum div{padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.sl-sum div+div{border-left:1px solid var(--line)}
+.sl-sum span{font-size:12px;color:var(--muted);font-weight:600}
+.sl-sum b{font-size:15px;overflow-wrap:anywhere}
+.sl-row{display:flex;align-items:center;gap:6px;padding:2px 12px 2px 4px;border-bottom:1px solid var(--line)}
+.sl-row:last-child{border-bottom:0}
+.sl-chk{position:relative;width:44px;height:44px;flex-shrink:0;display:grid;place-items:center}
+.sl-chk::before{content:'';position:absolute;inset:11px;border-radius:7px;border:2px solid var(--muted)}
+.sl-row.done .sl-chk::before{background:var(--brand);border-color:var(--brand)}
+.sl-chk svg{position:relative;width:15px;height:15px;color:var(--on-brand);stroke-width:3.2}
+.sl-main{flex:1;min-width:0;text-align:left;padding:9px 0;display:flex;flex-direction:column}
+.sl-n{font-weight:700;overflow-wrap:anywhere}
+.sl-q{font-size:12.5px;color:var(--muted)}
+.sl-row.done .sl-n{text-decoration:line-through;color:var(--muted)}
+.sl-p{font-weight:700;flex-shrink:0;font-size:14px}
+.sl-row.done .sl-p{color:var(--muted)}
+.shop-promo{padding:22px 18px;text-align:center}
+.shop-promo .sp-ic{width:64px;height:64px;border-radius:20px;margin:0 auto 10px;display:grid;place-items:center;background:var(--teal-bg);color:var(--teal)}
+.shop-promo .sp-ic svg{width:32px;height:32px}
+.shop-promo h2{margin:0 0 6px;font-size:20px}
+.shop-promo p{color:var(--muted);margin:0 0 12px}
+.shop-promo .prem-list{text-align:left}
 </style>
 </head>
 <body>
@@ -393,8 +432,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=28;
-const WHATS_NEW=["Xavfsizlik kuchaytirildi: yangi parollar endi kamida 6 belgidan iborat bo'ladi. Hozirgi parolingiz avvalgidek ishlayveradi","Ilova kodi tozalandi va yengillashdi"];
+const APP_VERSION=29;
+const WHATS_NEW=["Yangi: 🛒 Bozorlik ro'yxati — qog'oz ko'tarib yurmang! Nima olishni telefoningizga yozing, bozorda belgilab boring, xarajatni ilova o'zi hisoblaydi (Premium)","Ro'yxatni oilangizga Telegram orqali yuborishingiz mumkin","Xavfsizlik: kirishda xato urinishlar cheklandi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -487,7 +526,7 @@ const RU={
 "Internetga ulanib bo'lmadi. Qayta urinib ko'ring.":"Нет подключения к интернету. Попробуйте ещё раз.","Server javob bermadi. Birozdan keyin urinib ko'ring.":"Сервер не ответил. Попробуйте чуть позже.","Saqlab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.":"Не удалось сохранить. Проверьте интернет и попробуйте снова.",
 "Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.":"Не удалось подключиться — проверьте интернет. Данные могут быть устаревшими.",
 "Ismingizni yozing":"Введите имя","Ismni yozing":"Введите имя","Telefon raqam noto'g'ri":"Неверный номер телефона","Parol kamida 6 belgidan iborat bo'lsin":"Пароль — минимум 6 символов","Parollar bir xil emas":"Пароли не совпадают","Raqam va parolni kiriting":"Введите номер и пароль",
-"Bu raqam ro'yxatdan o'tmagan":"Этот номер не зарегистрирован","Parol noto'g'ri":"Неверный пароль","Juda ko'p xato urinish. 15 daqiqadan keyin qayta urinib ko'ring.":"Слишком много неверных попыток. Попробуйте через 15 минут.","Bu raqam allaqachon ro'yxatdan o'tgan. «Kirish»ni tanlang.":"Этот номер уже зарегистрирован. Выберите «Вход».","Bu raqam boshqa akkauntga tegishli":"Этот номер принадлежит другому аккаунту",
+"Bu raqam ro'yxatdan o'tmagan":"Этот номер не зарегистрирован","Parol noto'g'ri":"Неверный пароль","Bozorlik ro'yxati":"Список покупок","Qog'ozsiz xaridlar ro'yxati va xarajat hisobi":"Список покупок без бумаги и учёт расходов","Qog'ozsiz bozorlik — ro'yxat telefoningizda":"Покупки без бумаги — список в телефоне","Ro'yxat tuzing — qog'oz kerak emas":"Составьте список — бумага не нужна","Qog'oz ro'yxat endi kerak emas":"Бумажный список больше не нужен","Bozorga nima olish kerakligini telefoningizga yozing. Olganingizni belgilab borasiz — hech narsa esdan chiqmaydi, qancha pul ketganini ilova o'zi hisoblaydi.":"Запишите в телефон, что нужно купить. Отмечайте купленное — ничего не забудете, а приложение само посчитает расходы.","Bir nechta ro'yxat":"Несколько списков","Haftalik bozor, uy uchun, to'y uchun…":"На неделю, для дома, для праздника…","Belgilab borish":"Отмечайте купленное","Olinganlar alohida, qolgani bir qarashda":"Купленное отдельно, остальное — сразу видно","Xarajat hisobi":"Учёт расходов","Narx yozsangiz — jami va sarflangan summa":"Укажите цены — увидите итог и потраченное","Oilaga ulashish":"Отправить семье","Ro'yxatni Telegram yoki SMS orqali yuborish":"Отправка списка в Telegram или по SMS","Har hafta qayta ishlatish":"Каждую неделю заново","Bir bosishda ro'yxat yana yangidek":"Одно нажатие — и список снова как новый","★ Premium bilan ochish":"★ Открыть с Premium","Yangi ro'yxat":"Новый список","Hali ro'yxat yo'q":"Списков пока нет","Bozorga chiqishdan oldin nima olishni yozing — qog'oz kerak emas.":"Перед походом на рынок запишите, что купить — бумага не нужна.","Ro'yxatlar akkauntingizda saqlanadi — istalgan telefondan ko'rasiz.":"Списки хранятся в аккаунте — видны с любого телефона.","Ro'yxatlar hozircha shu telefonda saqlanmoqda.":"Пока списки хранятся только на этом телефоне.","Bo'sh ro'yxat":"Пустой список","2 kg kartoshka":"2 кг картошки","Mahsulot":"Товар","Narxi":"Цена","Narxi (ixtiyoriy)":"Цена (необязательно)","Qo'shish":"Добавить","Jami":"Итого","Sarflandi":"Потрачено","Olinmagan":"Не куплено","Ro'yxat bo'sh":"Список пуст","Yuqoriga mahsulot nomini yozing. Miqdor va narx ixtiyoriy.":"Впишите товар вверху. Количество и цена — по желанию.","Olinadi":"Купить","Olingan":"Куплено","✓ Hammasi olindi!":"✓ Всё куплено!","Qayta boshlash":"Начать заново","Tozalash":"Очистить","Olindi deb belgilash":"Отметить как купленное","Olinmadi deb belgilash":"Снять отметку","Ro'yxat nomi":"Название списка","Yaratish":"Создать","Miqdori":"Количество","Nomi":"Название","Ro'yxatni ulashish":"Отправить список","Oila a'zongizga yuboring — u ham bozorga nima olishni biladi.":"Отправьте близким — они тоже будут знать, что купить.","Boshqa ilova orqali":"Через другое приложение","Nusxalash":"Копировать","Ro'yxat":"Список","Nusxa olish (yangi ro'yxat)":"Копировать (новый список)","Ro'yxatni o'chirish":"Удалить список","Ro'yxat sozlamalari":"Настройки списка","Ulashish":"Поделиться","Olinganlarni tozalash":"Убрать купленное","Ro'yxat butunlay o'chiriladi.":"Список будет удалён полностью.","Ro'yxat yana yangidek — belgilar olib tashlandi":"Список снова как новый — отметки сняты","Nusxa olindi":"Копия создана","Avval ro'yxatga mahsulot qo'shing":"Сначала добавьте товары в список","Ro'yxat saqlanmadi":"Список не сохранён","Ro'yxat o'chirilmadi":"Список не удалён","Xaridlar ro'yxati va xarajatlar":"Список покупок и расходы","Juda ko'p xato urinish. 15 daqiqadan keyin qayta urinib ko'ring.":"Слишком много неверных попыток. Попробуйте через 15 минут.","Bu raqam allaqachon ro'yxatdan o'tgan. «Kirish»ni tanlang.":"Этот номер уже зарегистрирован. Выберите «Вход».","Bu raqam boshqa akkauntga tegishli":"Этот номер принадлежит другому аккаунту",
 "Hozirgi parol noto'g'ri":"Текущий пароль неверный","Yangi parol kamida 6 belgi bo'lsin":"Новый пароль — минимум 6 символов","Yangi parollar bir xil emas":"Новые пароли не совпадают","Hozirgi parolni kiriting":"Введите текущий пароль","Parol yangilandi":"Пароль обновлён",
 "Telefon raqamni to'g'ri kiriting":"Введите правильный номер","Sessiya tugadi, qayta kiring":"Сессия истекла, войдите снова","Telefon raqam va parolingiz bilan kiring":"Войдите по номеру и паролю","Xatolik yuz berdi":"Произошла ошибка",
 "Havola eskirgan yoki noto'g'ri":"Ссылка устарела или неверна","Bu yozuv o'chirilgan":"Эта запись удалена","Yozuv hali saqlanmagan. Birozdan keyin urinib ko'ring.":"Запись ещё не сохранена. Попробуйте чуть позже.",
@@ -511,7 +550,7 @@ const RU_RX=[
  [/Muddati? (.+?) da o'tgan/g,'Срок истёк $1'],[/Muddat (.+?) da o'tgan/g,'Срок истёк $1'],
  [/(\d+) ta to'lov bo'yicha: o'z vaqtida qaytarish/g,'по $1 платежам: возврат вовремя'],
  [/(\d+) ta yozuvi ham o'chiriladi\. Buni qaytarib bo'lmaydi\./g,'Его $1 записей тоже удалятся. Это нельзя отменить.'],
- [/(\d+) ta yozuv/g,'$1 записей'],[/(\d+) kishi/g,'$1 чел.'],[/(\d+) kundan beri/g,'уже $1 дн.'],[/har (\d+) kunda/g,'каждые $1 дн.'],[/(\d+) kun\b/g,'$1 дн.'],
+ [/(\d+) ta yozuv/g,'$1 записей'],[/(\d+)\/(\d+) olindi/g,'куплено $1 из $2'],[/(\d+) ta ro'yxat · (\d+) ta olinmagan/g,'списков: $1 · не куплено: $2'],[/^(\d+) ta$/g,'$1 шт.'],[/(\d+) ta olingan mahsulot ro'yxatdan o'chiriladi\./g,'Купленные товары ($1) будут удалены из списка.'],[/^«(.+?)» o'chirilsinmi\?$/g,'Удалить «$1»?'],[/(\d+) kishi/g,'$1 чел.'],[/(\d+) kundan beri/g,'уже $1 дн.'],[/har (\d+) kunda/g,'каждые $1 дн.'],[/(\d+) kun\b/g,'$1 дн.'],
  [/(\d+) oy · (.+?) dan/g,'$1 мес. · с $2'],[/Versiya (\d+)\. Nima yangi:/g,'Версия $1. Что нового:'],
  [/«(.+?)» kontaktda yo'q — yangi yaratish/g,'«$1» нет в контактах — создать'],[/«(.+?)» ni yaratish/g,'Создать «$1»'],[/«(.+?)» allaqachon bor\. Baribir yaratish uchun yana bosing\./g,'«$1» уже есть. Нажмите ещё раз, чтобы всё равно создать.'],
  [/^(.+?) tarixini ochish$/g,'История: $1'],[/^Shu rasmni (.+?) profiliga qo'yish$/g,'Сделать фото профиля: $1'],[/^(.+?) o'chirilsinmi\?$/g,'Удалить $1?'],
@@ -554,6 +593,7 @@ function langSwitch(){return `<div class="lang-sw" role="group" aria-label="Til 
 
 /* ============ icons ============ */
 const I={
+ cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>',
  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg>',
  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
@@ -660,8 +700,8 @@ function trialAskSheet(){openSheet(tr("Premium'ni bepul sinab ko'ring"),`<div cl
  <button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="trialNo">${tr("Yo'q, hozircha bepul versiya yetadi")}</button>`,'trialask')}
 function maybeTrialAsk(){if(!S.acc||S.locked||S.setup||sheets.length||!canTrial()||S.view!=='home')return;if(LS.get('oldiberdi_trialask_'+S.acc.id))return;LS.set('oldiberdi_trialask_'+S.acc.id,'1');setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup&&canTrial())trialAskSheet()},1200)}
 /* ============ premium ============ */
-const PREM=Object.assign({price:'',features:['report','excel','remind','trust','usd','plan','confirm','ru']},window.OLDIBERDI_PREMIUM||{});
-const PREM_INFO={report:['Oylik hisobot',"Grafiklar, eng katta qarzdorlar"],excel:['Excel fayl','Hisobotni .xlsx qilib yuklab olish'],remind:['SMS eslatmalar',"Kimga eslatish kerakligini ilova o'zi topadi"],trust:['Ishonch reytingi',"Kim o'z vaqtida qaytarishini ko'rsatadi"],usd:['Dollar va MB kursi','Dollarda qarz yozish, so\'mga avtomatik hisoblash'],plan:["Bo'lib to'lash",'Nasiya grafigi va kechikishlar'],confirm:['Ikki tomonlama tasdiq','Qarzdor SMS havola orqali tasdiqlaydi'],ru:['Rus tili','Ilovani rus tilida ishlatish']};
+const PREM=Object.assign({price:'',features:['shop','report','excel','remind','trust','usd','plan','confirm','ru']},window.OLDIBERDI_PREMIUM||{});
+const PREM_INFO={shop:["Bozorlik ro'yxati","Qog'ozsiz xaridlar ro'yxati va xarajat hisobi"],report:['Oylik hisobot',"Grafiklar, eng katta qarzdorlar"],excel:['Excel fayl','Hisobotni .xlsx qilib yuklab olish'],remind:['SMS eslatmalar',"Kimga eslatish kerakligini ilova o'zi topadi"],trust:['Ishonch reytingi',"Kim o'z vaqtida qaytarishini ko'rsatadi"],usd:['Dollar va MB kursi','Dollarda qarz yozish, so\'mga avtomatik hisoblash'],plan:["Bo'lib to'lash",'Nasiya grafigi va kechikishlar'],confirm:['Ikki tomonlama tasdiq','Qarzdor SMS havola orqali tasdiqlaydi'],ru:['Rus tili','Ilovani rus tilida ishlatish']};
 function isPrem(){const p=S.acc&&S.acc.premium;return !!(p&&p.on)}
 function locked(f){return !!S.acc&&PREM.features.includes(f)&&!isPrem()}
 function lk(f){return locked(f)?`<span class="lock-tag">${I.lock}Premium</span>`:''}
@@ -706,7 +746,7 @@ function refreshPhotos(){document.querySelectorAll('img[data-ph]').forEach(i=>{c
 function imgTag(v,alt){const src=phSrc(v);return `<img ${v&&v.startsWith('d:')?`data-ph="${esc(v)}"`:''} ${src?`src="${esc(src)}"`:''} alt="${esc(alt||'')}">`}
 
 /* ============ state ============ */
-const S={api:+(LS.get('oldiberdi_api')||1),confirms:{},rate:(()=>{try{return JSON.parse(LS.get('oldiberdi_rate')||'null')}catch(e){return null}})(),usd:{},alloc:{},trust:{},token:LS.get('oldiberdi_token'),acc:null,people:{},tx:{},view:'home',pid:null,pq:'',pf:'all',hq:'',hf:'all',loaded:{p:false,t:false},stale:false,unsub:[],bal:{},authTab:'login'};
+const S={api:+(LS.get('oldiberdi_api')||1),confirms:{},rate:(()=>{try{return JSON.parse(LS.get('oldiberdi_rate')||'null')}catch(e){return null}})(),usd:{},alloc:{},trust:{},token:LS.get('oldiberdi_token'),acc:null,people:{},tx:{},lists:{},lid:null,view:'home',pid:null,pq:'',pf:'all',hq:'',hf:'all',loaded:{p:false,t:false},stale:false,unsub:[],bal:{},authTab:'login'};
 /* currency: a record may be in dollars; totals are shown in the main currency at the Central Bank rate */
 const USD_FALLBACK=12800;
 function rate(){return (S.rate&&S.rate.usd)||USD_FALLBACK}
@@ -802,7 +842,7 @@ function writeErr(e){if(e&&e.message==='BLOCKED'){setTimeout(()=>sync(),300);ret
 function startSession(a,restore,data){
  S.acc=null;setAcc(a);
  S.locked=!!(restore&&a.pinHash);S.setup=a.pinHash?null:{step:'pin1',mode:'new'};S.pinBuf='';S.pinErr='';S.pinTries=0;
- clearInterval(S.poll);S.people={};S.tx={};S.loaded={p:false,t:false};S.view='home';S.stale=false;
+ clearInterval(S.poll);S.people={};S.tx={};S.lists={};S.loaded={p:false,t:false};S.view='home';S.stale=false;
  if(data)applySync(data);else{try{const c=JSON.parse(LS.get('oldiberdi_cache')||'null');if(c&&c.acc&&c.acc.id===a.id)applySync(c,true)}catch(e){}}
  if(!data)sync();
  checkVersion();
@@ -817,6 +857,7 @@ function applySync(j,fromCache){
  S.tx={};(j.tx||[]).forEach(t=>S.tx[t.id]=t);
  if(j.confirms)S.confirms=j.confirms;
  if(j.marks)S.marks=j.marks;
+ if(fromCache){if(Array.isArray(j.lists)){S.lists={};j.lists.forEach(l=>{S.lists[l.id]=l})}}else if(Array.isArray(j.lists))mergeLists(j.lists);
  if(!fromCache){S.api=j.api||1;LS.set('oldiberdi_api',String(S.api))}
  if(j.rate&&j.rate.usd){S.rate=j.rate;LS.set('oldiberdi_rate',JSON.stringify(j.rate))}
  if(j.acc&&!fromCache)setAcc(j.acc);
@@ -824,7 +865,7 @@ function applySync(j,fromCache){
  S.loaded={p:true,t:true};compute();
  if(!fromCache){S.stale=false;saveCache()}
 }
-function saveCache(){if(!S.acc)return;try{localStorage.setItem('oldiberdi_cache',JSON.stringify({acc:{id:S.acc.id},people:Object.values(S.people),tx:Object.values(S.tx),confirms:S.confirms,marks:S.marks}))}catch(e){}}
+function saveCache(){if(!S.acc)return;try{localStorage.setItem('oldiberdi_cache',JSON.stringify({acc:{id:S.acc.id},people:Object.values(S.people),tx:Object.values(S.tx),confirms:S.confirms,marks:S.marks,lists:Object.values(S.lists||{})}))}catch(e){}}
 async function sync(){if(!S.acc||S.syncing)return;S.syncing=true;
  try{if(S.pending)return;const j=await api('sync');if(!S.acc||S.pending)return;applySync(j);if(payPending())checkPay();if(!isTyping())render();refreshOpenSheets();refreshInstSheet();maybeRemindPrompt();openRemindParam()}
  catch(e){if(S.acc&&!S.loaded.p){S.stale=true;if(!isTyping())render()}}
@@ -873,16 +914,16 @@ function render(){
  if(S.locked)return renderLock();
  if(S.setup)return renderSetup();
 
- const y=window.scrollY;const keep=render._last===S.view+'|'+S.pid;
+ const y=window.scrollY;const keep=render._last===S.view+'|'+S.pid+'|'+S.lid;
  const v=S.view;
- let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():v==='report'?vReport():vProfile();
+ let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():v==='report'?vReport():v==='lists'?vLists():v==='list'?vList():vProfile();
  $('#app').innerHTML=body+'<div class="spacer"></div>'+nav()+(S.newVer?`<div class="upd" role="status"><span>Ilovaning yangi versiyasi chiqdi</span><button class="btn" data-act="reloadApp">Yangilash</button></div>`:'');
  if(keep)window.scrollTo(0,y);else window.scrollTo(0,0);
- render._last=S.view+'|'+S.pid;
+ render._last=S.view+'|'+S.pid+'|'+S.lid;
  // restore focus on search inputs
  if(render._focus){const el=document.getElementById(render._focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}render._focus=null}
 }
-function nav(){const b=(v,ic,l)=>`<button data-act="go" data-v="${v}" class="${S.view===v||(v==='people'&&S.view==='person')||(v==='history'&&S.view==='report')?'on':''}"><span class="ni">${I[ic]}</span>${l}</button>`;
+function nav(){const b=(v,ic,l)=>`<button data-act="go" data-v="${v}" class="${S.view===v||(v==='people'&&S.view==='person')||(v==='history'&&S.view==='report')||(v==='home'&&(S.view==='lists'||S.view==='list'))?'on':''}"><span class="ni">${I[ic]}</span>${l}</button>`;
  return `<nav class="nav"><div class="nav-in">${b('home','home','Asosiy')}${b('people','users','Odamlar')}<div><button class="fab" data-act="newTx" aria-label="Yangi yozuv">${I.plus}</button></div>${b('history','clock','Tarix')}${b('profile','user','Profil')}</div></nav>`}
 function loadingNote(){if(S.stale)return `<div class="banner">Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.</div>`;if(!S.loaded.p||!S.loaded.t)return `<div class="empty"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div><p>Yuklanmoqda…</p></div>`;return ''}
 function txRow(t,showPerson=true){const p=S.people[t.pid]||{name:"O'chirilgan odam"};const m=T[t.type]||T.lend;
@@ -905,6 +946,7 @@ function vHome(){
  ${tgCard()}
  ${quickBtns()}
  <form class="quick-in" data-form="quick" autocomplete="off"><div class="qk-wrap"><input id="qk" aria-label="Tez yozish" placeholder="Tez yozish: «Akmalga 500 ming berdim»"><button class="qk-go" aria-label="Davom etish">${I.send}</button></div></form>
+ ${shopCard()}
  ${loadingNote()}
  ${od.length?`<div class="sec-head"><h2>Muddati o'tganlar</h2><span class="badge warn">${od.length}</span></div><div class="card list">${od.slice(0,5).map(x=>personRow(x.p)).join('')}</div>`:''}
  <div class="sec-head"><h2>So'nggi yozuvlar</h2>${recent.length?'<span class="sec-links"><button class="link" data-act="go" data-v="report">Hisobot</button><button class="link" data-act="go" data-v="history">Hammasi</button></span>':''}</div>
@@ -967,6 +1009,7 @@ function vProfile(){const a=S.acc;
   <button class="item" data-act="changePin">${I.shield}<div class="mid">PIN kodni o'zgartirish<div class="t2">Ilovani ochishda so'raladi</div></div></button>
   ${BIO.ok?`<button class="item" data-act="toggleBio">${I.finger}<div class="mid">Barmoq izi<div class="t2">${bioGet()?"Yoqilgan · o'chirish uchun bosing":"O'chiq · yoqish uchun bosing"}</div></div></button>`:''}
   <button class="item" data-act="lockNow">${I.lock}<div class="mid">Ilovani hozir qulflash</div></button>
+  <button class="item" data-act="go" data-v="lists">${I.cart}<div class="mid">Bozorlik ro'yxati ${lk('shop')}<div class="t2">Xaridlar ro'yxati va xarajatlar</div></div></button>
   <button class="item" data-act="go" data-v="report">${I.chart}<div class="mid">Oylik hisobot ${lk('report')}<div class="t2">Grafiklar va Excel fayl</div></div></button>
   <button class="item" data-act="langSheet">${I.globe}<div class="mid">Til ${lk('ru')}<div class="t2" data-notr>${LANG==='ru'?'Русский':"O'zbekcha"}</div></div></button>
   <button class="item" data-act="remSettings">${I.bell}<div class="mid">Eslatma sozlamalari<div class="t2">Muddatsiz qarzlar: har ${remDays()} kunda · ${LS.get('oldiberdi_remauto')==='off'?"o'zi so'ramaydi":"ochilganda so'raydi"}</div></div></button>
@@ -977,6 +1020,75 @@ function vProfile(){const a=S.acc;
  </div>
  <p class="hint" style="margin-top:14px">Akkauntingizga boshqa telefondan kirish uchun shu ilova havolasini oching va <b class="num">${fphone(a.phone)}</b> raqami hamda parolingizni kiriting.</p>
  </div>`}
+
+/* ============ shopping lists (Premium): paper-free market list kept on the phone and in the account ============ */
+const LQ=/^(\d+(?:[.,]\d+)?)\s*(kg|kilo|g|gr|gramm|l|litr|ml|ta|dona|bog'|bog‘|pachka|qop|quti|shisha|m|metr)?\.?\s+(.+)$/i;
+const LQE=/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*(kg|kilo|g|gr|gramm|l|litr|ml|ta|dona|bog'|bog‘|pachka|qop|quti|shisha|m|metr)\.?$/i;
+function parseItem(s){s=String(s||'').trim();const qq=(a,u)=>(a.replace('.',',')+(u?' '+u.toLowerCase():'')).slice(0,24);let m=s.match(LQ);if(m&&m[3].trim())return {n:m[3].trim().slice(0,80),q:qq(m[1],m[2])};m=s.match(LQE);if(m)return {n:m[1].trim().slice(0,80),q:qq(m[2],m[3])};return {n:s.slice(0,80),q:''}}
+function normList(l){return {id:String(l.id),name:String(l.name||''),items:(Array.isArray(l.items)?l.items:[]).map(i=>({id:String(i.id||uid()),n:String(i.n||''),q:String(i.q||''),p:+i.p||0,d:i.d?1:0})),createdAt:+l.createdAt||0,updatedAt:+l.updatedAt||0}}
+/* server copy wins, except lists changed here that the server has not received yet */
+function mergeLists(arr){const out={},push=[];arr.forEach(l=>{const x=normList(l);out[x.id]=x});
+ for(const l of Object.values(S.lists||{})){if(!l._u)continue;const sv=out[l.id];if(!sv||(l.updatedAt||0)>(sv.updatedAt||0)){out[l.id]=l;push.push(l.id)}}
+ S.lists=out;if(push.length)setTimeout(()=>push.forEach(listQueue),0)}
+function listOut(l){return {id:l.id,name:l.name,items:l.items.map(i=>({id:i.id,n:i.n,q:i.q||'',p:+i.p||0,d:i.d?1:0})),createdAt:l.createdAt,updatedAt:l.updatedAt}}
+const LT={};
+/* saves are grouped: many quick ticks in the market become one request */
+function listQueue(id){if(S.api<8){const l=S.lists[id];if(l){l._u=1;saveCache()}return}
+ if(LT[id])clearTimeout(LT[id]);else{S.pending=(S.pending||0)+1;showSaving()}
+ LT[id]=setTimeout(()=>{delete LT[id];S.pending--;const l=S.lists[id];if(!l){showSaving();return}const item=listOut(l);
+  bg("Ro'yxat saqlanmadi",async()=>{await api('saveList',{item});const x=S.lists[id];if(x&&x.updatedAt===item.updatedAt){delete x._u;saveCache()}},()=>{const x=S.lists[id];if(x){x._u=1;saveCache()}})},700)}
+function listTouch(l){l.updatedAt=Date.now();l._u=1;S.lists[l.id]=l;saveCache();listQueue(l.id)}
+function listStats(l){let n=l.items.length,d=0,sum=0,spent=0;l.items.forEach(i=>{const p=+i.p||0;sum+=p;if(i.d){d++;spent+=p}});return {n,d,sum,spent}}
+function curList(){return S.lists[S.lid]}
+function shopCard(){const ls=Object.values(S.lists||{});const open=ls.reduce((z,l)=>z+l.items.filter(i=>!i.d).length,0);
+ return `<button class="shop-card" data-act="go" data-v="lists"><span class="qi">${I.cart}</span><span class="mid"><b>Bozorlik ro'yxati ${lk('shop')}</b><small>${locked('shop')?"Qog'ozsiz bozorlik — ro'yxat telefoningizda":ls.length?`${ls.length} ta ro'yxat · ${open} ta olinmagan`:"Ro'yxat tuzing — qog'oz kerak emas"}</small></span><span class="go">${I.right}</span></button>`}
+function vLists(){const back=`<button class="icon-btn" data-act="go" data-v="home" aria-label="Orqaga">${I.left}</button>`;
+ if(locked('shop'))return `<div class="pad"><div class="topbar">${back}<h1>Bozorlik ro'yxati</h1></div>
+ <div class="card shop-promo"><div class="sp-ic">${I.cart}</div><h2>Qog'oz ro'yxat endi kerak emas</h2><p>Bozorga nima olish kerakligini telefoningizga yozing. Olganingizni belgilab borasiz — hech narsa esdan chiqmaydi, qancha pul ketganini ilova o'zi hisoblaydi.</p>
+ <ul class="prem-list">${[["Bir nechta ro'yxat","Haftalik bozor, uy uchun, to'y uchun…"],["Belgilab borish","Olinganlar alohida, qolgani bir qarashda"],["Xarajat hisobi","Narx yozsangiz — jami va sarflangan summa"],["Oilaga ulashish","Ro'yxatni Telegram yoki SMS orqali yuborish"],["Har hafta qayta ishlatish","Bir bosishda ro'yxat yana yangidek"]].map(([a,b])=>`<li><span class="pi">${I.check}</span><span><b>${a}</b><small>${b}</small></span></li>`).join('')}</ul>
+ <button class="btn btn-primary" style="width:100%" data-act="prem" data-v="shop">★ Premium bilan ochish</button></div></div>`;
+ const ls=Object.values(S.lists).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+ return `<div class="pad"><div class="topbar">${back}<h1>Bozorlik ro'yxati</h1><button class="icon-btn" data-act="listNew" aria-label="Yangi ro'yxat">${I.plus}</button></div>
+ ${ls.length?`<div class="card list">${ls.map(l=>{const s=listStats(l);const pct=s.n?Math.round(s.d/s.n*100):0;return `<button class="item" data-act="listOpen" data-id="${l.id}"><span class="sl-ic">${I.cart}</span><div class="mid"><div class="t1" data-notr>${esc(l.name)}</div><div class="t2">${s.n?`${s.d}/${s.n} olindi`:"Bo'sh ro'yxat"}${s.sum?` · <span class="num">${money(s.sum)}</span>`:''}</div><div class="sl-bar"><i style="width:${pct}%"></i></div></div><span class="r" style="color:var(--muted);display:inline-flex">${I.right}</span></button>`}).join('')}</div>`
+ :`<div class="card empty"><div class="ei">${I.cart}</div><b>Hali ro'yxat yo'q</b>Bozorga chiqishdan oldin nima olishni yozing — qog'oz kerak emas.<div><button class="btn btn-primary btn-sm" style="margin-top:12px" data-act="listNew">${I.plus} Yangi ro'yxat</button></div></div>`}
+ <p class="hint" style="margin-top:12px">${S.api>=8?"Ro'yxatlar akkauntingizda saqlanadi — istalgan telefondan ko'rasiz.":"Ro'yxatlar hozircha shu telefonda saqlanmoqda."}</p>
+ </div>`}
+function itemRow(i){return `<div class="sl-row${i.d?' done':''}"><button class="sl-chk" data-act="itemTog" data-id="${i.id}" aria-label="${i.d?'Olinmadi deb belgilash':'Olindi deb belgilash'}" aria-pressed="${i.d?'true':'false'}">${i.d?I.check:''}</button><button class="sl-main" data-act="itemEdit" data-id="${i.id}"><span class="sl-n" data-notr>${esc(i.n)}</span>${i.q?`<span class="sl-q" data-notr>${esc(i.q)}</span>`:''}</button>${+i.p?`<span class="sl-p num">${fmt(i.p)}</span>`:''}</div>`}
+function vList(){const l=curList();if(!l||locked('shop')){S.view='lists';return vLists()}
+ const s=listStats(l);const todo=l.items.filter(i=>!i.d),done=l.items.filter(i=>i.d);
+ return `<div class="pad"><div class="topbar"><button class="icon-btn" data-act="go" data-v="lists" aria-label="Orqaga">${I.left}</button><h1 data-notr>${esc(l.name)}</h1><button class="icon-btn" data-act="listShare" aria-label="Ulashish">${I.send}</button><button class="icon-btn" data-act="listMenu" aria-label="Ro'yxat sozlamalari">${I.edit}</button></div>
+ <form class="sl-add card" data-form="item" autocomplete="off"><input class="inp" id="it-n" name="n" maxlength="100" placeholder="2 kg kartoshka" aria-label="Mahsulot" enterkeyhint="done"><input class="inp num" id="it-p" name="p" data-amount inputmode="decimal" placeholder="Narxi" aria-label="Narxi (ixtiyoriy)"><button class="btn btn-primary" aria-label="Qo'shish">${I.plus}</button></form>
+ <div class="sl-sum card"><div><span>Jami</span><b class="num">${fmt(s.sum)}</b></div><div><span>Sarflandi</span><b class="num">${fmt(s.spent)}</b></div><div><span>Olinmagan</span><b class="num">${s.n-s.d} ta</b></div></div>
+ ${l.items.length?'':`<div class="card empty" style="margin-top:10px"><b>Ro'yxat bo'sh</b>Yuqoriga mahsulot nomini yozing. Miqdor va narx ixtiyoriy.</div>`}
+ ${todo.length?`<div class="sec-head"><h2>Olinadi</h2><span class="hint">${todo.length} ta</span></div><div class="card">${todo.map(itemRow).join('')}</div>`:(l.items.length?`<div class="card empty" style="margin-top:10px"><b>✓ Hammasi olindi!</b></div>`:'')}
+ ${done.length?`<div class="sec-head"><h2>Olingan</h2><span class="sec-links"><button class="link" data-act="listReset">Qayta boshlash</button><button class="link" data-act="listClear">Tozalash</button></span></div><div class="card">${done.map(itemRow).join('')}</div>`:''}
+ </div>`}
+function addItem(f){const l=curList();if(!l||!need('shop'))return;const raw=f.n.value.trim();if(!raw){f.n.focus();return}
+ if(l.items.length>=150){toast("Bitta ro'yxatda ko'pi bilan 150 ta mahsulot bo'ladi");return}
+ const it=parseItem(raw);l.items.push({id:uid(),n:it.n,q:it.q,p:Math.max(0,parseAmt(f.p.value)),d:0});listTouch(l);render._focus='it-n';render()}
+function listNewSheet(){openSheet("Yangi ro'yxat",`<form data-form="listNew" autocomplete="off"><div class="field"><label for="ln-name">Ro'yxat nomi</label><input class="inp" id="ln-name" name="name" maxlength="60" value="Bozorlik · ${esc(fdate(today()))}"></div><button class="btn btn-primary" style="width:100%">Yaratish</button></form>`,'listnew');setTimeout(()=>{const i=$('#ln-name');if(i){i.focus();i.select()}},300)}
+function saveListNew(f){if(!need('shop'))return;if(Object.keys(S.lists).length>=30){toast("Ko'pi bilan 30 ta ro'yxat bo'ladi");return}
+ const now=Date.now();const l={id:uid(),name:f.name.value.trim().slice(0,60)||'Bozorlik',items:[],createdAt:now,updatedAt:now};
+ listTouch(l);closeAllSheets();S.lid=l.id;S.view='list';render();setTimeout(()=>{const i=$('#it-n');i&&i.focus()},200)}
+function itemSheet(id){const l=curList();const i=l&&l.items.find(x=>x.id===id);if(!i)return;
+ openSheet('Mahsulot',`<form data-form="itemEdit" data-id="${i.id}" autocomplete="off"><div class="field"><label for="ie-n">Nomi</label><input class="inp" id="ie-n" name="n" maxlength="80" value="${esc(i.n)}"></div>
+ <div style="display:flex;gap:10px"><div class="field" style="flex:1"><label for="ie-q">Miqdori</label><input class="inp" id="ie-q" name="q" maxlength="24" placeholder="2 kg" value="${esc(i.q)}"></div><div class="field" style="flex:1"><label for="ie-p">Narxi</label><input class="inp num" id="ie-p" name="p" data-amount inputmode="decimal" placeholder="0" value="${+i.p?fmt(i.p):''}"></div></div>
+ <button class="btn btn-primary" style="width:100%">Saqlash</button></form>
+ <button class="btn btn-danger btn-sm" style="margin-top:14px" data-act="itemDel" data-id="${i.id}">${I.trash} O'chirish</button>`,'item')}
+function saveItemEdit(f){const l=curList();const i=l&&l.items.find(x=>x.id===f.dataset.id);if(!i)return;const n=f.n.value.trim();if(!n){f.n.focus();return}
+ i.n=n.slice(0,80);i.q=f.q.value.trim().slice(0,24);i.p=Math.max(0,parseAmt(f.p.value));listTouch(l);closeAllSheets();render()}
+function listText(l){const s=listStats(l);const line=i=>`${i.d?'✅':'⬜'} ${i.n}${i.q?' — '+i.q:''}${+i.p?' · '+fmt(i.p):''}`;
+ return `🛒 ${l.name}\n\n${l.items.filter(i=>!i.d).map(line).join('\n')}${l.items.some(i=>i.d)?'\n'+l.items.filter(i=>i.d).map(line).join('\n'):''}${s.sum?`\n\nJami: ${money(s.sum)}`:''}\n\nOldi-Berdi ilovasida tuzilgan`}
+function listShareSheet(){const l=curList();if(!l)return;if(!l.items.length){toast("Avval ro'yxatga mahsulot qo'shing");return}S.shareCtx=null;
+ openSheet("Ro'yxatni ulashish",`<p class="hint" style="margin:0 0 10px">Oila a'zongizga yuboring — u ham bozorga nima olishni biladi.</p><div class="field"><textarea class="inp" id="sh-text" rows="9" data-notr>${esc(listText(l))}</textarea></div>
+ <div class="copts"><button class="copt" data-act="shareVia" data-v="tg"><span class="qi" style="background:#e3f2fb;color:#1c8fca">${I.send}</span><b>Telegram</b></button>${navigator.share?`<button class="copt" data-act="shareVia" data-v="any"><span class="qi" style="background:var(--surface-2);color:var(--brand)">${I.link}</span><b>Boshqa ilova orqali</b></button>`:''}<button class="copt" data-act="shareVia" data-v="copy"><span class="qi" style="background:var(--surface-2);color:var(--brand)">${I.book}</span><b>Nusxalash</b></button></div>`,'listshare')}
+function listMenuSheet(){const l=curList();if(!l)return;
+ openSheet("Ro'yxat",`<form data-form="listRename" autocomplete="off"><div class="field"><label for="lr-name">Nomi</label><input class="inp" id="lr-name" name="name" maxlength="60" value="${esc(l.name)}"></div><button class="btn btn-primary" style="width:100%">Saqlash</button></form>
+ <button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="listCopy">Nusxa olish (yangi ro'yxat)</button>
+ <button class="btn btn-danger btn-sm" style="margin-top:14px" data-act="listDel">${I.trash} Ro'yxatni o'chirish</button>`,'listmenu')}
+function saveListRename(f){const l=curList();if(!l)return;l.name=f.name.value.trim().slice(0,60)||l.name;listTouch(l);closeAllSheets();render()}
+function listDelete(id){const l=S.lists[id];if(!l)return;if(LT[id]){clearTimeout(LT[id]);delete LT[id];S.pending--;showSaving()}
+ delete S.lists[id];saveCache();if(S.api>=8)bg("Ro'yxat o'chirilmadi",()=>api('deleteList',{id}),()=>{S.lists[id]=l;saveCache()})}
 
 function ymShift(ym,k){const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-1+k,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 function ymName(ym,short){const [y,m]=ym.split('-').map(Number);const n=isRu()?RU_MON_N[m-1]:MON[m-1];const cap=n.charAt(0).toUpperCase()+n.slice(1);return short?cap.slice(0,3):cap+' '+y}
@@ -1330,6 +1442,17 @@ const A={
  planFreq:d=>{if(!TX)return;const was=TX.freq;TX.freq=d.v;document.querySelectorAll('.freq-seg button').forEach(b=>b.classList.toggle('on',b.dataset.v===d.v));const l=$('#tx-months-l');if(l)l.textContent=tr(d.v==='d'?'Necha kunga':'Necha oyga');const n=$('#tx-months');if(n){n.max=d.v==='d'?100:36;if(was!==d.v)n.value=d.v==='d'?30:3}const f=$('#tx-first');if(f&&was!==d.v){const base=($('#tx-date')||{}).value||today();f.value=d.v==='d'?addDays(base,1):addMonths(base,1)}planPreview()},
  instPaid:d=>instPaid(d.k),
  instMiss:d=>instMiss(d.k),
+ listOpen:d=>{if(!need('shop'))return;closeAllSheets();S.lid=d.id;S.view='list';render()},
+ listNew:()=>{if(need('shop'))listNewSheet()},
+ itemTog:d=>{const l=curList();if(!l||!need('shop'))return;const i=l.items.find(x=>x.id===d.id);if(!i)return;i.d=i.d?0:1;listTouch(l);render()},
+ itemEdit:d=>{if(need('shop'))itemSheet(d.id)},
+ itemDel:d=>{const l=curList();if(!l)return;l.items=l.items.filter(x=>x.id!==d.id);listTouch(l);closeAllSheets();render();toast("O'chirildi")},
+ listShare:()=>listShareSheet(),
+ listMenu:()=>listMenuSheet(),
+ listReset:()=>{const l=curList();if(!l||!need('shop'))return;l.items.forEach(i=>{i.d=0});listTouch(l);render();toast("Ro'yxat yana yangidek — belgilar olib tashlandi")},
+ listClear:()=>{const l=curList();if(!l)return;const n=l.items.filter(i=>i.d).length;confirmSheet("Olinganlarni tozalash",`${n} ta olingan mahsulot ro'yxatdan o'chiriladi.`,"Tozalash",async()=>{l.items=l.items.filter(i=>!i.d);listTouch(l);closeAllSheets();render()})},
+ listCopy:()=>{const l=curList();if(!l||!need('shop'))return;const now=Date.now();const c={id:uid(),name:(l.name+' (nusxa)').slice(0,60),items:l.items.map(i=>({...i,id:uid(),d:0})),createdAt:now,updatedAt:now};listTouch(c);closeAllSheets();S.lid=c.id;render();toast('Nusxa olindi')},
+ listDel:()=>{const l=curList();if(!l)return;confirmSheet(`«${l.name}» o'chirilsinmi?`,"Ro'yxat butunlay o'chiriladi.","O'chirish",async()=>{listDelete(l.id);S.lid=null;S.view='lists';closeAllSheets();render();toast("O'chirildi")})},
  logout:()=>logout(),
  trialStart:async(d,el)=>{if(el)el.disabled=true;try{const j=await api('startTrial',{});if(j.acc)setAcc(j.acc);closeAllSheets();render();toast(isPrem()?tr('🎁 Premium sinov boshlandi — 15 kun bepul!'):tr('Sinov allaqachon ishlatilgan'))}catch(e){if(el)el.disabled=false;toast(writeErr(e))}},
  trialNo:()=>{LS.set('oldiberdi_trialno','1');closeAllSheets();render();toast(tr("Yaxshi! Premium'ni Profil bo'limidan istalgan vaqt sinab ko'rishingiz mumkin"))},
@@ -1424,7 +1547,7 @@ const A={
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(!f)return;if(el.tagName==='BUTTON'&&el.type!=='submit')e.preventDefault();f(el.dataset,el,e)});
 document.addEventListener('change',e=>{if(e.target.id==='rem-auto'){LS.set('oldiberdi_remauto',e.target.checked?'on':'off');render()}if(e.target.id==='tx-plan-on'&&TX&&e.target.checked&&!TX.planOn&&locked('plan')){e.target.checked=false;premSheet('plan');return}if(e.target.id==='tx-plan-on'&&TX){TX.planOn=e.target.checked;const b=$('#tx-plan-box');if(b)b.hidden=!TX.planOn;syncDue()}});
-document.addEventListener('submit',e=>{e.preventDefault();const k=e.target.dataset.form;({quick:doQuick,login:doLogin,register:doRegister,tx:saveTx,person:savePerson,profile:saveProfile,pass:savePass})[k]?.(e.target)});
+document.addEventListener('submit',e=>{e.preventDefault();const k=e.target.dataset.form;({quick:doQuick,login:doLogin,register:doRegister,tx:saveTx,person:savePerson,profile:saveProfile,pass:savePass,item:addItem,listNew:saveListNew,itemEdit:saveItemEdit,listRename:saveListRename})[k]?.(e.target)});
 document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.input==='pq'){S.pq=t.value;render._focus='pq';render()}
  else if(t.dataset.input==='hq'){S.hq=t.value;render._focus='hq';render()}
