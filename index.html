@@ -51,7 +51,7 @@ img{max-width:100%}
 [hidden]{display:none!important}
 .ava{position:relative}
 .ava img{position:absolute;inset:0}
-html,body{height:100%}
+html,body{height:100%;overscroll-behavior-y:contain}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none}
@@ -454,6 +454,10 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 .grp-head{padding:14px 16px;display:flex;flex-direction:column;gap:6px;margin-top:4px}
 .grp-head>b{font-size:20px}.grp-head>b small{font-size:14px;color:var(--muted)}
 .badge.free{background:var(--pos-bg);color:var(--pos)}
+.ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:60;width:42px;height:42px;margin-left:-21px;border-radius:50%;background:var(--surface);box-shadow:var(--shadow);display:grid;place-items:center;color:var(--brand);opacity:0;transform:translateY(-60px);pointer-events:none}
+.ptr svg{width:22px;height:22px}
+.ptr.spin svg{animation:ptrspin .8s linear infinite}
+@keyframes ptrspin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -461,8 +465,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=30;
-const WHATS_NEW=["💍 To'yona daftari: kim qancha olib keldi, kimga qancha olib bordingiz — ism bilan qidiring (Premium)","🏦 Kreditlar kalendari: bank krediti va nasiyalar, to'lov kuni eslatiladi (Premium)","👥 Gap boshqaruvi (Premium) va 💰 Pul yig'ish — do'stlar bilan sovg'aga pul yig'ish, bepul","🏪 Yangi Biznes tarif do'konlar uchun"];
+const APP_VERSION=31;
+const WHATS_NEW=["Ekranni tepadan pastga tortsangiz, ma'lumotlar yangilanadi — ilova qayta ochilmaydi va PIN kod so'ralmaydi","Ilovani yopib qayta ochganda PIN kod avvalgidek so'raladi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -555,7 +559,7 @@ const RU={
 "Internetga ulanib bo'lmadi. Qayta urinib ko'ring.":"Нет подключения к интернету. Попробуйте ещё раз.","Server javob bermadi. Birozdan keyin urinib ko'ring.":"Сервер не ответил. Попробуйте чуть позже.","Saqlab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.":"Не удалось сохранить. Проверьте интернет и попробуйте снова.",
 "Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.":"Не удалось подключиться — проверьте интернет. Данные могут быть устаревшими.",
 "Ismingizni yozing":"Введите имя","Ismni yozing":"Введите имя","Telefon raqam noto'g'ri":"Неверный номер телефона","Parol kamida 6 belgidan iborat bo'lsin":"Пароль — минимум 6 символов","Parollar bir xil emas":"Пароли не совпадают","Raqam va parolni kiriting":"Введите номер и пароль",
-"Bu raqam ro'yxatdan o'tmagan":"Этот номер не зарегистрирован","Parol noto'g'ri":"Неверный пароль","Bozorlik ro'yxati":"Список покупок","Qog'ozsiz xaridlar ro'yxati va xarajat hisobi":"Список покупок без бумаги и учёт расходов","Qog'ozsiz bozorlik — ro'yxat telefoningizda":"Покупки без бумаги — список в телефоне","Ro'yxat tuzing — qog'oz kerak emas":"Составьте список — бумага не нужна","Qog'oz ro'yxat endi kerak emas":"Бумажный список больше не нужен","Bozorga nima olish kerakligini telefoningizga yozing. Olganingizni belgilab borasiz — hech narsa esdan chiqmaydi, qancha pul ketganini ilova o'zi hisoblaydi.":"Запишите в телефон, что нужно купить. Отмечайте купленное — ничего не забудете, а приложение само посчитает расходы.","Bir nechta ro'yxat":"Несколько списков","Haftalik bozor, uy uchun, to'y uchun…":"На неделю, для дома, для праздника…","Belgilab borish":"Отмечайте купленное","Olinganlar alohida, qolgani bir qarashda":"Купленное отдельно, остальное — сразу видно","Xarajat hisobi":"Учёт расходов","Narx yozsangiz — jami va sarflangan summa":"Укажите цены — увидите итог и потраченное","Oilaga ulashish":"Отправить семье","Ro'yxatni Telegram yoki SMS orqali yuborish":"Отправка списка в Telegram или по SMS","Har hafta qayta ishlatish":"Каждую неделю заново","Bir bosishda ro'yxat yana yangidek":"Одно нажатие — и список снова как новый","★ Premium bilan ochish":"★ Открыть с Premium","Yangi ro'yxat":"Новый список","Hali ro'yxat yo'q":"Списков пока нет","Bozorga chiqishdan oldin nima olishni yozing — qog'oz kerak emas.":"Перед походом на рынок запишите, что купить — бумага не нужна.","Ro'yxatlar akkauntingizda saqlanadi — istalgan telefondan ko'rasiz.":"Списки хранятся в аккаунте — видны с любого телефона.","Ro'yxatlar hozircha shu telefonda saqlanmoqda.":"Пока списки хранятся только на этом телефоне.","Bo'sh ro'yxat":"Пустой список","2 kg kartoshka":"2 кг картошки","Mahsulot":"Товар","Narxi":"Цена","Narxi (ixtiyoriy)":"Цена (необязательно)","Qo'shish":"Добавить","Jami":"Итого","Sarflandi":"Потрачено","Olinmagan":"Не куплено","Ro'yxat bo'sh":"Список пуст","Yuqoriga mahsulot nomini yozing. Miqdor va narx ixtiyoriy.":"Впишите товар вверху. Количество и цена — по желанию.","Olinadi":"Купить","Olingan":"Куплено","✓ Hammasi olindi!":"✓ Всё куплено!","Qayta boshlash":"Начать заново","Tozalash":"Очистить","Olindi deb belgilash":"Отметить как купленное","Olinmadi deb belgilash":"Снять отметку","Ro'yxat nomi":"Название списка","Yaratish":"Создать","Miqdori":"Количество","Nomi":"Название","Ro'yxatni ulashish":"Отправить список","Oila a'zongizga yuboring — u ham bozorga nima olishni biladi.":"Отправьте близким — они тоже будут знать, что купить.","Boshqa ilova orqali":"Через другое приложение","Nusxalash":"Копировать","Ro'yxat":"Список","Nusxa olish (yangi ro'yxat)":"Копировать (новый список)","Ro'yxatni o'chirish":"Удалить список","Ro'yxat sozlamalari":"Настройки списка","Ulashish":"Поделиться","Olinganlarni tozalash":"Убрать купленное","Ro'yxat butunlay o'chiriladi.":"Список будет удалён полностью.","Ro'yxat yana yangidek — belgilar olib tashlandi":"Список снова как новый — отметки сняты","Nusxa olindi":"Копия создана","Avval ro'yxatga mahsulot qo'shing":"Сначала добавьте товары в список","Ro'yxat saqlanmadi":"Список не сохранён","Ro'yxat o'chirilmadi":"Список не удалён","Xaridlar ro'yxati va xarajatlar":"Список покупок и расходы","Juda ko'p xato urinish. 15 daqiqadan keyin qayta urinib ko'ring.":"Слишком много неверных попыток. Попробуйте через 15 минут.","Bu raqam allaqachon ro'yxatdan o'tgan. «Kirish»ni tanlang.":"Этот номер уже зарегистрирован. Выберите «Вход».","Bu raqam boshqa akkauntga tegishli":"Этот номер принадлежит другому аккаунту",
+"Bu raqam ro'yxatdan o'tmagan":"Этот номер не зарегистрирован","Parol noto'g'ri":"Неверный пароль","Yangilandi":"Обновлено","Bozorlik ro'yxati":"Список покупок","Qog'ozsiz xaridlar ro'yxati va xarajat hisobi":"Список покупок без бумаги и учёт расходов","Qog'ozsiz bozorlik — ro'yxat telefoningizda":"Покупки без бумаги — список в телефоне","Ro'yxat tuzing — qog'oz kerak emas":"Составьте список — бумага не нужна","Qog'oz ro'yxat endi kerak emas":"Бумажный список больше не нужен","Bozorga nima olish kerakligini telefoningizga yozing. Olganingizni belgilab borasiz — hech narsa esdan chiqmaydi, qancha pul ketganini ilova o'zi hisoblaydi.":"Запишите в телефон, что нужно купить. Отмечайте купленное — ничего не забудете, а приложение само посчитает расходы.","Bir nechta ro'yxat":"Несколько списков","Haftalik bozor, uy uchun, to'y uchun…":"На неделю, для дома, для праздника…","Belgilab borish":"Отмечайте купленное","Olinganlar alohida, qolgani bir qarashda":"Купленное отдельно, остальное — сразу видно","Xarajat hisobi":"Учёт расходов","Narx yozsangiz — jami va sarflangan summa":"Укажите цены — увидите итог и потраченное","Oilaga ulashish":"Отправить семье","Ro'yxatni Telegram yoki SMS orqali yuborish":"Отправка списка в Telegram или по SMS","Har hafta qayta ishlatish":"Каждую неделю заново","Bir bosishda ro'yxat yana yangidek":"Одно нажатие — и список снова как новый","★ Premium bilan ochish":"★ Открыть с Premium","Yangi ro'yxat":"Новый список","Hali ro'yxat yo'q":"Списков пока нет","Bozorga chiqishdan oldin nima olishni yozing — qog'oz kerak emas.":"Перед походом на рынок запишите, что купить — бумага не нужна.","Ro'yxatlar akkauntingizda saqlanadi — istalgan telefondan ko'rasiz.":"Списки хранятся в аккаунте — видны с любого телефона.","Ro'yxatlar hozircha shu telefonda saqlanmoqda.":"Пока списки хранятся только на этом телефоне.","Bo'sh ro'yxat":"Пустой список","2 kg kartoshka":"2 кг картошки","Mahsulot":"Товар","Narxi":"Цена","Narxi (ixtiyoriy)":"Цена (необязательно)","Qo'shish":"Добавить","Jami":"Итого","Sarflandi":"Потрачено","Olinmagan":"Не куплено","Ro'yxat bo'sh":"Список пуст","Yuqoriga mahsulot nomini yozing. Miqdor va narx ixtiyoriy.":"Впишите товар вверху. Количество и цена — по желанию.","Olinadi":"Купить","Olingan":"Куплено","✓ Hammasi olindi!":"✓ Всё куплено!","Qayta boshlash":"Начать заново","Tozalash":"Очистить","Olindi deb belgilash":"Отметить как купленное","Olinmadi deb belgilash":"Снять отметку","Ro'yxat nomi":"Название списка","Yaratish":"Создать","Miqdori":"Количество","Nomi":"Название","Ro'yxatni ulashish":"Отправить список","Oila a'zongizga yuboring — u ham bozorga nima olishni biladi.":"Отправьте близким — они тоже будут знать, что купить.","Boshqa ilova orqali":"Через другое приложение","Nusxalash":"Копировать","Ro'yxat":"Список","Nusxa olish (yangi ro'yxat)":"Копировать (новый список)","Ro'yxatni o'chirish":"Удалить список","Ro'yxat sozlamalari":"Настройки списка","Ulashish":"Поделиться","Olinganlarni tozalash":"Убрать купленное","Ro'yxat butunlay o'chiriladi.":"Список будет удалён полностью.","Ro'yxat yana yangidek — belgilar olib tashlandi":"Список снова как новый — отметки сняты","Nusxa olindi":"Копия создана","Avval ro'yxatga mahsulot qo'shing":"Сначала добавьте товары в список","Ro'yxat saqlanmadi":"Список не сохранён","Ro'yxat o'chirilmadi":"Список не удалён","Xaridlar ro'yxati va xarajatlar":"Список покупок и расходы","Juda ko'p xato urinish. 15 daqiqadan keyin qayta urinib ko'ring.":"Слишком много неверных попыток. Попробуйте через 15 минут.","Bu raqam allaqachon ro'yxatdan o'tgan. «Kirish»ni tanlang.":"Этот номер уже зарегистрирован. Выберите «Вход».","Bu raqam boshqa akkauntga tegishli":"Этот номер принадлежит другому аккаунту",
 "Hozirgi parol noto'g'ri":"Текущий пароль неверный","Yangi parol kamida 6 belgi bo'lsin":"Новый пароль — минимум 6 символов","Yangi parollar bir xil emas":"Новые пароли не совпадают","Hozirgi parolni kiriting":"Введите текущий пароль","Parol yangilandi":"Пароль обновлён",
 "Telefon raqamni to'g'ri kiriting":"Введите правильный номер","Sessiya tugadi, qayta kiring":"Сессия истекла, войдите снова","Telefon raqam va parolingiz bilan kiring":"Войдите по номеру и паролю","Xatolik yuz berdi":"Произошла ошибка",
 "Havola eskirgan yoki noto'g'ri":"Ссылка устарела или неверна","Bu yozuv o'chirilgan":"Эта запись удалена","Yozuv hali saqlanmagan. Birozdan keyin urinib ko'ring.":"Запись ещё не сохранена. Попробуйте чуть позже.",
@@ -877,7 +881,7 @@ async function doLogin(f){
 function writeErr(e){if(e&&e.message==='BLOCKED'){setTimeout(()=>sync(),300);return 'Bu Premium imkoniyat'}return (e&&e.message)||"Saqlab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."}
 function startSession(a,restore,data){
  S.acc=null;setAcc(a);
- S.locked=!!(restore&&a.pinHash);S.setup=a.pinHash?null:{step:'pin1',mode:'new'};S.pinBuf='';S.pinErr='';S.pinTries=0;
+ S.locked=!!(restore&&a.pinHash)&&!aliveRecently();S.setup=a.pinHash?null:{step:'pin1',mode:'new'};S.pinBuf='';S.pinErr='';S.pinTries=0;
  clearInterval(S.poll);S.people={};S.tx={};S.lists={};S.docs={};S.loaded={p:false,t:false};S.view='home';S.stale=false;
  if(data)applySync(data);else{try{const c=JSON.parse(LS.get('oldiberdi_cache')||'null');if(c&&c.acc&&c.acc.id===a.id)applySync(c,true)}catch(e){}}
  if(!data)sync();
@@ -912,7 +916,7 @@ function openRemindParam(){const id=S.remindParam;if(!id||S.locked||S.setup)retu
 function maybeNew(){if(!S.showNew||S.locked||S.setup)return;S.showNew=false;LS.set('oldiberdi_seen_ver',String(APP_VERSION));
  setTimeout(()=>openSheet('Ilova yangilandi',`<p class="hint" style="margin-top:0">Versiya ${APP_VERSION}. Nima yangi:</p><ul class="new-list">${WHATS_NEW.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${S.acc&&S.acc.tg?'':`<a class="btn btn-ghost" style="width:100%;margin-bottom:10px" href="https://t.me/${esc(botName())}?start=app" target="_blank" rel="noopener">${I.send} Yangiliklarni Telegram'da kuzatish</a>`}<button class="btn btn-primary" data-act="closeSheet">Tushunarli</button>`),600);
 }
-function logout(){if(S.token)api('logout').catch(()=>{});S.token=null;clearInterval(S.poll);LS.del('oldiberdi_token');LS.del('oldiberdi_acc');LS.del('oldiberdi_cache');S.acc=null;S.locked=false;S.setup=null;S.pinBuf='';S.pinErr='';closeAllSheets();S.authTab='login';renderAuth()}
+function logout(){clearAlive();if(S.token)api('logout').catch(()=>{});S.token=null;clearInterval(S.poll);LS.del('oldiberdi_token');LS.del('oldiberdi_acc');LS.del('oldiberdi_cache');S.acc=null;S.locked=false;S.setup=null;S.pinBuf='';S.pinErr='';closeAllSheets();S.authTab='login';renderAuth()}
 
 /* ============ app lock: PIN (hashed, stored with the account) + fingerprint (stays on the phone) ============ */
 const BIO={ok:false};
@@ -931,7 +935,7 @@ function renderSetup(){const st=S.setup;
  const t={cur:['Hozirgi PIN kod','Avval hozirgi PIN kodingizni kiriting'],pin1:[st.mode==='new'?"PIN kod o'rnating":'Yangi PIN kod',"Ilovaga begonalar kirmasligi uchun 4 xonali kod o'ylab toping"],pin2:['PIN kodni takrorlang','Tasdiqlash uchun yana bir marta kiriting']}[st.step];
  $('#app').innerHTML=`<div class="lock"><div class="lock-top pad"><div class="lock-ic">${I.shield}</div><h2>${t[0]}</h2><p>${t[1]}</p>${pinDots()}</div>${pinPad(false)}<div class="lock-foot">${st.mode==='change'?'<button data-act="pinCancel">Bekor qilish</button>':'<span style="font-size:12.5px;opacity:.8">PIN kod shifrlangan holda saqlanadi</span>'}</div></div>`}
 async function pinDone(){const pin=S.pinBuf;
- if(S.locked){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash){S.locked=false;S.pinBuf='';S.pinTries=0;render();maybeNew();maybeRemindPrompt();openRemindParam()}else{S.pinTries=(S.pinTries||0)+1;S.pinBuf='';if(S.pinTries>=5){logout();toast("5 marta xato kiritildi. Raqam va parol bilan kiring.");return}S.pinErr=`PIN noto'g'ri. Yana ${5-S.pinTries} ta urinish qoldi`;render()}return}
+ if(S.locked){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash){S.locked=false;markAlive();S.pinBuf='';S.pinTries=0;render();maybeNew();maybeRemindPrompt();openRemindParam()}else{S.pinTries=(S.pinTries||0)+1;S.pinBuf='';if(S.pinTries>=5){logout();toast("5 marta xato kiritildi. Raqam va parol bilan kiring.");return}S.pinErr=`PIN noto'g'ri. Yana ${5-S.pinTries} ta urinish qoldi`;render()}return}
  const st=S.setup;if(!st)return;
  if(st.step==='cur'){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash)st.step='pin1';else S.pinErr="Hozirgi PIN noto'g'ri";S.pinBuf='';render();return}
  if(st.step==='pin1'){if(/^(\d)\1{3}$/.test(pin)||pin==='1234'||pin==='4321'){S.pinErr='Bu PIN juda oson. Boshqasini tanlang';S.pinBuf='';render();return}st.first=pin;st.step='pin2';S.pinBuf='';render();return}
@@ -942,7 +946,25 @@ async function pinDone(){const pin=S.pinBuf;
   S.setup=null;render();toast(st.mode==='new'?"PIN kod o'rnatildi":'PIN kod yangilandi');maybeNew()}
 }
 let hiddenAt=0;
-document.addEventListener('visibilitychange',()=>{if(document.hidden){hiddenAt=Date.now();return}if(S.acc&&S.acc.pinHash&&!S.locked&&!S.setup&&hiddenAt&&Date.now()-hiddenAt>60000){S.locked=true;S.pinBuf='';S.pinErr='';closeAllSheets();render()}hiddenAt=0});
+/* the session survives a page reload (pull-down, update): no PIN if the app was in use a moment ago.
+   sessionStorage is cleared when the app is closed, so opening it again still asks for the PIN. */
+const ALIVE_MS=60000;
+function markAlive(){try{if(S.acc&&!S.locked&&!S.setup)sessionStorage.setItem('ob_alive',String(Date.now()))}catch(e){}}
+function aliveRecently(){try{const t=+sessionStorage.getItem('ob_alive');return !!t&&Date.now()-t<ALIVE_MS}catch(e){return false}}
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{if(!markAlive.t||Date.now()-markAlive.t>5000){markAlive.t=Date.now();markAlive()}},{passive:true}));
+window.addEventListener('pagehide',()=>markAlive());
+function clearAlive(){try{sessionStorage.removeItem('ob_alive')}catch(e){}}
+/* pull down at the top of the screen: refresh the data instead of reloading the app */
+const PTR={y0:null,d:0,busy:false,el:null};
+function ptrEl(){if(!PTR.el){PTR.el=document.createElement('div');PTR.el.className='ptr';PTR.el.setAttribute('aria-hidden','true');PTR.el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>';document.body.appendChild(PTR.el)}return PTR.el}
+function ptrShow(d){const el=ptrEl(),k=Math.min(1,d/70);el.style.opacity=String(k);el.style.transform=`translateY(${Math.min(d,90)-40}px) rotate(${d*3}deg)`}
+function ptrHide(){if(!PTR.el)return;PTR.el.classList.remove('spin');PTR.el.style.transition='opacity .2s,transform .2s';PTR.el.style.opacity='0';PTR.el.style.transform='translateY(-60px)';setTimeout(()=>{if(PTR.el)PTR.el.style.transition=''},250)}
+document.addEventListener('touchstart',e=>{PTR.y0=null;if(PTR.busy||!S.acc||S.locked||S.setup||sheets.length||e.touches.length!==1||window.scrollY>0)return;PTR.y0=e.touches[0].clientY;PTR.d=0},{passive:true});
+document.addEventListener('touchmove',e=>{if(PTR.y0===null)return;const d=(e.touches[0].clientY-PTR.y0)*0.5;if(d<=0||window.scrollY>0){PTR.d=0;ptrHide();return}PTR.d=d;ptrShow(d)},{passive:true});
+document.addEventListener('touchend',async()=>{if(PTR.y0===null)return;PTR.y0=null;if(PTR.d<70){ptrHide();return}
+ PTR.busy=true;const el=ptrEl();el.style.transform='translateY(30px)';el.style.opacity='1';el.classList.add('spin');
+ try{if(S.pending)await QCHAIN;await sync();checkVersion();if(payPending())checkPay()}finally{PTR.busy=false;ptrHide();toast(S.stale?"Internetga ulanib bo'lmadi":'Yangilandi')}},{passive:true});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){hiddenAt=Date.now();return}if(S.acc&&S.acc.pinHash&&!S.locked&&!S.setup&&hiddenAt&&Date.now()-hiddenAt>60000){S.locked=true;clearAlive();S.pinBuf='';S.pinErr='';closeAllSheets();render()}hiddenAt=0});
 
 /* ============ views ============ */
 function render(){
@@ -1785,14 +1807,14 @@ const A={
  contactDev:()=>{const ph=normPhone(DEV.phone);openSheet('Dasturchiga murojaat',`<p class="hint" style="margin:0">Ilova bo'yicha savol, taklif yoki muammo bo'lsa, qulay usulni tanlang.</p><div class="copts">${ph?`<a class="copt" href="tel:+${ph}"><span class="qi t-lend">${I.phone}</span><span><b>Qo'ng'iroq qilish</b><small class="num">${fphone(ph)}</small></span><span class="go">${I.left}</span></a>`:''}<a class="copt" href="https://t.me/${esc(DEV.telegram)}" target="_blank" rel="noopener"><span class="qi" style="background:#e2f2fb;color:#1c8fca">${I.send}</span><span><b>Telegram'da yozish</b><small>@${esc(DEV.telegram)}</small></span><span class="go">${I.left}</span></a></div>`)},
  pinKey:d=>{if(S.pinBusy||S.pinBuf.length>=4)return;S.pinBuf+=d.v;S.pinErr='';render();if(S.pinBuf.length===4){S.pinBusy=true;setTimeout(async()=>{try{await pinDone()}finally{S.pinBusy=false}},150)}},
  pinDel:()=>{if(S.pinBusy)return;S.pinBuf=S.pinBuf.slice(0,-1);S.pinErr='';render()},
- bioUnlock:async()=>{if(await bioVerify()){S.locked=false;S.pinBuf='';S.pinTries=0;render();maybeNew()}else toast('Barmoq izi tasdiqlanmadi. PIN kodni kiriting.')},
+ bioUnlock:async()=>{if(await bioVerify()){S.locked=false;markAlive();S.pinBuf='';S.pinTries=0;render();maybeNew()}else toast('Barmoq izi tasdiqlanmadi. PIN kodni kiriting.')},
  bioSetup:async()=>{if(await bioEnable())toast('Barmoq izi yoqildi');S.setup=null;render();maybeNew()},
  bioSkip:()=>{S.setup=null;render();toast("PIN kod o'rnatildi");maybeNew()},
  forgotPin:()=>{logout();toast('Telefon raqam va parolingiz bilan kiring')},
  pinCancel:()=>{S.setup=null;S.pinBuf='';S.pinErr='';render()},
  changePin:()=>{S.setup={step:S.acc.pinHash?'cur':'pin1',mode:'change'};S.pinBuf='';S.pinErr='';render()},
  toggleBio:async()=>{if(bioGet()){LS.del('oldiberdi_bio');toast("Barmoq izi o'chirildi")}else if(await bioEnable())toast('Barmoq izi yoqildi');render()},
- lockNow:()=>{if(!S.acc.pinHash)return;S.locked=true;S.pinBuf='';S.pinErr='';render()},
+ lockNow:()=>{if(!S.acc.pinHash)return;S.locked=true;clearAlive();S.pinBuf='';S.pinErr='';render()},
  setAva:async(d,el)=>{const t=S.tx[d.id];if(!t)return;el.disabled=true;if(await touchPerson(t.pid,t.photo,true)){el.remove();toast('Profil rasmi qo\'yildi')}else el.disabled=false},
  reloadApp:(d,el)=>{el.disabled=true;el.textContent='Yuklanmoqda…';let done=false;const go=()=>{if(done)return;done=true;location.reload()};const c=navigator.serviceWorker&&navigator.serviceWorker.controller;if(!c)return go();const ch=new MessageChannel();ch.port1.onmessage=go;c.postMessage('refresh',[ch.port2]);setTimeout(go,6000)}
 };
