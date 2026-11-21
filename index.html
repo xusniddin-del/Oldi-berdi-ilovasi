@@ -468,8 +468,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 .kid-hi{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .kid-hi span{opacity:.85;font-size:15px}
 .kid-hi b{display:block;font-size:27px;letter-spacing:-.02em;overflow-wrap:anywhere}
-.kid-ava{border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.55);flex:none;padding:0;margin:0;line-height:0;width:58px;height:58px;aspect-ratio:1;display:grid;place-items:center;overflow:hidden}
-.kid-ava .ava{width:58px!important;height:58px!important}
+.kid-ava{flex:none;padding:0;margin:0;border:0;background:none;line-height:0;width:64px;height:64px;min-width:64px;display:grid;place-items:center;border-radius:50%;-webkit-appearance:none;appearance:none}
+.kid-ava .ava{width:58px!important;height:58px!important;min-width:58px;box-shadow:0 0 0 3px rgba(255,255,255,.6)}
 .kid-chest{display:flex;align-items:center;gap:14px;margin-top:18px;background:rgba(255,255,255,.14);border-radius:24px;padding:14px 16px}
 .kid-chest svg{width:96px;height:80px;flex:none}
 .kid-chest span{font-size:14px;opacity:.9}
@@ -505,8 +505,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=32;
-const WHATS_NEW=["👧 Farzandlar xazinasi: bolangizga ism va 4 xonali PIN bilan alohida kirish yarating (Premium)","Bola o'z xazinasiga pul qo'shadi, sarflaydi va orzusi uchun yig'adi — siz hammasini kuzatasiz","Tepadan tortsangiz ma'lumotlar yangilanadi, PIN qayta so'ralmaydi"];
+const APP_VERSION=33;
+const WHATS_NEW=["Farzand sahifasidagi rasm endi to'g'ri doira bo'lib ko'rinadi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
