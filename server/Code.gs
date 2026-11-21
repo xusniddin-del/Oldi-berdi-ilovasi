@@ -148,7 +148,32 @@ function hash_(s) {
   return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, s, Utilities.Charset.UTF_8)
     .map(function (b) { return ('0' + (b & 255).toString(16)).slice(-2); }).join('');
 }
-function pwHash_(salt, pass) { return hash_(salt + '|' + pass + '|oldi-berdi'); }
+function pwHash_(salt, pass) { return hash_(salt + '|' + pass + '|oldi-berdi'); }   // eski (v1) usul — faqat tekshirish uchun
+/* v2: parol xeshi ko'p marta takrorlanadi — jadval begona qo'lga tushsa ham parolni topish ancha qiyin */
+const PW_ROUNDS = 500;
+function pwHashV2_(salt, pass) {
+  let h = pwHash_(salt, pass);
+  for (let i = 0; i < PW_ROUNDS; i++) h = hash_(h + '|' + salt);
+  return 'v2$' + h;
+}
+/* parolni tekshiradi; eski (v1) xesh to'g'ri kelsa, akkauntni jimgina v2 ga o'tkazadi */
+function checkPw_(a, pass) {
+  const stored = String(a.hash || '');
+  if (stored.indexOf('v2$') === 0) return pwHashV2_(a.salt, pass) === stored;
+  if (pwHash_(a.salt, pass) !== stored) return false;
+  try { a.hash = pwHashV2_(a.salt, pass); put_('Accounts', a, a._row); } catch (e) { console.error(e); }
+  return true;
+}
+/* kirishda ketma-ket xato parol: 5 marta xato → 15 daqiqa kutish */
+const LOGIN_MAX_FAILS = 5, LOGIN_BLOCK_SEC = 900;
+function loginGuard_(phone) {
+  const n = Number(CacheService.getScriptCache().get('lf_' + phone) || 0);
+  if (n >= LOGIN_MAX_FAILS) throw new Error("Juda ko'p xato urinish. 15 daqiqadan keyin qayta urinib ko'ring.");
+}
+function loginFail_(phone) {
+  const c = CacheService.getScriptCache(), k = 'lf_' + phone;
+  c.put(k, String(Number(c.get(k) || 0) + 1), LOGIN_BLOCK_SEC);
+}
 function normPhone_(p) { let d = String(p || '').replace(/\D/g, ''); if (d.length === 9) d = '998' + d; return d; }
 function str_(v, max) { return String(v === undefined || v === null ? '' : v).slice(0, max || 500); }
 function pub_(a) {
@@ -319,10 +344,10 @@ const API = {
     const name = str_(r.name, 80).trim(), phone = normPhone_(r.phone), pass = String(r.pass || '');
     if (name.length < 2) throw new Error('Ismingizni yozing');
     if (phone.length < 9 || phone.length > 15) throw new Error("Telefon raqam noto'g'ri");
-    if (pass.length < 4) throw new Error("Parol kamida 4 belgidan iborat bo'lsin");
+    if (pass.length < 6) throw new Error("Parol kamida 6 belgidan iborat bo'lsin");
     if (all_('Accounts').some(function (a) { return a.phone === phone; })) throw new Error("Bu raqam allaqachon ro'yxatdan o'tgan. «Kirish»ni tanlang.");
     const salt = uid_();
-    const a = { id: uid_(), name: name, phone: phone, salt: salt, hash: pwHash_(salt, pass), photo: '', currency: "so'm", pinSalt: '', pinHash: '', createdAt: Date.now(), trialEnd: '' };
+    const a = { id: uid_(), name: name, phone: phone, salt: salt, hash: pwHashV2_(salt, pass), photo: '', currency: "so'm", pinSalt: '', pinHash: '', createdAt: Date.now(), trialEnd: '' };
     put_('Accounts', a);
     try { notifyAdmin_('🆕 Yangi foydalanuvchi: <b>' + h_(name) + '</b> (+' + phone + ')'); } catch (e) {}
     const d = data_(a.id);
@@ -332,7 +357,9 @@ const API = {
     const phone = normPhone_(r.phone);
     const a = all_('Accounts').filter(function (x) { return x.phone === phone; })[0];
     if (!a) throw new Error("Bu raqam ro'yxatdan o'tmagan");
-    if (pwHash_(a.salt, String(r.pass || '')) !== a.hash) throw new Error("Parol noto'g'ri");
+    loginGuard_(phone);
+    if (!checkPw_(a, String(r.pass || ''))) { loginFail_(phone); throw new Error("Parol noto'g'ri"); }
+    CacheService.getScriptCache().remove('lf_' + phone);
     const d = data_(a.id);
     return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
@@ -357,9 +384,9 @@ const API = {
   },
   changePass: function (r) {
     const a = auth_(r);
-    if (pwHash_(a.salt, String(r.old || '')) !== a.hash) throw new Error("Hozirgi parol noto'g'ri");
-    if (String(r['new'] || '').length < 4) throw new Error("Yangi parol kamida 4 belgi bo'lsin");
-    a.salt = uid_(); a.hash = pwHash_(a.salt, String(r['new']));
+    if (!checkPw_(a, String(r.old || ''))) throw new Error("Hozirgi parol noto'g'ri");
+    if (String(r['new'] || '').length < 6) throw new Error("Yangi parol kamida 6 belgi bo'lsin");
+    a.salt = uid_(); a.hash = pwHashV2_(a.salt, String(r['new']));
     put_('Accounts', a, a._row);
     return { acc: pub_(a) };
   },
