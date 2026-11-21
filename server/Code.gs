@@ -272,7 +272,7 @@ function plan_(v) {
 const FLIP = { lend: 'borrow', borrow: 'lend', got: 'paid', paid: 'got' };
 
 /* ---------- online payment (TezCheck) ---------- */
-const PLANS = { month: { days: 30, key: 'price_month', def: 30000, title: 'Oldi-Berdi Premium — 1 oy' }, year: { days: 365, key: 'price_year', def: 300000, title: 'Oldi-Berdi Premium — 1 yil' } };
+const PLANS = { month: { days: 30, key: 'price_month', def: 59000, title: 'Oldi-Berdi Premium — 1 oy' }, year: { days: 365, key: 'price_year', def: 588000, title: 'Oldi-Berdi Premium — 1 yil' } };
 function prices_() {
   const p = PropertiesService.getScriptProperties();
   const on = !!(p.getProperty('TC_KEY') && p.getProperty('TC_DESK'));
@@ -685,7 +685,9 @@ function botPremium_(chat, a) {
   const rows = [];
   if (p.canTrial) { rows.push([{ text: '🎁 ' + TRIAL_DAYS + ' kun bepul sinab ko\'rish', callback_data: 'trial' }]); t += '\n\nPremium\'ni <b>' + TRIAL_DAYS + ' kun bepul</b> sinab ko\'rishingiz mumkin — majburiy emas.'; }
   if (pr.online && !(p.on && !p.until)) {
-    if (pr.year > 0) rows.push([{ text: '1 yil — ' + sum_(pr.year), callback_data: 'buy:year' }]);
+    const full = pr.month * 12, save = pr.month > 0 && pr.year > 0 ? full - pr.year : 0, pct = save > 0 ? Math.round(save / full * 100) : 0;
+    if (pr.year > 0) rows.push([{ text: '🔥 1 yil — ' + sum_(pr.year) + (pct ? ' (−' + pct + '%)' : ''), callback_data: 'buy:year' }]);
+    if (save > 0) t += '\n\n🔥 <b>Yillik tarif foydali:</b> oyiga ' + sum_(Math.round(pr.year / 12)) + ' — <s>' + sum_(full) + '</s> o\'rniga <b>' + sum_(pr.year) + '</b>, ' + sum_(save) + ' tejaysiz.';
     if (pr.month > 0) rows.push([{ text: '1 oy — ' + sum_(pr.month), callback_data: 'buy:month' }]);
     t += '\n\n' + (p.on && !p.trial ? 'Uzaytirish' : 'Sotib olish') + ' uchun tarifni tanlang 👇\n<i>Click, Payme, Uzum yoki karta orqali</i>';
   }
