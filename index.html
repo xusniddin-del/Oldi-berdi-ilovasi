@@ -386,9 +386,6 @@ a.item{color:inherit;text-decoration:none}
 .tc-go{background:var(--brand);color:#fff;font-weight:800;font-size:12.5px;padding:7px 12px;border-radius:99px;flex:none;border:0;font-family:inherit;cursor:pointer}
 button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}.trial-card.offer{align-items:flex-start;background:linear-gradient(135deg,#f1fbf5,#e2f5ea);border-color:#bfe6cf}
 .tc-btns{display:flex;gap:8px;margin-top:10px}.tc-no{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:12.5px;padding:7px 12px;border-radius:99px;font-family:inherit;cursor:pointer}
-.blocked{min-height:100vh;background:var(--bg)}.bl-top{background:linear-gradient(160deg,var(--brand),var(--brand-deep));color:#fff;text-align:center;padding-top:48px;padding-bottom:70px}
-.bl-top svg{width:56px;height:56px}.bl-ic{font-size:44px;margin:10px 0 4px}.bl-top h1{font-size:26px;margin:0 0 8px}.bl-top p{opacity:.9;margin:0 auto;max-width:320px;line-height:1.45}
-.blocked .auth-card{margin-top:-46px}
 </style>
 </head>
 <body>
@@ -396,8 +393,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=27;
-const WHATS_NEW=["Oldi-Berdi endi bepul: qarz yozish, ro'yxat va qoldiqlar doim bepul, hech narsa bloklanmaydi","Premium'ni xohlasangizgina 15 kun bepul sinab ko'rasiz — sinov tugagach ilova bepul ishlayveradi"];
+const APP_VERSION=28;
+const WHATS_NEW=["Xavfsizlik kuchaytirildi: yangi parollar endi kamida 6 belgidan iborat bo'ladi. Hozirgi parolingiz avvalgidek ishlayveradi","Ilova kodi tozalandi va yengillashdi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -452,7 +449,7 @@ const RU={
 "Barmoq izi":"Отпечаток пальца","Yoqilgan · o'chirish uchun bosing":"Включён · нажмите, чтобы выключить","O'chiq · yoqish uchun bosing":"Выключен · нажмите, чтобы включить","Ilovani hozir qulflash":"Заблокировать сейчас",
 "Eslatma sozlamalari":"Настройки напоминаний","Valyuta":"Валюта","Dasturchiga murojaat":"Связаться с разработчиком","Savol, taklif yoki muammo bo'lsa":"Вопросы, предложения или проблемы","Chiqish":"Выйти","Til":"Язык","Oylik hisobot":"Отчёт за месяц",
 "Akkauntingizga boshqa telefondan kirish uchun shu ilova havolasini oching va":"Чтобы войти с другого телефона, откройте ссылку приложения и введите номер","raqami hamda parolingizni kiriting.":"и ваш пароль.",
-"Kirish":"Вход","Ro'yxatdan o'tish":"Регистрация","Ro'yxatdan o'tish — bepul":"Зарегистрироваться — бесплатно","Ismingiz":"Ваше имя","Telefon raqam":"Номер телефона","Parol":"Пароль","Kamida 4 belgi":"Минимум 4 символа","Parolni takrorlang":"Повторите пароль",
+"Kirish":"Вход","Ro'yxatdan o'tish":"Регистрация","Ro'yxatdan o'tish — bepul":"Зарегистрироваться — бесплатно","Ismingiz":"Ваше имя","Telefon raqam":"Номер телефона","Parol":"Пароль","Kamida 6 belgi":"Минимум 6 символов","Parolni takrorlang":"Повторите пароль",
 "Qarz daftaringiz — doim cho'ntagingizda":"Ваша тетрадь долгов — всегда в кармане","Akkauntingizga istalgan telefondan shu raqam va parol bilan kirasiz.":"Входите с любого телефона по этому номеру и паролю.","Akkauntingiz yo'qmi? Yuqoridan «Ro'yxatdan o'tish»ni tanlang.":"Нет аккаунта? Выберите «Регистрация» вверху.",
 "Kirishda muammo bormi? Dasturchiga yozing":"Проблемы со входом? Напишите разработчику","Qarz berdim / oldim":"Дал / взял в долг","Har bir yozuvga rasm va izoh":"Фото и примечание к каждой записи","Odamlar tarixi":"История людей","Kim qancha qarzdor — bir qarashda":"Кто сколько должен — с первого взгляда","Kontaktlardan":"Из контактов","Telefon kontaktidan tanlash":"Выбор из контактов телефона","Muddat nazorati":"Контроль сроков","Muddati o'tganlar alohida":"Просроченные отдельно",
 "Kirilmoqda…":"Вход…","Yaratilmoqda…":"Создание…","Parolni ko'rsatish":"Показать пароль","Parolni yashirish":"Скрыть пароль",
@@ -489,9 +486,9 @@ const RU={
 "Yozib qo'yildi":"Записано","Saqlandi":"Сохранено","O'chirildi":"Удалено","Nusxalandi":"Скопировано","Raqam nusxalandi":"Номер скопирован","Saqlanmoqda…":"Сохраняем…",
 "Internetga ulanib bo'lmadi. Qayta urinib ko'ring.":"Нет подключения к интернету. Попробуйте ещё раз.","Server javob bermadi. Birozdan keyin urinib ko'ring.":"Сервер не ответил. Попробуйте чуть позже.","Saqlab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.":"Не удалось сохранить. Проверьте интернет и попробуйте снова.",
 "Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.":"Не удалось подключиться — проверьте интернет. Данные могут быть устаревшими.",
-"Ismingizni yozing":"Введите имя","Ismni yozing":"Введите имя","Telefon raqam noto'g'ri":"Неверный номер телефона","Parol kamida 4 belgidan iborat bo'lsin":"Пароль — минимум 4 символа","Parollar bir xil emas":"Пароли не совпадают","Raqam va parolni kiriting":"Введите номер и пароль",
+"Ismingizni yozing":"Введите имя","Ismni yozing":"Введите имя","Telefon raqam noto'g'ri":"Неверный номер телефона","Parol kamida 6 belgidan iborat bo'lsin":"Пароль — минимум 6 символов","Parollar bir xil emas":"Пароли не совпадают","Raqam va parolni kiriting":"Введите номер и пароль",
 "Bu raqam ro'yxatdan o'tmagan":"Этот номер не зарегистрирован","Parol noto'g'ri":"Неверный пароль","Bu raqam allaqachon ro'yxatdan o'tgan. «Kirish»ni tanlang.":"Этот номер уже зарегистрирован. Выберите «Вход».","Bu raqam boshqa akkauntga tegishli":"Этот номер принадлежит другому аккаунту",
-"Hozirgi parol noto'g'ri":"Текущий пароль неверный","Yangi parol kamida 4 belgi bo'lsin":"Новый пароль — минимум 4 символа","Yangi parollar bir xil emas":"Новые пароли не совпадают","Hozirgi parolni kiriting":"Введите текущий пароль","Parol yangilandi":"Пароль обновлён",
+"Hozirgi parol noto'g'ri":"Текущий пароль неверный","Yangi parol kamida 6 belgi bo'lsin":"Новый пароль — минимум 6 символов","Yangi parollar bir xil emas":"Новые пароли не совпадают","Hozirgi parolni kiriting":"Введите текущий пароль","Parol yangilandi":"Пароль обновлён",
 "Telefon raqamni to'g'ri kiriting":"Введите правильный номер","Sessiya tugadi, qayta kiring":"Сессия истекла, войдите снова","Telefon raqam va parolingiz bilan kiring":"Войдите по номеру и паролю","Xatolik yuz berdi":"Произошла ошибка",
 "Havola eskirgan yoki noto'g'ri":"Ссылка устарела или неверна","Bu yozuv o'chirilgan":"Эта запись удалена","Yozuv hali saqlanmagan. Birozdan keyin urinib ko'ring.":"Запись ещё не сохранена. Попробуйте чуть позже.",
 "Yozuv saqlanmadi":"Запись не сохранена","Odam saqlanmadi":"Человек не сохранён","O'zgarish saqlanmadi":"Изменение не сохранено","O'chirilmadi":"Не удалено",
@@ -646,11 +643,10 @@ function instMiss(key){const x=instFind(key);if(!x)return;S.marks=S.marks||{};S.
  closeAllSheets();setTimeout(()=>{toast("To'lamadi deb belgilandi. Mijozga SMS eslatma yuboring 👇");A.remind({id:x.p.id})},250)}
 function instSheet(){const l=dueInstList();if(!l.length)return;openSheet("Bugungi to'lovlar",`<p class="hint" style="margin-top:0">Grafik bo'yicha to'lov kuni kelganlar. To'ladimi?</p><div class="inst-card" data-inst>${l.map(instRowHtml).join('')}</div>`,'inst')}
 function refreshInstSheet(){const b=document.querySelector('[data-inst]');if(!b)return;const l=dueInstList();if(!l.length){closeAllSheets();return}b.innerHTML=l.map(instRowHtml).join('')}
-function maybeInstPrompt(){if(!S.acc||S.locked||S.setup||sheets.length||!S.loaded.t||isBlocked())return;const td=today();if(LS.get('oldiberdi_instday')===td)return;
+function maybeInstPrompt(){if(!S.acc||S.locked||S.setup||sheets.length||!S.loaded.t)return;const td=today();if(LS.get('oldiberdi_instday')===td)return;
  if(!dueInstList().some(x=>!x.missed))return;LS.set('oldiberdi_instday',td);instSheet()}
 
 /* ============ 15-day trial / block ============ */
-function isBlocked(){return false}   // v27: ilova hech qachon bloklanmaydi — asosiy qismi bepul
 function trialLeft(){const p=S.acc&&S.acc.premium;if(!p||!p.trial||!p.until)return -1;return Math.round((new Date(p.until)-new Date(today()))/864e5)+1}
 function canTrial(){const p=S.acc&&S.acc.premium;return S.api>=7&&!!(p&&p.canTrial)}
 function trialBanner(){const n=trialLeft();
@@ -663,13 +659,6 @@ function trialAskSheet(){openSheet(tr("Premium'ni bepul sinab ko'ring"),`<div cl
  <button class="btn btn-primary" style="width:100%" data-act="trialStart">🎁 ${tr("Ha, 15 kun bepul sinab ko'raman")}</button>
  <button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="trialNo">${tr("Yo'q, hozircha bepul versiya yetadi")}</button>`,'trialask')}
 function maybeTrialAsk(){if(!S.acc||S.locked||S.setup||sheets.length||!canTrial()||S.view!=='home')return;if(LS.get('oldiberdi_trialask_'+S.acc.id))return;LS.set('oldiberdi_trialask_'+S.acc.id,'1');setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup&&canTrial())trialAskSheet()},1200)}
-function renderBlocked(){const p=S.acc.premium||{};
- $('#app').innerHTML=`<div class="blocked"><div class="bl-top pad">${LOGO}<div class="bl-ic">⛔</div><h1>Siz bloklandingiz</h1><p>${p.until?'Premium muddati tugadi.':'15 kunlik sinov muddati tugadi.'} Ilovadan foydalanishni davom ettirish uchun Premium oling.</p></div>
- <div class="pad"><div class="auth-card"><ul class="prem-list" style="margin-top:0"><li><span class="pi">${I.check}</span><span><b>Ma'lumotlaringiz saqlanib qoladi</b><small>To'lovdan keyin hammasi o'z joyida</small></span></li><li><span class="pi">${I.check}</span><span><b>Premium o'zi yoqiladi</b><small>To'lovdan keyin 30 soniya ichida</small></span></li></ul>
- <a class="btn btn-primary" style="width:100%" href="https://t.me/${esc(botName())}?start=premium" target="_blank" rel="noopener">★ Premium olish</a>
- <p class="hint" style="text-align:center;margin:10px 0 14px">To'lov Telegram botimiz orqali: Click, Payme, Uzum yoki karta.</p>
- <div style="display:flex;gap:10px"><a class="btn btn-ghost" style="flex:1" href="https://t.me/${esc(DEV.telegram)}" target="_blank" rel="noopener">Dasturchiga yozish</a><button class="btn btn-ghost" style="flex:1" data-act="logout">Chiqish</button></div></div></div></div>`}
-
 /* ============ premium ============ */
 const PREM=Object.assign({price:'',features:['report','excel','remind','trust','usd','plan','confirm','ru']},window.OLDIBERDI_PREMIUM||{});
 const PREM_INFO={report:['Oylik hisobot',"Grafiklar, eng katta qarzdorlar"],excel:['Excel fayl','Hisobotni .xlsx qilib yuklab olish'],remind:['SMS eslatmalar',"Kimga eslatish kerakligini ilova o'zi topadi"],trust:['Ishonch reytingi',"Kim o'z vaqtida qaytarishini ko'rsatadi"],usd:['Dollar va MB kursi','Dollarda qarz yozish, so\'mga avtomatik hisoblash'],plan:["Bo'lib to'lash",'Nasiya grafigi va kechikishlar'],confirm:['Ikki tomonlama tasdiq','Qarzdor SMS havola orqali tasdiqlaydi'],ru:['Rus tili','Ilovani rus tilida ishlatish']};
@@ -780,7 +769,7 @@ function renderAuth(){
  <form data-form="${reg?'register':'login'}" autocomplete="on">
  ${reg?`<div class="field"><label for="a-name">Ismingiz</label><input class="inp" id="a-name" name="name" autocomplete="name" placeholder="Masalan: Xusniddin" required></div>`:''}
  <div class="field"><label for="a-phone">Telefon raqam</label><input class="inp" id="a-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" required></div>
- <div class="field"><label for="a-pass">Parol</label>${pwInp('a-pass','pass',reg?'new-password':'current-password','Kamida 4 belgi')}</div>
+ <div class="field"><label for="a-pass">Parol</label>${pwInp('a-pass','pass',reg?'new-password':'current-password',reg?'Kamida 6 belgi':'')}</div>
  ${reg?`<div class="field"><label for="a-pass2">Parolni takrorlang</label>${pwInp('a-pass2','pass2','new-password')}</div>`:''}
  <div class="err" id="a-err"></div>
  <button class="btn btn-primary" id="a-btn">${reg?"Ro'yxatdan o'tish — bepul":'Kirish'}</button>
@@ -795,7 +784,7 @@ async function doRegister(f){
  const name=f.name.value.trim(),phone=normPhone(f.phone.value),pass=f.pass.value,pass2=f.pass2.value;
  if(name.length<2)return err.textContent='Ismingizni yozing';
  if(phone.length<9||phone.length>15)return err.textContent="Telefon raqam noto'g'ri";
- if(pass.length<4)return err.textContent="Parol kamida 4 belgidan iborat bo'lsin";
+ if(pass.length<6)return err.textContent="Parol kamida 6 belgidan iborat bo'lsin";
  if(pass!==pass2)return err.textContent='Parollar bir xil emas';
  btn.disabled=true;btn.textContent='Yaratilmoqda…';
  try{const j=await api('register',{name,phone,pass});S.token=j.token;LS.set('oldiberdi_token',j.token);startSession(j.acc,false,j);toast("Xush kelibsiz, "+name+"!")}
@@ -842,7 +831,7 @@ async function sync(){if(!S.acc||S.syncing)return;S.syncing=true;
  finally{S.syncing=false}}
 function checkVersion(){fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(v=>{const n=+v.version||0;const was=S.newVer;S.newVer=n>APP_VERSION?n:0;if(!!was!==!!S.newVer&&!isTyping())render()}).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.acc&&!S.locked){sync();if(payPending())setTimeout(()=>checkPay(),1500)}});
-function openRemindParam(){const id=S.remindParam;if(!id||S.locked||S.setup||isBlocked())return;if(!S.people[id]){if(!S.loaded.p)setTimeout(openRemindParam,1500);return}S.remindParam=null;closeAllSheets();A.remind({id})}
+function openRemindParam(){const id=S.remindParam;if(!id||S.locked||S.setup)return;if(!S.people[id]){if(!S.loaded.p)setTimeout(openRemindParam,1500);return}S.remindParam=null;closeAllSheets();A.remind({id})}
 function maybeNew(){if(!S.showNew||S.locked||S.setup)return;S.showNew=false;LS.set('oldiberdi_seen_ver',String(APP_VERSION));
  setTimeout(()=>openSheet('Ilova yangilandi',`<p class="hint" style="margin-top:0">Versiya ${APP_VERSION}. Nima yangi:</p><ul class="new-list">${WHATS_NEW.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${S.acc&&S.acc.tg?'':`<a class="btn btn-ghost" style="width:100%;margin-bottom:10px" href="https://t.me/${esc(botName())}?start=app" target="_blank" rel="noopener">${I.send} Yangiliklarni Telegram'da kuzatish</a>`}<button class="btn btn-primary" data-act="closeSheet">Tushunarli</button>`),600);
 }
@@ -883,7 +872,7 @@ function render(){
  if(!S.acc)return;
  if(S.locked)return renderLock();
  if(S.setup)return renderSetup();
- if(isBlocked()){closeAllSheets();return renderBlocked()}
+
  const y=window.scrollY;const keep=render._last===S.view+'|'+S.pid;
  const v=S.view;
  let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():v==='report'?vReport():vProfile();
@@ -1324,7 +1313,7 @@ async function saveProfile(){const err=$('#pr-err'),btn=$('#pr-save');err.textCo
  }catch(e){err.textContent=writeErr(e)}finally{btn.disabled=false;btn.textContent='Saqlash'}}
 function passForm(){openSheet("Parolni o'zgartirish",`<form data-form="pass"><div class="field"><label for="pw-old">Hozirgi parol</label>${pwInp('pw-old','old','current-password')}</div><div class="field"><label for="pw-new">Yangi parol</label>${pwInp('pw-new','new','new-password')}</div><div class="field"><label for="pw-new2">Yangi parolni takrorlang</label>${pwInp('pw-new2','new2','new-password')}</div><div class="err" id="pw-err"></div><button class="btn btn-primary" id="pw-save">Parolni yangilash</button></form>`)}
 async function savePass(){const err=$('#pw-err'),btn=$('#pw-save');err.textContent='';const o=$('#pw-old').value,n=$('#pw-new').value,n2=$('#pw-new2').value;
- if(!o)return err.textContent='Hozirgi parolni kiriting';if(n.length<4)return err.textContent="Yangi parol kamida 4 belgi bo'lsin";if(n!==n2)return err.textContent='Yangi parollar bir xil emas';
+ if(!o)return err.textContent='Hozirgi parolni kiriting';if(n.length<6)return err.textContent="Yangi parol kamida 6 belgi bo'lsin";if(n!==n2)return err.textContent='Yangi parollar bir xil emas';
  btn.disabled=true;try{await api('changePass',{old:o,new:n});closeSheet();toast('Parol yangilandi')}catch(e){err.textContent=writeErr(e);btn.disabled=false}}
 function currencyForm(){const opts=["so'm",'$','€','₽','₸'];openSheet('Valyuta',`<p class="hint" style="margin-top:0">Summalar yonida ko'rsatiladigan belgi. Eski yozuvlar summasi o'zgarmaydi.</p><div class="chips" style="flex-wrap:wrap">${opts.map(o=>`<button class="chip ${cur()===o?'on':''}" data-act="setCur" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`)}
 
