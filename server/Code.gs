@@ -31,12 +31,13 @@ const TABLES = {
   Confirms: ['token', 'acc', 'txId', 'status', 'answeredAt', 'createdAt'],
   Meta:     ['key', 'value'],
   Reminders: ['key', 'acc', 'pid', 'txId', 'idx', 'due', 'amount', 'status', 'markDay', 'chat', 'msg', 'text', 'updatedAt'],
-  Payments: ['bill', 'acc', 'phone', 'tarif', 'days', 'amount', 'status', 'createdAt', 'paidAt', 'until']
+  Payments: ['bill', 'acc', 'phone', 'tarif', 'days', 'amount', 'status', 'createdAt', 'paidAt', 'until'],
+  Lists:    ['id', 'acc', 'name', 'items', 'createdAt', 'updatedAt']
 };
-const JSON_FIELDS = { log: true, edits: true, plan: true };
+const JSON_FIELDS = { log: true, edits: true, plan: true, items: true };
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -242,9 +243,10 @@ function data_(accId) {
   return {
     people: all_('People').filter(function (p) { return p.acc === accId; }).map(clean_),
     tx: all_('Tx').filter(function (t) { return t.acc === accId; }).map(clean_),
+    lists: all_('Lists').filter(function (l) { return l.acc === accId; }).map(clean_),
     confirms: confirms,
     rate: rate_(),
-    api: 7,
+    api: 8,
     marks: marks_(accId),
     prices: prices_(),
     version: meta_('version')
@@ -351,7 +353,7 @@ const API = {
     put_('Accounts', a);
     try { notifyAdmin_('🆕 Yangi foydalanuvchi: <b>' + h_(name) + '</b> (+' + phone + ')'); } catch (e) {}
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
   login: function (r) {
     const phone = normPhone_(r.phone);
@@ -361,7 +363,7 @@ const API = {
     if (!checkPw_(a, String(r.pass || ''))) { loginFail_(phone); throw new Error("Parol noto'g'ri"); }
     CacheService.getScriptCache().remove('lf_' + phone);
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
   logout: function (r) {
     const rows = all_('Sessions').filter(function (x) { return x.token === String(r.token || ''); }).map(function (x) { return x._row; });
@@ -370,7 +372,7 @@ const API = {
   },
   sync: function (r) {
     const a = auth_(r), d = data_(a.id);
-    return { acc: pub_(a), people: d.people, tx: d.tx, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
   },
   saveProfile: function (r) {
     const a = auth_(r);
@@ -450,6 +452,30 @@ const API = {
   deleteTx: function (r) {
     const a = auth_(r), id = String(r.id || '');
     delRows_('Tx', all_('Tx').filter(function (t) { return t.id === id && t.acc === a.id; }).map(function (t) { return t._row; }));
+    return {};
+  },
+  /* Bozorlik ro'yxati (Premium): butun ro'yxat bitta qatorda, mahsulotlar JSON ko'rinishida */
+  saveList: function (r) {
+    const a = auth_(r), it = r.item || {};
+    if (!premium_(a).on) throw new Error("Bozorlik ro'yxati — Premium funksiya");
+    const id = str_(it.id, 40) || uid_();
+    const old = all_('Lists').filter(function (x) { return x.id === id; })[0];
+    if (old && old.acc !== a.id) throw new Error("Ruxsat yo'q");
+    if (!old && all_('Lists').filter(function (x) { return x.acc === a.id; }).length >= 30) throw new Error("Ko'pi bilan 30 ta ro'yxat bo'ladi");
+    const items = (Array.isArray(it.items) ? it.items : []).slice(0, 150).map(function (x) {
+      x = x || {};
+      return { id: str_(x.id, 40) || uid_(), n: str_(x.n, 80).trim(), q: str_(x.q, 24).trim(), p: Math.max(0, Math.round((Number(x.p) || 0) * 100) / 100), d: x.d ? 1 : 0 };
+    }).filter(function (x) { return x.n; });
+    if (JSON.stringify(items).length > 45000) throw new Error("Ro'yxat juda katta");
+    const now = Date.now();
+    const l = { id: id, acc: a.id, name: str_(it.name, 60).trim() || 'Bozorlik', items: items,
+      createdAt: Number(it.createdAt) || (old && old.createdAt) || now, updatedAt: Number(it.updatedAt) || now };
+    put_('Lists', l, old ? old._row : 0);
+    return { item: clean_(l) };
+  },
+  deleteList: function (r) {
+    const a = auth_(r), id = String(r.id || '');
+    delRows_('Lists', all_('Lists').filter(function (x) { return x.id === id && x.acc === a.id; }).map(function (x) { return x._row; }));
     return {};
   },
   /* two-sided confirmation: the other person opens a link and confirms the record */
@@ -655,7 +681,7 @@ function botPremium_(chat, a) {
   const p = premium_(a), pr = prices_();
   let t = '💎 <b>Oldi-Berdi Premium</b>\n\n';
   t += p.trial ? '🎁 Holat: <b>sinov muddati — ' + fdate_(p.until) + ' gacha</b>\nSinov tugagach ilova bepul rejimda ishlayveradi.\n\n' : p.on ? '✅ Holat: <b>faol' + (p.until ? ' — ' + fdate_(p.until) + ' gacha' : ' (muddatsiz)') + '</b>\n\n' : '🆓 Holat: <b>bepul rejim</b>\nAsosiy imkoniyatlar bepul. Premium qo\'shimcha imkoniyatlarni ochadi.\n\n';
-  t += 'Premium\'da:\n📊 Oylik hisobot va grafiklar\n📥 Excel fayl\n💬 SMS eslatmalar\n⭐ Ishonch reytingi\n💵 Dollar va MB kursi\n🗓 Bo\'lib to\'lash\n🤝 Ikki tomonlama tasdiq\n🇷🇺 Rus tili\n⏰ Har kuni botda eslatma';
+  t += 'Premium\'da:\n🛒 Bozorlik ro\'yxati\n📊 Oylik hisobot va grafiklar\n📥 Excel fayl\n💬 SMS eslatmalar\n⭐ Ishonch reytingi\n💵 Dollar va MB kursi\n🗓 Bo\'lib to\'lash\n🤝 Ikki tomonlama tasdiq\n🇷🇺 Rus tili\n⏰ Har kuni botda eslatma';
   const rows = [];
   if (p.canTrial) { rows.push([{ text: '🎁 ' + TRIAL_DAYS + ' kun bepul sinab ko\'rish', callback_data: 'trial' }]); t += '\n\nPremium\'ni <b>' + TRIAL_DAYS + ' kun bepul</b> sinab ko\'rishingiz mumkin — majburiy emas.'; }
   if (pr.online && !(p.on && !p.until)) {
@@ -749,7 +775,7 @@ function botStatus_(chat, a) {
 }
 
 function botAbout_(chat, a) {
-  send_(chat, '📒 <b>Oldi-Berdi</b> — qarz daftari ilovasi\n\nKimga qancha qarz berdingiz, kimdan qancha oldingiz — hammasi bir joyda. Ma\'lumotlar internetda saqlanadi: istalgan telefondan raqam va parol bilan kirasiz.\n\n<b>Bepul:</b>\n✅ Qarz berdim / oldim / qaytardi\n✅ Rasm va izoh\n✅ Muddat nazorati\n✅ Kontaktlardan tanlash\n✅ PIN va barmoq izi\n\n<b>Premium:</b> hisobot, Excel, SMS eslatma, ishonch reytingi, dollar, bo\'lib to\'lash, ikki tomonlama tasdiq, rus tili.\n\n<b>O\'rnatish:</b>\n🤖 Android — «Android uchun yuklash» tugmasi\n🍏 iPhone — havolani Safari\'da oching → «Ulashish» → «Bosh ekranga qo\'shish»', { reply_markup: { inline_keyboard: [[btnApp_()], [{ text: '🤖 Android uchun yuklash', url: appUrl_() + 'Oldi-Berdi.apk' }], [{ text: '🍏 iPhone / brauzer', url: appUrl_() }]] } });
+  send_(chat, '📒 <b>Oldi-Berdi</b> — qarz daftari ilovasi\n\nKimga qancha qarz berdingiz, kimdan qancha oldingiz — hammasi bir joyda. Ma\'lumotlar internetda saqlanadi: istalgan telefondan raqam va parol bilan kirasiz.\n\n<b>Bepul:</b>\n✅ Qarz berdim / oldim / qaytardi\n✅ Rasm va izoh\n✅ Muddat nazorati\n✅ Kontaktlardan tanlash\n✅ PIN va barmoq izi\n\n<b>Premium:</b> bozorlik ro\'yxati, hisobot, Excel, SMS eslatma, ishonch reytingi, dollar, bo\'lib to\'lash, ikki tomonlama tasdiq, rus tili.\n\n<b>O\'rnatish:</b>\n🤖 Android — «Android uchun yuklash» tugmasi\n🍏 iPhone — havolani Safari\'da oching → «Ulashish» → «Bosh ekranga qo\'shish»', { reply_markup: { inline_keyboard: [[btnApp_()], [{ text: '🤖 Android uchun yuklash', url: appUrl_() + 'Oldi-Berdi.apk' }], [{ text: '🍏 iPhone / brauzer', url: appUrl_() }]] } });
 }
 
 function botHelp_(chat, a) {
