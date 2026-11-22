@@ -221,6 +221,7 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 .grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 8px}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .sheet-head h3{margin:0;font-size:19px;letter-spacing:-.01em}
+.pin-skip{width:auto;min-height:48px;display:inline-flex;align-items:center;justify-content:center;padding:0 28px;border-radius:14px;font-size:15px;text-decoration:none!important;opacity:1!important}
 @keyframes su{from{transform:translateY(40px);opacity:0}}
 @keyframes fi{from{opacity:0}}
 /* ============ katta ekran (kompyuter) ============ */
@@ -266,6 +267,17 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
  .grab{display:none}
  .upd,.toast{left:calc(50% + 126px)}
  .upd{bottom:24px}
+ #app:has(.lock){max-width:none}
+ .lock{justify-content:center;align-items:center;background:radial-gradient(45% 55% at 85% 15%,rgba(191,242,111,.16),transparent 70%),radial-gradient(40% 50% at 10% 90%,rgba(255,255,255,.08),transparent 70%),linear-gradient(160deg,var(--hero-a),var(--hero-b));position:relative;overflow:hidden}
+ .lock:after{content:"";position:absolute;right:-140px;bottom:-140px;width:440px;height:440px;border-radius:50%;border:64px solid rgba(191,242,111,.08);pointer-events:none}
+ .lock>*{position:relative;z-index:1}
+ .lock-top{flex:none;padding:0 0 18px}
+ .lock-top h2{font-size:26px}
+ .pad-grid{max-width:330px;gap:16px 18px}
+ .pad-grid button{width:76px;height:76px}
+ .pad-grid button:hover{background:rgba(255,255,255,.22)}
+ .lock-foot{padding:22px 0 0}
+ .lock-foot:after{content:"Raqamlarni klaviaturadan ham terishingiz mumkin";display:block;font-size:12.5px;opacity:.65;margin-top:6px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
@@ -549,8 +561,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=35;
-const WHATS_NEW=["Kompyuterda endi katta ekranga moslashgan ko'rinish: chap tomonda menyu, keng sahifalar","Kirish sahifasi kompyuterda ikki tomonlama"];
+const APP_VERSION=36;
+const WHATS_NEW=["PIN qulf endi ixtiyoriy: Profil → «PIN qulf qo'yish» yoki «PIN qulfni o'chirish»","Kompyuterda katta ekranga moslashgan ko'rinish va qulf ekrani"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -974,7 +986,7 @@ async function doLogin(f){
 function writeErr(e){if(e&&e.message==='BLOCKED'){setTimeout(()=>sync(),300);return 'Bu Premium imkoniyat'}return (e&&e.message)||"Saqlab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."}
 function startSession(a,restore,data){
  S.acc=null;setAcc(a);
- S.locked=!!(restore&&a.pinHash)&&!aliveRecently();S.setup=a.pinHash?null:{step:'pin1',mode:'new'};S.pinBuf='';S.pinErr='';S.pinTries=0;
+ S.locked=!!(restore&&a.pinHash)&&!aliveRecently();S.setup=a.pinHash||LS.get('oldiberdi_nopin_'+a.id)==='1'?null:{step:'pin1',mode:'new'};S.pinBuf='';S.pinErr='';S.pinTries=0;
  clearInterval(S.poll);S.people={};S.tx={};S.lists={};S.docs={};S.kids={};S.loaded={p:false,t:false};S.view='home';S.stale=false;
  if(data)applySync(data);else{try{const c=JSON.parse(LS.get('oldiberdi_cache')||'null');if(c&&c.acc&&c.acc.id===a.id)applySync(c,true)}catch(e){}}
  if(!data)sync();
@@ -1027,12 +1039,15 @@ function renderLock(){const b=BIO.ok&&bioGet();
  $('#app').innerHTML=`<div class="lock"><div class="lock-top pad">${avatar(S.acc,72)}<h2>${esc(S.acc.name)}</h2><p>${b?'Barmoq izi yoki PIN kod bilan oching':'PIN kodni kiriting'}</p>${pinDots()}</div>${pinPad(!!b)}<div class="lock-foot"><button data-act="forgotPin">PIN esdan chiqdimi? Parol bilan kirish</button></div></div>`}
 function renderSetup(){const st=S.setup;
  if(st.step==='bio'){$('#app').innerHTML=`<div class="lock"><div class="lock-top pad"><div class="lock-ic">${I.finger}</div><h2>Barmoq izi bilan ochish</h2><p>Ilovani PIN o'rniga barmoq izingiz bilan ochasiz. Bu ixtiyoriy, keyin Profildan ham yoqsa bo'ladi.</p></div><div class="lock-foot pad" style="display:flex;flex-direction:column;gap:6px;max-width:380px;margin:0 auto;width:100%"><button class="btn lime" data-act="bioSetup">${I.finger} Barmoq izini yoqish</button><button data-act="bioSkip">Keyinroq</button></div></div>`;return}
- const t={cur:['Hozirgi PIN kod','Avval hozirgi PIN kodingizni kiriting'],pin1:[st.mode==='new'?"PIN kod o'rnating":'Yangi PIN kod',"Ilovaga begonalar kirmasligi uchun 4 xonali kod o'ylab toping"],pin2:['PIN kodni takrorlang','Tasdiqlash uchun yana bir marta kiriting']}[st.step];
- $('#app').innerHTML=`<div class="lock"><div class="lock-top pad"><div class="lock-ic">${I.shield}</div><h2>${t[0]}</h2><p>${t[1]}</p>${pinDots()}</div>${pinPad(false)}<div class="lock-foot">${st.mode==='change'?'<button data-act="pinCancel">Bekor qilish</button>':'<span style="font-size:12.5px;opacity:.8">PIN kod shifrlangan holda saqlanadi</span>'}</div></div>`}
+ const t={cur:['Hozirgi PIN kod',st.mode==='off'?"Qulfni o'chirish uchun hozirgi PIN kodingizni kiriting":'Avval hozirgi PIN kodingizni kiriting'],pin1:[st.mode==='new'?"PIN kod o'rnating":'Yangi PIN kod',"Ilovaga begonalar kirmasligi uchun 4 xonali kod o'ylab toping"],pin2:['PIN kodni takrorlang','Tasdiqlash uchun yana bir marta kiriting']}[st.step];
+ $('#app').innerHTML=`<div class="lock"><div class="lock-top pad"><div class="lock-ic">${I.shield}</div><h2>${t[0]}</h2><p>${t[1]}</p>${pinDots()}</div>${pinPad(false)}<div class="lock-foot">${st.mode==='new'?`<button class="btn lime pin-skip" data-act="pinSkip">PIN'siz davom etish</button><div style="font-size:12.5px;opacity:.8;margin-top:8px">Qulf ixtiyoriy — keyin Profildan yoqsa bo'ladi</div>`:'<button data-act="pinCancel">Bekor qilish</button>'}</div></div>`}
 async function pinDone(){const pin=S.pinBuf;
  if(S.locked){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash){S.locked=false;markAlive();S.pinBuf='';S.pinTries=0;render();maybeNew();maybeRemindPrompt();openRemindParam()}else{S.pinTries=(S.pinTries||0)+1;S.pinBuf='';if(S.pinTries>=5){logout();toast("5 marta xato kiritildi. Raqam va parol bilan kiring.");return}S.pinErr=`PIN noto'g'ri. Yana ${5-S.pinTries} ta urinish qoldi`;render()}return}
  const st=S.setup;if(!st)return;
- if(st.step==='cur'){if(await hashPw(pin,S.acc.pinSalt)===S.acc.pinHash)st.step='pin1';else S.pinErr="Hozirgi PIN noto'g'ri";S.pinBuf='';render();return}
+ if(st.step==='cur'){if(await hashPw(pin,S.acc.pinSalt)!==S.acc.pinHash){S.pinErr="Hozirgi PIN noto'g'ri";S.pinBuf='';render();return}
+  if(st.mode==='off'){try{const j=await api('setPin',{pinSalt:'',pinHash:''});setAcc(j.acc)}catch(e){S.pinErr=writeErr(e);S.pinBuf='';render();return}
+   LS.set('oldiberdi_nopin_'+S.acc.id,'1');S.setup=null;S.pinBuf='';render();toast("PIN qulf o'chirildi");return}
+  st.step='pin1';S.pinBuf='';render();return}
  if(st.step==='pin1'){if(/^(\d)\1{3}$/.test(pin)||pin==='1234'||pin==='4321'){S.pinErr='Bu PIN juda oson. Boshqasini tanlang';S.pinBuf='';render();return}st.first=pin;st.step='pin2';S.pinBuf='';render();return}
  if(st.step==='pin2'){if(pin!==st.first){st.step='pin1';st.first='';S.pinErr="PIN mos kelmadi. Qaytadan o'ylab toping";S.pinBuf='';render();return}
   const salt=uid();const {id,...rest}=S.acc;const data={...rest,pinSalt:salt,pinHash:await hashPw(pin,salt)};
@@ -1163,9 +1178,10 @@ function vProfile(){const a=S.acc;
  <div class="card list menu">
   <button class="item" data-act="editProfile">${I.edit}<div class="mid">Ma'lumotlarni o'zgartirish<div class="t2">Ism, telefon, rasm</div></div></button>
   <button class="item" data-act="changePass">${I.lock}<div class="mid">Parolni o'zgartirish</div></button>
-  <button class="item" data-act="changePin">${I.shield}<div class="mid">PIN kodni o'zgartirish<div class="t2">Ilovani ochishda so'raladi</div></div></button>
-  ${BIO.ok?`<button class="item" data-act="toggleBio">${I.finger}<div class="mid">Barmoq izi<div class="t2">${bioGet()?"Yoqilgan · o'chirish uchun bosing":"O'chiq · yoqish uchun bosing"}</div></div></button>`:''}
-  <button class="item" data-act="lockNow">${I.lock}<div class="mid">Ilovani hozir qulflash</div></button>
+  ${a.pinHash?`<button class="item" data-act="changePin">${I.shield}<div class="mid">PIN kodni o'zgartirish<div class="t2">Ilovani ochishda so'raladi</div></div></button>
+  <button class="item" data-act="pinOff">${I.lock}<div class="mid">PIN qulfni o'chirish<div class="t2">Ilova PIN so'ramasdan ochiladi</div></div></button>`:`<button class="item" data-act="changePin">${I.shield}<div class="mid">PIN qulf qo'yish<div class="t2">Ixtiyoriy · ilovaga begonalar kirmasin</div></div></button>`}
+  ${a.pinHash&&BIO.ok?`<button class="item" data-act="toggleBio">${I.finger}<div class="mid">Barmoq izi<div class="t2">${bioGet()?"Yoqilgan · o'chirish uchun bosing":"O'chiq · yoqish uchun bosing"}</div></div></button>`:''}
+  ${a.pinHash?`<button class="item" data-act="lockNow">${I.lock}<div class="mid">Ilovani hozir qulflash</div></button>`:''}
   ${fon('kids')?`<button class="item" data-act="go" data-v="kids">${I.child}<div class="mid">Farzandlarim ${lk('kids')}<div class="t2">Bolalar xazinasi va orzulari</div></div></button>`:''}
   ${fon('biz')||isBiz()?`<button class="item" data-act="bizMenu">${I.shop}<div class="mid">Biznes ${isBiz()?'':`<span class="lock-tag">${I.lock}Biznes</span>`}<div class="t2">${isBiz()?"Do'kon nomi, qarzdorlar ro'yxati":"Do'konlar va savdogarlar uchun tarif"}</div></div></button>`:''}
   ${fon('shop')?`<button class="item" data-act="go" data-v="lists">${I.cart}<div class="mid">Bozorlik ro'yxati ${lk('shop')}<div class="t2">Xaridlar ro'yxati va xarajatlar</div></div></button>`:''}
@@ -2027,6 +2043,8 @@ const A={
  bioSkip:()=>{S.setup=null;render();toast("PIN kod o'rnatildi");maybeNew()},
  forgotPin:()=>{logout();toast('Telefon raqam va parolingiz bilan kiring')},
  pinCancel:()=>{S.setup=null;S.pinBuf='';S.pinErr='';render()},
+ pinSkip:()=>{LS.set('oldiberdi_nopin_'+S.acc.id,'1');S.setup=null;S.pinBuf='';S.pinErr='';render();toast("Mayli. PIN qulfni Profildan istalgan vaqtda qo'yishingiz mumkin");maybeNew()},
+ pinOff:()=>{if(!S.acc.pinHash)return;S.setup={step:'cur',mode:'off'};S.pinBuf='';S.pinErr='';render()},
  changePin:()=>{S.setup={step:S.acc.pinHash?'cur':'pin1',mode:'change'};S.pinBuf='';S.pinErr='';render()},
  toggleBio:async()=>{if(bioGet()){LS.del('oldiberdi_bio');toast("Barmoq izi o'chirildi")}else if(await bioEnable())toast('Barmoq izi yoqildi');render()},
  lockNow:()=>{if(!S.acc.pinHash)return;S.locked=true;clearAlive();S.pinBuf='';S.pinErr='';render()},
