@@ -505,8 +505,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=33;
-const WHATS_NEW=["Farzand sahifasidagi rasm endi to'g'ri doira bo'lib ko'rinadi"];
+const APP_VERSION=34;
+const WHATS_NEW=["Bosh sahifa soddalashtirildi: eng kerakli xizmatlar qoldi","Bo'limlar endi server orqali yangilanadi — ilovani qayta o'rnatish shart emas"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -773,21 +773,27 @@ function trialBanner(){const n=trialLeft();
  return `<div class="trial-card offer"><span class="tc-ic">🎁</span><span class="mid"><b>${tr("Premium'ni 15 kun bepul sinab ko'rasizmi?")}</b><small>${tr("Majburiy emas — ilova baribir bepul ishlaydi")}</small><span class="tc-btns"><button class="tc-go" data-act="trialStart">${tr("Ha, sinab ko'raman")}</button><button class="tc-no" data-act="trialNo">${tr("Yo'q, rahmat")}</button></span></span></div>`}
 function trialAskSheet(){openSheet(tr("Premium'ni bepul sinab ko'ring"),`<div class="prem-hit on">🎁<b>${tr("15 kun — barcha Premium imkoniyatlar bepul")}</b></div>
  <p class="hint" style="margin:0 0 12px">${tr("Oldi-Berdi bepul ilova: qarzlarni yozish, ro'yxat va qoldiqlar doim bepul. Xohlasangiz, Premium imkoniyatlarni 15 kun bepul sinab ko'rishingiz mumkin. Sinov tugagach hech narsa bloklanmaydi va hech qanday to'lov olinmaydi.")}</p>
- <ul class="prem-list">${PREM.features.filter(k=>PREM_INFO[k]).map(k=>`<li><span class="pi">${I.check}</span><span><b>${PREM_INFO[k][0]}</b><small>${PREM_INFO[k][1]}</small></span></li>`).join('')}</ul>
+ <ul class="prem-list">${premFeats().filter(k=>PREM_INFO[k]).map(k=>`<li><span class="pi">${I.check}</span><span><b>${PREM_INFO[k][0]}</b><small>${PREM_INFO[k][1]}</small></span></li>`).join('')}</ul>
  <button class="btn btn-primary" style="width:100%" data-act="trialStart">🎁 ${tr("Ha, 15 kun bepul sinab ko'raman")}</button>
  <button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="trialNo">${tr("Yo'q, hozircha bepul versiya yetadi")}</button>`,'trialask')}
 function maybeTrialAsk(){if(!S.acc||S.locked||S.setup||sheets.length||!canTrial()||S.view!=='home')return;if(LS.get('oldiberdi_trialask_'+S.acc.id))return;LS.set('oldiberdi_trialask_'+S.acc.id,'1');setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup&&canTrial())trialAskSheet()},1200)}
 /* ============ premium ============ */
-const PREM=Object.assign({price:'',features:['shop','toy','loan','gap','kids','report','excel','remind','trust','usd','plan','confirm','ru']},window.OLDIBERDI_PREMIUM||{});
-const PREM_INFO={kids:['Farzandlar xazinasi',"Bolangiz uchun alohida kirish: tejash va orzular"],toy:["To'yona daftari","Kim qancha olib keldi, kimga qancha olib bordingiz"],loan:['Kreditlar kalendari',"Bank krediti va nasiyalar: to'lov kunlari, oylik yuk"],gap:['Gap boshqaruvi',"A'zolar, navbat, kim to'ladi"],shop:["Bozorlik ro'yxati","Qog'ozsiz xaridlar ro'yxati va xarajat hisobi"],report:['Oylik hisobot',"Grafiklar, eng katta qarzdorlar"],excel:['Excel fayl','Hisobotni .xlsx qilib yuklab olish'],remind:['SMS eslatmalar',"Kimga eslatish kerakligini ilova o'zi topadi"],trust:['Ishonch reytingi',"Kim o'z vaqtida qaytarishini ko'rsatadi"],usd:['Dollar va MB kursi','Dollarda qarz yozish, so\'mga avtomatik hisoblash'],plan:["Bo'lib to'lash",'Nasiya grafigi va kechikishlar'],confirm:['Ikki tomonlama tasdiq','Qarzdor SMS havola orqali tasdiqlaydi'],ru:['Rus tili','Ilovani rus tilida ishlatish']};
+const PREM=Object.assign({price:'',features:['shop','toy','loan','gap','yigin','kids','report','excel','remind','trust','usd','plan','confirm','ru']},window.OLDIBERDI_PREMIUM||{});
+const PREM_INFO={yigin:["Pul yig'ish","Do'stlar bilan sovg'a, to'yona, yordam uchun"],kids:['Farzandlar xazinasi',"Bolangiz uchun alohida kirish: tejash va orzular"],toy:["To'yona daftari","Kim qancha olib keldi, kimga qancha olib bordingiz"],loan:['Kreditlar kalendari',"Bank krediti va nasiyalar: to'lov kunlari, oylik yuk"],gap:['Gap boshqaruvi',"A'zolar, navbat, kim to'ladi"],shop:["Bozorlik ro'yxati","Qog'ozsiz xaridlar ro'yxati va xarajat hisobi"],report:['Oylik hisobot',"Grafiklar, eng katta qarzdorlar"],excel:['Excel fayl','Hisobotni .xlsx qilib yuklab olish'],remind:['SMS eslatmalar',"Kimga eslatish kerakligini ilova o'zi topadi"],trust:['Ishonch reytingi',"Kim o'z vaqtida qaytarishini ko'rsatadi"],usd:['Dollar va MB kursi','Dollarda qarz yozish, so\'mga avtomatik hisoblash'],plan:["Bo'lib to'lash",'Nasiya grafigi va kechikishlar'],confirm:['Ikki tomonlama tasdiq','Qarzdor SMS havola orqali tasdiqlaydi'],ru:['Rus tili','Ilovani rus tilida ishlatish']};
 function isPrem(){const p=S.acc&&S.acc.premium;return !!(p&&p.on)}
-function locked(f){return !!S.acc&&PREM.features.includes(f)&&!isPrem()}
+/* admin paneldan boshqariladigan bo'limlar: off — ko'rinmaydi, free — bepul, prem — Premium */
+const FEAT_DEF={shop:'prem',toy:'off',loan:'off',gap:'off',yigin:'free',kids:'prem',report:'prem',excel:'prem',remind:'prem',trust:'prem',usd:'prem',plan:'prem',confirm:'prem',ru:'prem',biz:'prem'};
+function feats(){if(S.feat===undefined){try{S.feat=JSON.parse(LS.get('oldiberdi_feat')||'null')}catch(e){S.feat=null}}return Object.assign({},FEAT_DEF,S.feat||{})}
+function fm(f){return feats()[f]||'prem'}
+function fon(f){return fm(f)!=='off'}
+function premFeats(){const F=feats();return PREM.features.filter(k=>F[k]==='prem')}
+function locked(f){return !!S.acc&&PREM.features.includes(f)&&fm(f)!=='free'&&!isPrem()}
 function lk(f){return locked(f)?`<span class="lock-tag">${I.lock}Premium</span>`:''}
 function need(f){if(locked(f)){premSheet(f);return false}return true}
 function premSheet(f){const p=S.acc&&S.acc.premium||{};
  openSheet('Oldi-Berdi Premium',`${p.trial?`<div class="prem-hit">🎁<b>${tr('Premium sinov')}: ${trialLeft()} ${tr('kun qoldi')} · ${tr('keyin bepul rejim')}</b></div>`:isPrem()?`<div class="prem-hit on">${I.check}<b>Premium faol${p.until?' · '+fdate(p.until)+' gacha':''}</b></div>`:f&&PREM_INFO[f]?`<div class="prem-hit">${I.lock}<b>«${PREM_INFO[f][0]}» — Premium funksiya</b></div>`:''}
  ${canTrial()?`<button class="btn btn-primary" style="width:100%;margin-bottom:10px" data-act="trialStart">🎁 ${tr("15 kun bepul sinab ko'rish")}</button><p class="hint" style="text-align:center;margin:0 0 14px">${tr("Majburiy emas. Sinov tugagach ilova bepul ishlayveradi.")}</p>`:''}<div class="sec-mini">Premium imkoniyatlari</div>
- <ul class="prem-list">${PREM.features.filter(k=>PREM_INFO[k]).map(k=>`<li class="${k===f?'hl':''}"><span class="pi">${I.check}</span><span><b>${PREM_INFO[k][0]}</b><small>${PREM_INFO[k][1]}</small></span></li>`).join('')}</ul>
+ <ul class="prem-list">${premFeats().filter(k=>PREM_INFO[k]).map(k=>`<li class="${k===f?'hl':''}"><span class="pi">${I.check}</span><span><b>${PREM_INFO[k][0]}</b><small>${PREM_INFO[k][1]}</small></span></li>`).join('')}</ul>
  ${isPrem()&&!p.until?'':priceBox()}${isPrem()&&!p.until?'':`<a class="btn ${canTrial()?'btn-ghost':'btn-primary'}" style="width:100%" href="https://t.me/${esc(botName())}?start=premium" target="_blank" rel="noopener">★ ${isPrem()&&!p.trial?"Premium'ni uzaytirish":'Premium olish'}</a>
  <p class="hint" style="text-align:center;margin:10px 0 0">To'lov Telegram botimiz orqali. To'lovdan keyin Premium ilovada o'zi yoqiladi.</p>`}`,'prem')}
 function tgCard(){if(!S.acc||LS.get('oldiberdi_tgcard')==='off')return '';const on=!!S.acc.tg;
@@ -946,6 +952,7 @@ function applySync(j,fromCache){
  if(j.rate&&j.rate.usd){S.rate=j.rate;LS.set('oldiberdi_rate',JSON.stringify(j.rate))}
  if(j.acc&&!fromCache)setAcc(j.acc);
  if(j.prices){S.prices=j.prices;LS.set('oldiberdi_prices',JSON.stringify(j.prices))}
+ if(j.feat&&typeof j.feat==='object'){S.feat=j.feat;LS.set('oldiberdi_feat',JSON.stringify(j.feat))}
  S.loaded={p:true,t:true};compute();
  if(!fromCache){S.stale=false;saveCache()}
 }
@@ -1016,6 +1023,8 @@ function render(){
  if(S.locked)return renderLock();
  if(S.setup)return renderSetup();
 
+ {const OFF={toyona:'toy',toy:'toy',loans:'loan',kids:'kids',kid:'kids',lists:'shop',list:'shop'};if(OFF[S.view]&&!fon(OFF[S.view]))S.view='home';
+  if((S.view==='groups'||S.view==='group')&&!fon('gap')&&!fon('yigin'))S.view='home';if(S.view==='group'){const d=curDoc();if(d&&!fon(d.kind))S.view='groups'}}
  const y=window.scrollY;const keep=render._last===S.view+'|'+S.pid+'|'+S.lid+'|'+S.did+'|'+S.kidId;
  const v=S.view;
  let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():v==='report'?vReport():v==='lists'?vLists():v==='list'?vList():v==='toyona'?vToyona():v==='toy'?vToy():v==='loans'?vLoans():v==='groups'?vGroups():v==='group'?vGroup():v==='kids'?vKids():v==='kid'?vKid():vProfile();
@@ -1112,9 +1121,9 @@ function vProfile(){const a=S.acc;
   <button class="item" data-act="changePin">${I.shield}<div class="mid">PIN kodni o'zgartirish<div class="t2">Ilovani ochishda so'raladi</div></div></button>
   ${BIO.ok?`<button class="item" data-act="toggleBio">${I.finger}<div class="mid">Barmoq izi<div class="t2">${bioGet()?"Yoqilgan · o'chirish uchun bosing":"O'chiq · yoqish uchun bosing"}</div></div></button>`:''}
   <button class="item" data-act="lockNow">${I.lock}<div class="mid">Ilovani hozir qulflash</div></button>
-  <button class="item" data-act="go" data-v="kids">${I.child}<div class="mid">Farzandlarim ${lk('kids')}<div class="t2">Bolalar xazinasi va orzulari</div></div></button>
-  <button class="item" data-act="bizMenu">${I.shop}<div class="mid">Biznes ${isBiz()?'':`<span class="lock-tag">${I.lock}Biznes</span>`}<div class="t2">${isBiz()?"Do'kon nomi, qarzdorlar ro'yxati":"Do'konlar va savdogarlar uchun tarif"}</div></div></button>
-  <button class="item" data-act="go" data-v="lists">${I.cart}<div class="mid">Bozorlik ro'yxati ${lk('shop')}<div class="t2">Xaridlar ro'yxati va xarajatlar</div></div></button>
+  ${fon('kids')?`<button class="item" data-act="go" data-v="kids">${I.child}<div class="mid">Farzandlarim ${lk('kids')}<div class="t2">Bolalar xazinasi va orzulari</div></div></button>`:''}
+  ${fon('biz')||isBiz()?`<button class="item" data-act="bizMenu">${I.shop}<div class="mid">Biznes ${isBiz()?'':`<span class="lock-tag">${I.lock}Biznes</span>`}<div class="t2">${isBiz()?"Do'kon nomi, qarzdorlar ro'yxati":"Do'konlar va savdogarlar uchun tarif"}</div></div></button>`:''}
+  ${fon('shop')?`<button class="item" data-act="go" data-v="lists">${I.cart}<div class="mid">Bozorlik ro'yxati ${lk('shop')}<div class="t2">Xaridlar ro'yxati va xarajatlar</div></div></button>`:''}
   <button class="item" data-act="go" data-v="report">${I.chart}<div class="mid">Oylik hisobot ${lk('report')}<div class="t2">Grafiklar va Excel fayl</div></div></button>
   <button class="item" data-act="langSheet">${I.globe}<div class="mid">Til ${lk('ru')}<div class="t2" data-notr>${LANG==='ru'?'Русский':"O'zbekcha"}</div></div></button>
   <button class="item" data-act="remSettings">${I.bell}<div class="mid">Eslatma sozlamalari<div class="t2">Muddatsiz qarzlar: har ${remDays()} kunda · ${LS.get('oldiberdi_remauto')==='off'?"o'zi so'ramaydi":"ochilganda so'raydi"}</div></div></button>
@@ -1196,7 +1205,7 @@ function listDelete(id){const l=S.lists[id];if(!l)return;if(LT[id]){clearTimeout
  delete S.lists[id];saveCache();if(S.api>=8)bg("Ro'yxat o'chirilmadi",()=>api('deleteList',{id}),()=>{S.lists[id]=l;saveCache()})}
 
 /* ============ docs: to'yona, kreditlar, gap, pul yig'ish, biznes — one generic synced store ============ */
-const DOC_FEAT={toy:'toy',toyg:'toy',loan:'loan',gap:'gap',yigin:'',biz:'biz'};
+const DOC_FEAT={toy:'toy',toyg:'toy',loan:'loan',gap:'gap',yigin:'yigin',biz:'biz'};
 function isBiz(){const p=S.acc&&S.acc.premium;return !!(p&&p.biz)}
 function docLocked(kind){const f=DOC_FEAT[kind];return f==='biz'?!isBiz():f?locked(f):false}
 function normDoc(d){const x=d.data;return {id:String(d.id),kind:String(d.kind||''),name:String(d.name||''),data:x&&typeof x==='object'&&!Array.isArray(x)?x:{},createdAt:+d.createdAt||0,updatedAt:+d.updatedAt||0}}
@@ -1226,15 +1235,19 @@ function nameList(){const s=new Set();Object.values(S.people).forEach(p=>s.add(p
 
 /* home: services grid */
 function toolsGrid(){const ls=Object.values(S.lists||{});const open=ls.reduce((z,l)=>z+l.items.filter(i=>!i.d).length,0);
- const la=loanAlerts(),nt=docsOf('toy').length,nl=docsOf('loan').length,ng=docsOf('gap').length+docsOf('yigin').length;
- const t=(v,ic,l,sub,f,c)=>`<button class="tool" data-act="go" data-v="${v}"><span class="tl-ic ${c}">${I[ic]}</span><b>${l}</b><small>${f&&locked(f)?`${I.lock} Premium`:sub}</small></button>`;
- return `<div class="sec-head"><h2>Xizmatlar</h2></div><div class="tools">
- ${t('lists','cart','Bozorlik',ls.length?`${open} ta olinmagan`:"Ro'yxat tuzing",'shop','c1')}
- ${t('toyona','gift',"To'yona",nt?`${nt} ta to'y`:'Kim qancha olib keldi','toy','c2')}
- ${t('loans','bank','Kreditlar',la.length?`${la.length} ta to'lov yaqin`:nl?`${nl} ta kredit`:"To'lov kalendari",'loan','c3')}
- ${t('groups','users',"Gap · yig'in",ng?`${ng} ta guruh`:"Pul yig'ish bepul",'','c4')}
- ${(()=>{const ks=Object.values(S.kids||{});return `<button class="tool wide" data-act="go" data-v="kids"><span class="tl-ic c5">${I.child}</span><span class="tw"><b>Farzandlar xazinasi</b><small>${locked('kids')?`${I.lock} Premium`:ks.length?ks.map(k=>`<span data-notr>${esc(k.name)}</span>: ${fmt(k.balance)}`).join(' · '):"Bolangizni tejashga o'rgating"}</small></span></button>`})()}
- </div>`}
+ const gOn=fon('gap'),yOn=fon('yigin');
+ const la=loanAlerts(),nt=docsOf('toy').length,nl=docsOf('loan').length,ng=(gOn?docsOf('gap').length:0)+(yOn?docsOf('yigin').length:0);
+ const t=(v,ic,l,sub,f,c,w)=>{const s2=f&&locked(f)?`${I.lock} Premium`:sub;return w?`<button class="tool wide" data-act="go" data-v="${v}"><span class="tl-ic ${c}">${I[ic]}</span><span class="tw"><b>${l}</b><small>${s2}</small></span></button>`:`<button class="tool" data-act="go" data-v="${v}"><span class="tl-ic ${c}">${I[ic]}</span><b>${l}</b><small>${s2}</small></button>`};
+ const T=[];
+ if(fon('shop'))T.push(['lists','cart','Bozorlik',ls.length?`${open} ta olinmagan`:"Ro'yxat tuzing",'shop','c1']);
+ if(fon('toy'))T.push(['toyona','gift',"To'yona",nt?`${nt} ta to'y`:'Kim qancha olib keldi','toy','c2']);
+ if(fon('loan'))T.push(['loans','bank','Kreditlar',la.length?`${la.length} ta to'lov yaqin`:nl?`${nl} ta kredit`:"To'lov kalendari",'loan','c3']);
+ if(gOn||yOn)T.push(['groups',gOn?'users':'coin',gOn&&yOn?"Gap · yig'in":gOn?'Gaplar':"Pul yig'ish",ng?`${ng} ta guruh`:yOn&&fm('yigin')==='free'?"Bepul · do'stlar bilan":gOn?"Navbat va to'lovlar":"Do'stlar bilan",gOn&&!yOn?'gap':!gOn?'yigin':'','c4']);
+ const ks=Object.values(S.kids||{});
+ if(fon('kids'))T.push(['kids','child','Farzandlar xazinasi',ks.length?ks.map(k=>`<span data-notr>${esc(k.name)}</span>: ${fmt(k.balance)}`).join(' · '):"Bolangizni tejashga o'rgating",'kids','c5',1]);
+ if(!T.length)return '';
+ const small=T.filter(x=>!x[6]);if(small.length%2)small[small.length-1][6]=1;
+ return `<div class="sec-head"><h2>Xizmatlar</h2></div><div class="tools">${T.map(x=>t(...x)).join('')}</div>`}
 
 /* ---------- loans & installments calendar ---------- */
 function lnDue(d,ym){const [y,m]=ym.split('-').map(Number);const last=new Date(y,m,0).getDate();return ym+'-'+String(Math.min(Math.max(1,+d.data.day||1),last)).padStart(2,'0')}
@@ -1243,7 +1256,7 @@ function lnInfo(d){const ms=lnMonths(d),paid=new Set(d.data.paid||[]),amt=+d.dat
  return {ms,paid,amt,done:ms.length-unpaid.length,left:unpaid.length*amt,next,nextDate:next?lnDue(d,next):null,late:unpaid.filter(m=>lnDue(d,m)<td).length}}
 function daysTo(ds){return Math.round((new Date(ds+'T12:00:00')-new Date(today()+'T12:00:00'))/864e5)}
 function dueLabel(ds){const n=daysTo(ds);return n<0?`${-n} kun kechikdi`:n===0?'bugun':n===1?'ertaga':`${n} kundan keyin`}
-function loanAlerts(){if(locked('loan'))return [];return docsOf('loan').map(d=>({d,i:lnInfo(d)})).filter(x=>x.i.next&&daysTo(x.i.nextDate)<=3).sort((a,b)=>a.i.nextDate.localeCompare(b.i.nextDate))}
+function loanAlerts(){if(!fon('loan')||locked('loan'))return [];return docsOf('loan').map(d=>({d,i:lnInfo(d)})).filter(x=>x.i.next&&daysTo(x.i.nextDate)<=3).sort((a,b)=>a.i.nextDate.localeCompare(b.i.nextDate))}
 function loanCard(){const l=loanAlerts();if(!l.length)return '';
  return `<button class="rem-card" data-act="go" data-v="loans"><span class="qi">${I.bank}</span><span class="mid"><b>Kredit to'lovi yaqin · ${l.length} ta</b><small>${l.slice(0,2).map(x=>`<span data-notr>${esc(x.d.name)}</span> — ${fmt(x.i.amt)} · ${dueLabel(x.i.nextDate)}`).join(', ')}</small></span><span class="go">${I.left}</span></button>`}
 function vLoans(){if(locked('loan'))return promoView('Kreditlar',I.bank,'Hamma kreditlar bitta kalendarda',"Bank krediti, Uzum Nasiya, do'kon nasiyasi — hammasini yozing. Ilova to'lov kunini eslatadi va oyiga qancha to'lashingizni hisoblaydi.",[["To'lov kalendari","Qaysi kun qancha to'lash kerak — bir qarashda"],['Oylik yuk',"Bu oy jami qancha to'laysiz"],['Kechikish nazorati',"To'lanmagan oylar qizil bilan"],['Qolgan qarz',"Har bir kredit bo'yicha qancha qoldi"]],'loan');
@@ -1320,13 +1333,13 @@ function gapRec(d){const m=d.data.members||[];return m.length?m[(+d.data.round||
 function gapPaid(d){const ids=new Set((d.data.members||[]).map(x=>x.id));return ((d.data.paid||{})[+d.data.round||0]||[]).filter(id=>ids.has(id))}
 function grpSub(d){const m=d.data.members||[];if(d.kind==='gap'){const r=gapRec(d);return m.length?`${(+d.data.round||0)+1}-navbat · <span data-notr>${esc(r.n)}</span> oladi · ${gapPaid(d).length}/${m.length} to'ladi`:"A'zo qo'shing"}
  return `${m.filter(x=>+x.a>0).length}/${m.length} to'ladi · <span class="num">${money(sumOf(m,x=>x.a))}</span>${+d.data.target?` / <span class="num">${fmt(d.data.target)}</span>`:''}`}
-function vGroups(){const gaps=docsOf('gap').sort((a,b)=>b.updatedAt-a.updatedAt),ys=docsOf('yigin').sort((a,b)=>b.updatedAt-a.updatedAt),gl=locked('gap');
+function vGroups(){const gaps=docsOf('gap').sort((a,b)=>b.updatedAt-a.updatedAt),ys=docsOf('yigin').sort((a,b)=>b.updatedAt-a.updatedAt),gl=locked('gap'),gOn=fon('gap'),yOn=fon('yigin');
  const row=d=>`<button class="item" data-act="grpOpen" data-id="${d.id}"><span class="sl-ic" style="background:var(--pos-bg);color:var(--pos)">${d.kind==='gap'?I.users:I.coin}</span><div class="mid"><div class="t1" data-notr>${esc(d.name)}</div><div class="t2">${grpSub(d)}</div></div><span class="r" style="color:var(--muted);display:inline-flex">${I.right}</span></button>`;
- return `<div class="pad"><div class="topbar">${backBtn('home')}<h1>Gap va pul yig'ish</h1><button class="icon-btn" data-act="grpNew" aria-label="Yangi">${I.plus}</button></div>
- <div class="sec-head"><h2>Pul yig'ish</h2><span class="badge free">Bepul</span></div>
- ${ys.length?`<div class="card list">${ys.map(row).join('')}</div>`:`<div class="card empty"><b>Do'stlar bilan pul yig'ing</b>Tug'ilgan kun sovg'asi, to'yona, bemorni ko'rish — kim to'ladi, kim to'lamadi, ilova o'zi hisoblaydi.<div><button class="btn btn-primary btn-sm" style="margin-top:12px" data-act="grpNew" data-v="yigin">${I.plus} Pul yig'ish</button></div></div>`}
- <div class="sec-head"><h2>Gaplar ${lk('gap')}</h2></div>
- ${gaps.length&&!gl?`<div class="card list">${gaps.map(row).join('')}</div>`:`<div class="card empty"><b>Gap (gashtak)</b>A'zolar, navbat, kim to'ladi — hammasi telefoningizda.<div><button class="btn ${gl?'btn-ghost':'btn-primary'} btn-sm" style="margin-top:12px" data-act="grpNew" data-v="gap">${gl?I.lock:I.plus} Gap ochish</button></div></div>`}
+ return `<div class="pad"><div class="topbar">${backBtn('home')}<h1>${gOn&&yOn?"Gap va pul yig'ish":gOn?'Gaplar':"Pul yig'ish"}</h1><button class="icon-btn" data-act="grpNew" aria-label="Yangi">${I.plus}</button></div>
+ ${yOn?`<div class="sec-head"><h2>Pul yig'ish ${lk('yigin')}</h2>${fm('yigin')==='free'?'<span class="badge free">Bepul</span>':''}</div>
+ ${ys.length?`<div class="card list">${ys.map(row).join('')}</div>`:`<div class="card empty"><b>Do'stlar bilan pul yig'ing</b>Tug'ilgan kun sovg'asi, to'yona, bemorni ko'rish — kim to'ladi, kim to'lamadi, ilova o'zi hisoblaydi.<div><button class="btn btn-primary btn-sm" style="margin-top:12px" data-act="grpNew" data-v="yigin">${I.plus} Pul yig'ish</button></div></div>`}`:''}
+ ${gOn?`<div class="sec-head"><h2>Gaplar ${lk('gap')}</h2></div>
+ ${gaps.length&&!gl?`<div class="card list">${gaps.map(row).join('')}</div>`:`<div class="card empty"><b>Gap (gashtak)</b>A'zolar, navbat, kim to'ladi — hammasi telefoningizda.<div><button class="btn ${gl?'btn-ghost':'btn-primary'} btn-sm" style="margin-top:12px" data-act="grpNew" data-v="gap">${gl?I.lock:I.plus} Gap ochish</button></div></div>`}`:''}
  </div>`}
 function vGroup(){const d=curDoc();if(!d||(d.kind!=='gap'&&d.kind!=='yigin')||docLocked(d.kind)){S.view='groups';return vGroups()}
  const m=d.data.members||[],gap=d.kind==='gap';let head,rows;
@@ -1855,9 +1868,9 @@ const A={
  loanPay:d=>{loanMark(d.id,d.ym,true);render();toast("To'landi deb belgilandi")},
  loanTog:d=>{const x=S.docs[d.id];if(!x)return;const on=!(x.data.paid||[]).includes(d.ym);loanMark(d.id,d.ym,on);closeSheet();loanSheet(d.id);render()},
  loanDel:d=>{const x=S.docs[d.id];if(!x)return;confirmSheet(`«${x.name}» o'chirilsinmi?`,"Kredit va uning to'lov tarixi o'chiriladi.","O'chirish",async()=>{docDelete(x.id);closeAllSheets();render();toast("O'chirildi")})},
- grpNew:d=>{if(d.v==='gap'){if(need('gap')){closeAllSheets();grpForm('gap')}return}if(d.v==='yigin'){closeAllSheets();grpForm('yigin');return}
+ grpNew:d=>{if(!d.v&&!fon('gap'))d.v='yigin';if(!d.v&&!fon('yigin'))d.v='gap';if(d.v==='gap'){if(need('gap')){closeAllSheets();grpForm('gap')}return}if(d.v==='yigin'){if(need('yigin')){closeAllSheets();grpForm('yigin')}return}
   openSheet('Yangi',`<div class="copts"><button class="copt" data-act="grpNew" data-v="yigin"><span class="qi" style="background:var(--pos-bg);color:var(--pos)">${I.coin}</span><span><b>Pul yig'ish</b><br><small class="hint">Bir martalik: sovg'a, to'yona, yordam · bepul</small></span></button><button class="copt" data-act="grpNew" data-v="gap"><span class="qi" style="background:var(--pos-bg);color:var(--pos)">${I.users}</span><span><b>Gap (gashtak) ${lk('gap')}</b><br><small class="hint">Har oy navbat bilan</small></span></button></div>`,'grpnew')},
- grpOpen:d=>{const x=S.docs[d.id];if(!x)return;if(x.kind==='gap'&&!need('gap'))return;closeAllSheets();S.did=d.id;S.view='group';render()},
+ grpOpen:d=>{const x=S.docs[d.id];if(!x)return;if(!need(x.kind))return;closeAllSheets();S.did=d.id;S.view='group';render()},
  grpEdit:()=>{const x=curDoc();if(x)grpForm(x.kind,x.id)},
  grpDel:d=>{const x=S.docs[d.id];if(!x)return;confirmSheet(`«${x.name}» o'chirilsinmi?`,"Guruh va a'zolar ro'yxati o'chiriladi.","O'chirish",async()=>{docDelete(x.id);S.did=null;S.view='groups';closeAllSheets();render();toast("O'chirildi")})},
  grpShare:()=>{const x=curDoc();if(!x)return;if(!(x.data.members||[]).length){toast("Avval a'zo qo'shing");return}shareSheet('Ulashish',"Guruh chatiga yuboring — kim to'lamagani ko'rinib turadi.",grpText(x))},

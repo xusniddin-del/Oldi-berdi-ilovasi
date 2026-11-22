@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Oldi-Berdi · Admin</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="config.js"></script>
+<style>
+:root{
+  --bg:#edf5ef;--surface:#fff;--surface-2:#f3f8f4;--fg:#0e2a1b;--muted:#5b7465;--line:#dbe7de;
+  --brand:#13894a;--brand-deep:#0b5c33;--lime:#bff26f;--on-brand:#fff;
+  --pos:#119a55;--pos-bg:#e3f6ea;--neg:#d9502f;--neg-bg:#fdebe5;--warn:#c98a06;--warn-bg:#fff4d9;
+  --plum:#7b56c9;--plum-bg:#efe9fb;--teal:#0f8f8a;--teal-bg:#e0f4f3;
+  --shadow:0 10px 30px -14px rgba(11,70,38,.3);
+  --font:"Plus Jakarta Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+html.dark{
+  --bg:#06140c;--surface:#0e2217;--surface-2:#132c1e;--fg:#e6f4ea;--muted:#8eae9a;--line:#1d3b29;
+  --brand:#28b866;--brand-deep:#1a8a4b;--lime:#c4f57a;--on-brand:#04130a;
+  --pos:#3ccf7d;--pos-bg:#123323;--neg:#ff7b5c;--neg-bg:#3a1a12;--warn:#f0b43a;--warn-bg:#332710;
+  --plum:#b294ff;--plum-bg:#251c3d;--teal:#3fd0c9;--teal-bg:#0f2f2e;--shadow:none;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.num{font-variant-numeric:tabular-nums}
+#app{max-width:560px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom))}
+.hero{border-radius:24px;padding:18px 18px 16px;color:#fff;background:radial-gradient(120% 140% at 100% 0%,#26b765 0%,transparent 55%),linear-gradient(140deg,#0b5c33,#13894a 60%,#1a9c55);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;border:28px solid rgba(191,242,111,.12)}
+.hero .hi{font-size:13px;opacity:.85;font-weight:600}
+.hero h1{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+.hero .big{display:flex;gap:18px;margin-top:14px;position:relative;z-index:1}
+.hero .big div{flex:1}
+.hero .big b{display:block;font-size:24px;font-weight:800;letter-spacing:-.02em}
+.hero .big small{font-size:12px;opacity:.85}
+.badge-admin{display:inline-flex;align-items:center;gap:6px;background:rgba(191,242,111,.2);color:var(--lime);font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+.sec{display:flex;align-items:center;justify-content:space-between;margin:22px 4px 10px}
+.sec h2{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.sec .hint{font-size:12px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:13px 14px}
+.kpi small{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.kpi b{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+.kpi em{font-style:normal;font-size:12px;color:var(--pos);font-weight:700}
+.stack{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--surface-2);gap:2px}
+.stack i{display:block;height:100%}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:12px}
+.legend span{display:flex;align-items:center;gap:8px;font-size:13px}
+.legend span b{margin-left:auto;font-weight:800}
+.dot{width:10px;height:10px;border-radius:3px;flex:none}
+.c-free{background:#9fb5a7}.c-trial{background:var(--warn)}.c-prem{background:var(--brand)}.c-biz{background:var(--plum)}
+.chart svg{display:block;width:100%;height:auto}
+.chart .ax{fill:var(--muted);font-size:10px;font-family:var(--font)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;text-align:left;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row:active{background:var(--surface-2)}
+.ava{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;flex:none;background:var(--pos-bg);color:var(--brand)}
+.mid{flex:1;min-width:0}
+.t1{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t2{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-size:11px;font-weight:800;padding:3px 8px;border-radius:99px;flex:none;letter-spacing:.02em}
+.tag.free{background:var(--surface-2);color:var(--muted)}.tag.trial{background:var(--warn-bg);color:var(--warn)}.tag.prem{background:var(--pos-bg);color:var(--brand)}.tag.biz{background:var(--plum-bg);color:var(--plum)}
+.tag.paid{background:var(--pos-bg);color:var(--pos)}.tag.other{background:var(--surface-2);color:var(--muted)}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:0 12px;height:46px}
+.search input{flex:1;border:0;background:none;outline:none;font-size:15px;min-width:0}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 13px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:700;color:var(--muted)}
+.chip.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip .n{opacity:.6;margin-left:4px;font-weight:600}
+.feat{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line)}
+.feat:last-child{border-bottom:0}
+.feat.wrap{flex-wrap:wrap}.feat.wrap .seg{flex:1 1 100%;margin-left:50px}.feat.wrap .seg button{flex:1}
+.fic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:19px;flex:none;background:var(--surface-2)}
+.seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;gap:2px;flex:none}
+.seg button{padding:6px 9px;border-radius:9px;font-size:12px;font-weight:800;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg button.on.m-off{color:var(--neg)}.seg button.on.m-free{color:var(--teal)}.seg button.on.m-prem{color:var(--brand)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin:0 0 6px 2px}
+.inp{width:100%;height:46px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2);padding:0 13px;font-size:16px;outline:none}
+.inp:focus{border-color:var(--brand)}
+textarea.inp{height:auto;min-height:120px;padding:12px 13px;resize:vertical;line-height:1.45}
+.btn{text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 16px;border-radius:14px;font-weight:800;font-size:14.5px}
+.btn-primary{background:var(--brand);color:var(--on-brand)}
+.btn-ghost{background:var(--surface-2);color:var(--fg);border:1px solid var(--line)}
+.btn-danger{background:var(--neg-bg);color:var(--neg)}
+.btn-sm{height:36px;padding:0 12px;font-size:13px;border-radius:11px}
+.btn:disabled{opacity:.5}
+.w100{width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.grid4 .btn{padding:0 4px;font-size:12.5px}
+.nav{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:20}
+.nav .in{display:flex;max-width:560px;width:100%}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11px;font-weight:700;color:var(--muted);border-radius:12px}
+.nav button .ni{font-size:20px;line-height:1;filter:grayscale(1);opacity:.7}
+.nav button.on{color:var(--brand)}
+.nav button.on .ni{filter:none;opacity:1}
+.sheet-bg{position:fixed;inset:0;background:rgba(3,15,8,.5);z-index:40;opacity:0;transition:opacity .2s}
+.sheet-bg.show{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:92vh;overflow:auto;background:var(--bg);border-radius:24px 24px 0 0;z-index:41;transform:translateY(100%);transition:transform .25s cubic-bezier(.2,.8,.2,1);padding:8px 14px calc(18px + env(safe-area-inset-bottom))}
+.sheet.show{transform:none}
+.sheet .grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 10px}
+.sheet-in{max-width:560px;margin:0 auto}
+.uhead{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.uhead .ava{width:56px;height:56px;font-size:19px}
+.uhead h3{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.kv small{display:block;font-size:11.5px;color:var(--muted);font-weight:600}
+.kv b{font-size:15px;font-weight:800}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:10px}
+.plan .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.plan .ph b{font-weight:800}
+.plan .ph small{color:var(--muted);font-size:12.5px}
+.custom{display:flex;gap:8px;margin-top:8px}
+.custom .inp{height:38px;font-size:14px;border-radius:11px}
+.mini{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:18px 4px 8px}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:14px;font-weight:700;font-size:14px;opacity:0;transition:.2s;z-index:60;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.empty{text-align:center;color:var(--muted);padding:28px 16px}
+.empty b{display:block;color:var(--fg);font-size:16px;margin-bottom:4px}
+.center{min-height:80vh;display:grid;place-items:center;text-align:center;padding:24px}
+.center .ic{font-size:44px;margin-bottom:10px}
+.center h2{font-size:20px;font-weight:800;margin-bottom:6px}
+.center p{color:var(--muted);max-width:340px;margin:0 auto}
+.idbox{margin-top:16px;display:inline-flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-weight:800}
+.spin{width:30px;height:30px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--brand);animation:sp .8s linear infinite;margin:0 auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.skel{height:84px;border-radius:18px;background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.saving{font-size:12.5px;color:var(--pos);font-weight:700;margin:-4px 2px 12px}
+.pay-amt{font-weight:800;white-space:nowrap}
+</style>
+</head>
+<body>
+<div id="app"><div class="center"><div><div class="spin"></div></div></div></div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const tg=window.Telegram&&Telegram.WebApp;
+const API_URL=String(window.OLDIBERDI_API||'').trim();
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>String(Math.round(Number(n)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const MON=['yan','fev','mar','apr','may','iyn','iyl','avg','sen','okt','noy','dek'];
+const fdate=s=>{if(!s)return '';if(s==='ha')return 'muddatsiz';const p=String(s).split('-');return p.length===3?`${+p[2]}-${MON[+p[1]-1]} ${p[0]}`:s};
+const fdt=ms=>{if(!ms)return '—';const d=new Date(+ms);return `${d.getDate()}-${MON[d.getMonth()]} ${d.getFullYear()}, ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+const ago=ms=>{if(!ms)return '—';const m=Math.round((Date.now()-ms)/6e4);if(m<2)return 'hozir';if(m<60)return m+' daq oldin';const h=Math.round(m/60);if(h<24)return h+' soat oldin';const d=Math.round(h/24);if(d<31)return d+' kun oldin';const mo=Math.round(d/30);return mo<12?mo+' oy oldin':Math.round(mo/12)+' yil oldin'};
+const fphone=p=>{p=String(p||'');return p.length===12?`+${p.slice(0,3)} ${p.slice(3,5)} ${p.slice(5,8)} ${p.slice(8,10)} ${p.slice(10)}`:'+'+p};
+const ini=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
+const TL={free:'Bepul',trial:'Sinov',prem:'Premium',biz:'Biznes'};
+const AVC=['#13894a','#0f8f8a','#7b56c9','#c98a06','#d9502f','#2b6fd6'];
+const avc=id=>AVC[[...String(id)].reduce((z,c)=>z+c.charCodeAt(0),0)%AVC.length];
+const ava=(u,cls='')=>`<span class="ava ${cls}" style="background:${avc(u.id)}22;color:${avc(u.id)}">${esc(ini(u.name))}</span>`;
+const haptic=t=>{try{t==='ok'?tg.HapticFeedback.notificationOccurred('success'):t==='err'?tg.HapticFeedback.notificationOccurred('error'):tg.HapticFeedback.impactOccurred('light')}catch(e){}};
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2400)}
+function confirmBox(msg){return new Promise(r=>{try{if(tg&&tg.showConfirm&&tg.isVersionAtLeast&&tg.isVersionAtLeast('6.2')){tg.showConfirm(msg,ok=>r(!!ok));return}}catch(e){}r(window.confirm(msg))})}
+
+const S={tab:'home',stats:null,users:null,pays:null,q:'',flt:'all',me:null,u:null};
+
+async function api(action,data){
+  if(!API_URL)throw new Error('config.js da server havolasi yo\'q');
+  let r;try{r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action,init:tg?tg.initData:''},data||{})),redirect:'follow'})}catch(e){throw new Error("Internetga ulanib bo'lmadi")}
+  let j;try{j=await r.json()}catch(e){throw new Error('Server javobi noto\'g\'ri')}
+  if(!j.ok){const e=new Error(j.error||'Xato');e.code=j.error;throw e}
+  return j;
+}
+
+/* ---------- boot ---------- */
+function applyTheme(){const dark=tg&&tg.colorScheme==='dark';document.documentElement.classList.toggle('dark',!!dark);try{tg.setHeaderColor(dark?'#06140c':'#edf5ef');tg.setBackgroundColor(dark?'#06140c':'#edf5ef')}catch(e){}}
+function screen(ic,h,p,extra){$('#app').innerHTML=`<div class="center"><div><div class="ic">${ic}</div><h2>${h}</h2><p>${p}</p>${extra||''}</div></div>`}
+async function boot(){
+  if(tg){tg.ready();tg.expand();applyTheme();tg.onEvent('themeChanged',()=>{applyTheme()})}
+  if(!tg||!tg.initData){screen('🔒','Faqat Telegram ichida',"Admin panel faqat Oldi-Berdi botida <b>/admin</b> buyrug'i orqali ochiladi.");return}
+  try{const j=await api('admMe');S.me=j.me}
+  catch(e){
+    const uid=tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.id;
+    if(e.code==='ADMIN')return screen('⛔','Ruxsat yo\'q',"Bu panel faqat admin uchun. Agar admin siz bo'lsangiz, Apps Script → Script Properties ga <b>ADMIN_TG</b> qilib quyidagi ID'ni yozing.",uid?`<div class="idbox">Telegram ID: <span class="num">${esc(uid)}</span></div>`:'');
+    if(e.code==='ADMIN_OLD')return screen('⏱','Sessiya eskirgan','Panelni yoping va botdan qaytadan oching.');
+    if(/Noma'lum amal/.test(e.message))return screen('🔄','Serverni yangilang',"Apps Script'ga yangi <b>Code.gs</b> ni qo'yib, Deploy → Manage deployments → <b>New version</b> qiling.");
+    return screen('⚠️','Ulanib bo\'lmadi',esc(e.message),`<div style="margin-top:16px"><button class="btn btn-primary" onclick="location.reload()">Qayta urinish</button></div>`);
+  }
+  render();loadStats();
+}
+
+/* ---------- render ---------- */
+const TABS=[['home','📊','Asosiy'],['users','👥','Mijozlar'],['feat','🧩',"Bo'limlar"],['pays','💳',"To'lovlar"],['msg','📢','Xabar']];
+function render(){
+  const v=S.tab;
+  const body=v==='home'?vHome():v==='users'?vUsers():v==='feat'?vFeat():v==='pays'?vPays():vMsg();
+  $('#app').innerHTML=body+`<nav class="nav"><div class="in">${TABS.map(([k,ic,l])=>`<button class="${v===k?'on':''}" data-go="${k}"><span class="ni">${ic}</span>${l}</button>`).join('')}</div></nav>`;
+  if(render._focus){const el=document.getElementById(render._focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}render._focus=null}
+}
+async function loadStats(){try{S.stats=await api('admStats')}catch(e){toast(e.message)}if(S.tab==='home'||S.tab==='feat')render()}
+async function loadUsers(force){if(S.users&&!force)return;try{S.users=(await api('admUsers')).users}catch(e){toast(e.message);S.users=S.users||[]}if(S.tab==='users')render()}
+async function loadPays(){try{S.pays=(await api('admPayments')).payments}catch(e){toast(e.message);S.pays=S.pays||[]}if(S.tab==='pays')render()}
+
+function vHome(){
+  const s=S.stats,name=S.me&&S.me.name||'Admin';
+  if(!s)return `<div class="hero"><span class="badge-admin">🛠 Admin</span><div class="hi" style="margin-top:10px">Salom,</div><h1>${esc(name)}</h1><div class="big"><div><b>…</b><small>mijozlar</small></div><div><b>…</b><small>shu oy daromad</small></div></div></div><div class="sec"><h2>Ko'rsatkichlar</h2></div><div class="kpis"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>`;
+  const T=s.tariffs,tot=Math.max(1,s.users);
+  const seg=k=>T[k]?`<i class="c-${k}" style="width:${T[k]/tot*100}%"></i>`:'';
+  return `<div class="hero"><span class="badge-admin">🛠 Admin</span><div class="hi" style="margin-top:10px">Salom,</div><h1>${esc(name)}</h1>
+  <div class="big"><div><b class="num">${fmt(s.users)}</b><small>mijozlar</small></div><div><b class="num">${fmt(s.revMonth)}</b><small>so'm · shu oy (${s.payMonth} ta)</small></div></div></div>
+  <div class="sec"><h2>Yangi mijozlar</h2><span class="hint">ro'yxatdan o'tganlar</span></div>
+  <div class="kpis">
+   <div class="kpi"><small>Bugun</small><b class="num">${s.today}</b></div>
+   <div class="kpi"><small>7 kun</small><b class="num">${s.week}</b></div>
+   <div class="kpi"><small>30 kun</small><b class="num">${s.month}</b></div>
+   <div class="kpi"><small>Botga ulangan</small><b class="num">${s.tg}</b><em>${Math.round(s.tg/tot*100)}%</em></div>
+  </div>
+  <div class="card chart" style="margin-top:10px"><div style="font-weight:800;margin-bottom:6px">So'nggi 30 kun</div>${barChart(s.signups.map(x=>x.n),s.signups.map((x,i)=>(29-i)%7===0?+x.d.slice(8):''),'var(--brand)')}</div>
+  <div class="sec"><h2>Tariflar</h2><span class="hint">${s.users} mijoz</span></div>
+  <div class="card"><div class="stack">${seg('free')}${seg('trial')}${seg('prem')}${seg('biz')}</div>
+   <div class="legend">${['free','trial','prem','biz'].map(k=>`<span><i class="dot c-${k}"></i>${TL[k]}<b class="num">${T[k]}</b></span>`).join('')}</div>
+   <div class="grid2" style="margin-top:12px">${['trial','prem','biz','free'].map(k=>`<button class="btn btn-ghost btn-sm" data-flt="${k}">${TL[k]} ro'yxati →</button>`).join('')}</div></div>
+  <div class="sec"><h2>Daromad</h2><span class="hint">jami ${fmt(s.revTotal)} so'm · ${s.payTotal} ta</span></div>
+  <div class="card chart">${barChart(s.rev.map(x=>x.s),s.rev.map(x=>MON[+x.m.slice(5)-1]),'var(--plum)',true)}</div>
+  <div class="sec"><h2>Eng yangi mijozlar</h2><button class="hint" data-go="users" style="font-weight:700;color:var(--brand)">Hammasi →</button></div>
+  <div class="list">${s.newest.length?s.newest.map(userRow).join(''):`<div class="empty"><b>Hali mijoz yo'q</b></div>`}</div>`;
+}
+function barChart(vals,labels,color,money){
+  const W=320,H=120,pad=16,n=vals.length,max=Math.max(1,...vals),bw=(W-pad*0)/n;
+  const bars=vals.map((v,i)=>{const h=v?Math.max(3,v/max*(H-30)):0,x=i*bw+bw*.18,w=bw*.64;return `<rect x="${x.toFixed(1)}" y="${(H-18-h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(4,w/2).toFixed(1)}" fill="${color}" opacity="${v?1:.25}"><title>${money?fmt(v)+" so'm":v}</title></rect>${money&&v?`<text class="ax" x="${(x+w/2).toFixed(1)}" y="${(H-22-h).toFixed(1)}" text-anchor="middle">${v>=1e6?(v/1e6).toFixed(1)+'m':v>=1e3?Math.round(v/1e3)+'k':v}</text>`:''}`}).join('');
+  const lab=labels.map((l,i)=>l===''?'':`<text class="ax" x="${(i*bw+bw/2).toFixed(1)}" y="${H-4}" text-anchor="middle">${l}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img">${bars}${lab}<line x1="0" x2="${W}" y1="${H-18}" y2="${H-18}" stroke="var(--line)"/></svg>`;
+}
+function userRow(u){
+  const sub=[fphone(u.phone),u.tx?u.tx+' yozuv':'',u.tg?'🤖':''].filter(Boolean).join(' · ');
+  return `<button class="row" data-user="${esc(u.id)}">${ava(u)}<div class="mid"><div class="t1">${esc(u.name)}${u.admin?' 👑':''}</div><div class="t2">${sub}</div></div><span style="text-align:right"><span class="tag ${u.t}">${TL[u.t]}</span><div class="t2" style="margin-top:3px">${ago(u.createdAt)}</div></span></button>`;
+}
+
+function flt(u,f){const wk=Date.now()-7*864e5;return f==='all'||(f==='new'?u.createdAt>=wk:f==='tg'?u.tg:f==='active'?u.last>=wk:u.t===f)}
+function vUsers(){
+  const L=S.users;
+  const head=`<div class="sec" style="margin-top:6px"><h2>Mijozlar</h2><button class="hint" data-reload="users" style="font-weight:700;color:var(--brand)">↻ Yangilash</button></div>
+  <div class="search">🔎<input id="q" placeholder="Ism yoki telefon raqam" value="${esc(S.q)}" autocomplete="off" inputmode="search"></div>`;
+  if(!L)return head+`<div style="margin-top:14px" class="list">${'<div class="row"><div class="skel" style="height:40px;width:100%"></div></div>'.repeat(5)}</div>`;
+  const F=[['all','Hammasi'],['new','Yangi (7 kun)'],['active','Faol (7 kun)'],['trial','Sinov'],['prem','Premium'],['biz','Biznes'],['free','Bepul'],['tg','Botda']];
+  const q=S.q.trim().toLowerCase(),qd=q.replace(/\D/g,'');
+  const list=L.filter(u=>flt(u,S.flt)&&(!q||String(u.name).toLowerCase().includes(q)||(qd.length>=2&&u.phone.includes(qd))));
+  return head+`<div class="chips">${F.map(([k,l])=>`<button class="chip ${S.flt===k?'on':''}" data-flt="${k}">${l}<span class="n">${L.filter(u=>flt(u,k)).length}</span></button>`).join('')}</div>
+  <div style="margin-top:10px" class="list">${list.length?list.slice(0,300).map(userRow).join(''):`<div class="empty"><b>Topilmadi</b>Boshqa so'z bilan qidirib ko'ring</div>`}</div>${list.length>300?`<p class="t2" style="text-align:center;margin-top:10px">Birinchi 300 tasi ko'rsatildi — qidiruvdan foydalaning</p>`:''}`;
+}
+
+/* ---------- user sheet ---------- */
+let sheetEl=null;
+function openSheet(html){closeSheet(true);const bg=document.createElement('div');bg.className='sheet-bg';bg.onclick=()=>closeSheet();const sh=document.createElement('div');sh.className='sheet';sh.innerHTML=`<div class="grab"></div><div class="sheet-in">${html}</div>`;document.body.append(bg,sh);sheetEl={bg,sh};requestAnimationFrame(()=>{bg.classList.add('show');sh.classList.add('show')});try{tg.BackButton.show()}catch(e){}}
+function setSheet(html){if(sheetEl)sheetEl.sh.querySelector('.sheet-in').innerHTML=html}
+function closeSheet(now){if(!sheetEl)return;const {bg,sh}=sheetEl;sheetEl=null;S.u=null;try{tg.BackButton.hide()}catch(e){}if(now){bg.remove();sh.remove();return}bg.classList.remove('show');sh.classList.remove('show');setTimeout(()=>{bg.remove();sh.remove()},260)}
+if(tg)tg.BackButton.onClick(()=>closeSheet());
+
+async function openUser(id){
+  const base=(S.users||[]).concat(S.stats?S.stats.newest:[]).find(u=>u.id===id);
+  openSheet(base?userHtml(base,null,true):'<div style="padding:40px"><div class="spin"></div></div>');S.u=id;
+  try{const j=await api('admUser',{id});if(S.u!==id)return;S.ud=j;setSheet(userHtml(j.user,j.payments))}catch(e){toast(e.message)}
+}
+const DOCN={toy:"to'y",toyg:"to'yona",loan:'kredit',gap:'gap',yigin:"yig'in",biz:'biznes'};
+function userHtml(u,pays,loading){
+  const pl=(kind,title,cur)=>`<div class="plan"><div class="ph"><b>${title}</b><small>${cur}</small></div>
+   <div class="grid4">${[['30','+30 kun'],['90','+90 kun'],['365','+1 yil'],['ha','Cheksiz']].map(([v,l])=>`<button class="btn btn-ghost btn-sm" data-plan="${kind}" data-v="${v}" ${loading?'disabled':''}>${l}</button>`).join('')}</div>
+   <div class="custom"><input class="inp num" id="pd-${kind}" inputmode="numeric" placeholder="Kun soni"><button class="btn btn-primary btn-sm" data-plan="${kind}" data-v="custom" ${loading?'disabled':''}>Qo'shish</button><button class="btn btn-danger btn-sm" data-plan="${kind}" data-v="0" ${loading?'disabled':''}>O'chirish</button></div></div>`;
+  const premCur=u.t==='prem'||u.t==='trial'||u.t==='biz'?(u.t==='trial'?'Sinov · ':'')+(u.until?fdate(u.until)+' gacha':'muddatsiz'):'yo\'q';
+  const bizCur=u.t==='biz'?(u.bizUntil?fdate(u.bizUntil)+' gacha':'muddatsiz'):"yo'q";
+  const docs=u.docs?Object.keys(u.docs).map(k=>`${u.docs[k]} ${DOCN[k]||k}`).join(', '):'';
+  return `<div class="uhead">${ava(u)}<div class="mid"><h3>${esc(u.name)}${u.admin?' 👑':''}</h3><div class="t2">${fphone(u.phone)}</div><div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><span class="tag ${u.t}">${TL[u.t]}</span>${u.tg?'<span class="tag prem">🤖 Botda</span>':'<span class="tag free">Bot ulanmagan</span>'}</div></div></div>
+  <div class="grid2" style="margin-bottom:10px"><a class="btn btn-ghost btn-sm" href="tel:+${esc(u.phone)}">📞 Qo'ng'iroq</a><button class="btn btn-ghost btn-sm" data-umsg="1" ${u.tg&&!loading?'':'disabled'}>💬 Botda yozish</button></div>
+  <div class="kv">
+   <div><small>Ro'yxatdan o'tgan</small><b>${fdt(u.createdAt)}</b></div>
+   <div><small>Oxirgi faollik</small><b>${ago(u.last)}</b></div>
+   <div><small>Odamlar</small><b class="num">${u.people}</b></div>
+   <div><small>Qarz yozuvlari</small><b class="num">${u.tx}</b></div>
+   ${loading?'':`<div><small>Ro'yxat · farzand</small><b class="num">${u.lists} · ${u.kids}</b></div><div><small>Qurilmalar (sessiya)</small><b class="num">${u.sessions}</b></div>`}
+  </div>
+  ${docs?`<p class="t2" style="margin:8px 2px 0;white-space:normal">Bo'limlar: ${esc(docs)}</p>`:''}
+  <div class="mini">Tarif</div>
+  ${pl('prem','💎 Premium',premCur)}
+  ${pl('biz','🏪 Biznes',bizCur)}
+  ${loading?'':`<div class="plan"><div class="ph"><b>🎁 Sinov muddati</b><small>${u.trial?fdate(u.trialEnd)+' gacha':u.trialUsed?'ishlatilgan':u.canTrial?'ishlatilmagan':'—'}</small></div>
+   <div class="grid2">${u.trial?`<button class="btn btn-ghost btn-sm" data-trial="end">Tugatish</button>`:`<button class="btn btn-ghost btn-sm" data-trial="start">Hozir boshlash</button>`}<button class="btn btn-ghost btn-sm" data-trial="reset">Qayta berish</button></div></div>`}
+  <div class="mini">Xavfsizlik</div>
+  <div class="grid2"><button class="btn btn-ghost btn-sm" data-upass="1" ${loading?'disabled':''}>🔑 Parolni tiklash</button><button class="btn btn-ghost btn-sm" data-ulogout="1" ${loading?'disabled':''}>🚪 Hamma qurilmadan chiqarish</button></div>
+  ${pays&&pays.length?`<div class="mini">To'lovlar</div><div class="list">${pays.map(payRow).join('')}</div>`:''}
+  <button class="btn btn-ghost w100" style="margin-top:16px" data-close="1">Yopish</button>`;
+}
+async function refreshUser(){const id=S.u;if(!id)return;try{const j=await api('admUser',{id});if(S.u===id)setSheet(userHtml(j.user,j.payments));const i=(S.users||[]).findIndex(x=>x.id===id);if(i>=0)Object.assign(S.users[i],j.user)}catch(e){}}
+
+/* ---------- features ---------- */
+const FEATS=[
+ ['main',[['shop','🛒',"Bozorlik ro'yxati","Qog'ozsiz bozorlik"],['yigin','💰',"Pul yig'ish",'Sovg\'a, yordam uchun'],['kids','👧','Farzandlar xazinasi','Bola kabineti va PIN'],['toy','💍',"To'yona daftari",'Kim qancha olib keldi'],['loan','🏦','Kreditlar','To\'lov kalendari'],['gap','👥','Gaplar','Navbat va to\'lovlar'],['biz','🏪','Biznes tarif',"Do'konlar uchun"]]],
+ ['extra',[['report','📊','Oylik hisobot',''],['excel','📥','Excel fayl',''],['remind','💬','SMS eslatmalar',''],['trust','⭐','Ishonch reytingi',''],['usd','💵','Dollar va kurs',''],['plan','🗓',"Bo'lib to'lash",''],['confirm','🤝','Ikki tomonlama tasdiq',''],['ru','🇷🇺','Rus tili','']]]];
+const MODES={biz:[['off',"O'chiq"],['prem','Sotuvda']]};
+const MODES3=[['off',"O'chiq"],['free','Bepul'],['prem','Premium']],MODES2=[['free','Bepul'],['prem','Premium']];
+function vFeat(){
+  const s=S.stats;if(!s)return `<div class="sec" style="margin-top:6px"><h2>Bo'limlar</h2></div><div class="skel"></div>`;
+  const F=s.feat,P=s.prices;
+  const row=([k,ic,l,d],modes)=>`<div class="feat${modes.length>2?' wrap':''}"><span class="fic">${ic}</span><div class="mid"><div class="t1">${l}</div>${d?`<div class="t2">${d}</div>`:''}</div><div class="seg">${modes.map(([m,ml])=>`<button class="m-${m} ${F[k]===m?'on':''}" data-feat="${k}" data-m="${m}">${ml}</button>`).join('')}</div></div>`;
+  const full=P.month*12,save=P.month>0&&P.year>0?full-P.year:0;
+  return `<div class="sec" style="margin-top:6px"><h2>Bo'limlar</h2><span class="hint">darhol hammada o'zgaradi</span></div>
+  <div class="list">${FEATS[0][1].map(f=>row(f,MODES[f[0]]||MODES3)).join('')}</div>
+  <p class="t2" style="white-space:normal;margin:8px 4px 0"><b>O'chiq</b> — ilovada ko'rinmaydi, lekin mijozlarning yozuvlari o'chmaydi. Qayta yoqsangiz, hammasi joyida bo'ladi.</p>
+  <div class="sec"><h2>Premium imkoniyatlar</h2></div>
+  <div class="list">${FEATS[1][1].map(f=>row(f,MODES2)).join('')}</div>
+  <div class="sec"><h2>Narxlar</h2><span class="hint">so'mda · 0 — tarif yopiq</span></div>
+  <div class="card"><div class="field"><label for="pr-month">Premium · 1 oy</label><input class="inp num" id="pr-month" inputmode="numeric" value="${fmt(P.month)}"></div>
+   <div class="field"><label for="pr-year">Premium · 1 yil</label><input class="inp num" id="pr-year" inputmode="numeric" value="${fmt(P.year)}"></div>
+   ${save>0?`<div class="saving">Yillik tarifda mijoz ${fmt(save)} so'm tejaydi (−${Math.round(save/full*100)}%) · oyiga ${fmt(Math.round(P.year/12))} so'm</div>`:''}
+   <div class="field"><label for="pr-biz">Biznes · 1 oy</label><input class="inp num" id="pr-biz" inputmode="numeric" value="${fmt(P.biz)}" ${F.biz==='off'?'disabled placeholder="Biznes o\'chiq"':''}></div>
+   <button class="btn btn-primary w100" data-prices="1">Narxlarni saqlash</button>
+   ${P.online?'':`<p class="t2" style="white-space:normal;margin-top:10px">⚠️ Onlayn to'lov (TezCheck) ulanmagan — narxlar ko'rinadi, lekin botda to'lov tugmalari chiqmaydi.</p>`}</div>`;
+}
+
+/* ---------- payments ---------- */
+const PST={paid:"To'langan",active:'Kutilmoqda',created:'Kutilmoqda',expired:'Muddati o\'tgan',cancelled:'Bekor qilingan'};
+const PTL={month:'1 oy',year:'1 yil',biz:'Biznes'};
+function payRow(p){return `<div class="row"><span class="fic">${p.tarif==='biz'?'🏪':'💎'}</span><div class="mid"><div class="t1">${esc(p.name||fphone(p.phone))} · ${PTL[p.tarif]||esc(p.tarif)}</div><div class="t2">${fdt(p.paidAt||p.createdAt)}${p.until?' · '+fdate(p.until)+' gacha':''}</div></div><span style="text-align:right"><div class="pay-amt num">${fmt(p.amount)}</div><span class="tag ${p.status==='paid'?'paid':'other'}">${PST[p.status]||esc(p.status)}</span></span></div>`}
+function vPays(){
+  const L=S.pays;const head=`<div class="sec" style="margin-top:6px"><h2>To'lovlar</h2><button class="hint" data-reload="pays" style="font-weight:700;color:var(--brand)">↻ Yangilash</button></div>`;
+  if(!L)return head+'<div class="skel"></div>';
+  const paid=L.filter(p=>p.status==='paid'),sum=paid.reduce((z,p)=>z+(+p.amount||0),0);
+  return head+`<div class="kpis" style="margin-bottom:10px"><div class="kpi"><small>To'langan</small><b class="num">${paid.length}</b></div><div class="kpi"><small>Jami summa</small><b class="num">${fmt(sum)}</b></div></div>
+  <div class="list">${L.length?L.map(payRow).join(''):`<div class="empty"><b>Hali to'lov yo'q</b>Mijozlar botda Premium olganda shu yerda ko'rinadi</div>`}</div>`;
+}
+
+/* ---------- broadcast ---------- */
+function vMsg(){
+  const s=S.stats,T=s?s.tariffs:{};
+  const TO=[['all','Hammaga'],['free','Bepul'],['trial','Sinovdagilar'],['paid','Premium + Biznes']];
+  S.to=S.to||'all';
+  return `<div class="sec" style="margin-top:6px"><h2>Hammaga xabar</h2><span class="hint">bot orqali</span></div>
+  <div class="card"><div class="field"><label>Kimga</label><div class="chips" style="padding-top:0">${TO.map(([k,l])=>`<button class="chip ${S.to===k?'on':''}" data-to="${k}">${l}</button>`).join('')}</div></div>
+  <div class="field"><label for="bm">Matn</label><textarea class="inp" id="bm" maxlength="3500" placeholder="Masalan: Yangi versiya chiqdi! Ilovani yangilang 🎉">${esc(S.draft||'')}</textarea></div>
+  <button class="btn btn-primary w100" data-send="1">📢 Yuborish</button>
+  <p class="t2" style="white-space:normal;margin-top:10px">Faqat botga ulangan mijozlarga boradi${s?` (${s.tg} kishi)`:''}. Rasm yoki video yubormoqchi bo'lsangiz, botga yuboring va izohiga <b>/xabar</b> deb yozing.</p></div>`;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('button,[data-user]');if(!b)return;const d=b.dataset;
+  if(d.go){S.tab=d.go;haptic();if(d.go==='users')loadUsers();if(d.go==='pays'&&!S.pays)loadPays();if((d.go==='home'||d.go==='feat')&&S.stats)loadStats();render();window.scrollTo(0,0);return}
+  if(d.flt){S.flt=d.flt;if(S.tab!=='users'){S.tab='users';loadUsers();window.scrollTo(0,0)}render();return}
+  if(d.reload){if(d.reload==='users'){S.users=null;render();loadUsers(true)}else{S.pays=null;render();loadPays()}return}
+  if(d.user){haptic();openUser(d.user);return}
+  if(d.close){closeSheet();return}
+  if(d.to){S.draft=($('#bm')||{}).value||'';S.to=d.to;render();return}
+  if(d.feat){
+    const s=S.stats;if(!s||s.feat[d.feat]===d.m)return;const old=s.feat[d.feat];
+    if(d.m==='off'&&!await confirmBox("Bo'lim hamma mijozlarda yashiriladi. Ularning yozuvlari o'chmaydi. Davom etamizmi?"))return;
+    s.feat[d.feat]=d.m;render();
+    try{const j=await api('admFeat',{f:d.feat,mode:d.m});s.feat=j.feat;haptic('ok');toast('Saqlandi');if(d.feat==='biz')loadStats()}catch(er){s.feat[d.feat]=old;render();haptic('err');toast(er.message)}
+    return}
+  if(d.prices){const g=k=>String(($('#pr-'+k)||{}).value||'').replace(/\D/g,'');const body={month:g('month'),year:g('year')};if(!($('#pr-biz')||{}).disabled)body.biz=g('biz');
+    b.disabled=true;try{const j=await api('admPrices',body);S.stats.prices=j.prices;haptic('ok');toast('Narxlar saqlandi');render()}catch(er){haptic('err');toast(er.message);b.disabled=false}return}
+  if(d.send){const text=($('#bm')||{}).value.trim();if(!text){toast('Matnni yozing');return}
+    const lbl={all:'hammaga',free:'bepul tarifdagilarga',trial:'sinovdagilarga',paid:'Premium va Biznes mijozlarga'}[S.to];
+    if(!await confirmBox(`Xabar ${lbl} yuboriladi. Davom etamizmi?`))return;
+    b.disabled=true;b.textContent='Yuborilmoqda…';
+    try{const j=await api('admBroadcast',{text,to:S.to});S.draft='';haptic('ok');toast(`✅ ${j.n} kishiga yuborildi${j.bad?` · ${j.bad} ta yetmadi`:''}`);render()}catch(er){haptic('err');toast(er.message);b.disabled=false;b.textContent='📢 Yuborish'}return}
+  const uid=S.u;if(!uid)return;
+  if(d.plan){let v=d.v;if(v==='custom'){v=String(($('#pd-'+d.plan)||{}).value||'').replace(/\D/g,'');if(!v){toast('Kun sonini yozing');return}}
+    const nm=d.plan==='biz'?'Biznes':'Premium';
+    if(v==='0'&&!await confirmBox(`${nm} o'chiriladi. Davom etamizmi?`))return;
+    b.disabled=true;try{const j=await api('admSetPlan',{id:uid,kind:d.plan,v,notify:true});haptic('ok');toast(`${nm}: ${j.until}`);await refreshUser()}catch(er){haptic('err');toast(er.message);b.disabled=false}return}
+  if(d.trial){b.disabled=true;try{await api('admTrial',{id:uid,v:d.trial});haptic('ok');toast('Saqlandi');await refreshUser()}catch(er){toast(er.message);b.disabled=false}return}
+  if(d.ulogout){if(!await confirmBox('Mijoz barcha telefonlardan chiqariladi va qayta parol bilan kiradi. Davom etamizmi?'))return;
+    try{const j=await api('admLogout',{id:uid});haptic('ok');toast(`${j.n} ta qurilmadan chiqarildi`);refreshUser()}catch(er){toast(er.message)}return}
+  if(d.upass){if(!await confirmBox("Yangi vaqtinchalik parol yaratiladi, PIN o'chadi va mijoz hamma qurilmadan chiqadi. Davom etamizmi?"))return;
+    try{const j=await api('admPass',{id:uid,notify:true});haptic('ok');
+      setSheet(`<div class="center" style="min-height:0;padding:20px 0"><div><div class="ic">🔑</div><h2>Yangi parol</h2><div class="idbox" style="font-size:26px;letter-spacing:.12em" data-notr>${esc(j.pass)}</div><p style="margin-top:12px">${j.sent?"Parol mijozning Telegram'iga ham yuborildi.":"Mijoz botga ulanmagan — parolni unga o'zingiz ayting."}</p><button class="btn btn-primary w100" style="margin-top:16px" data-back="1">Mijozga qaytish</button></div></div>`)}
+    catch(er){toast(er.message)}return}
+  if(d.back){setSheet('<div style="padding:40px"><div class="spin"></div></div>');refreshUser();return}
+  if(d.umsg){setSheet(`<h3 style="font-size:18px;font-weight:800;margin:4px 0 12px">💬 Xabar yozish</h3><div class="field"><textarea class="inp" id="um" maxlength="3500" placeholder="Xabar matni"></textarea></div><div class="grid2"><button class="btn btn-ghost" data-back="1">Orqaga</button><button class="btn btn-primary" data-umsend="1">Yuborish</button></div>`);setTimeout(()=>{const t=$('#um');t&&t.focus()},200);return}
+  if(d.umsend){const text=($('#um')||{}).value.trim();if(!text){toast('Matnni yozing');return}b.disabled=true;
+    try{await api('admMsg',{id:uid,text});haptic('ok');toast('✅ Yuborildi');setSheet('<div style="padding:40px"><div class="spin"></div></div>');refreshUser()}catch(er){haptic('err');toast(er.message);b.disabled=false}return}
+});
+document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;render._focus='q';render()}if(e.target.id==='bm')S.draft=e.target.value;
+  if(/^pr-/.test(e.target.id)){const v=e.target.value.replace(/\D/g,'');e.target.value=v?fmt(v):''}});
+boot();
+</script>
+</body>
+</html>
