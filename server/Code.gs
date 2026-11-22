@@ -21,6 +21,9 @@
  *
  * TELEGRAM BOT: Script Properties ga TG_TOKEN (BotFather tokeni) va ADMIN_PHONE (raqamingiz) qo'shing,
  * yangi versiyani Deploy qiling, keyin yuqoridan "botSetup" funksiyasini tanlab ▶ Run bosing.
+ *
+ * ADMIN PANEL: botda /admin deb yozing (faqat admin Telegram'ida ochiladi).
+ *   ADMIN_TG = Telegram ID raqamingiz (ixtiyoriy). Yozilmasa — ADMIN_PHONE akkauntiga ulangan Telegram admin hisoblanadi.
  */
 
 const TABLES = {
@@ -39,9 +42,24 @@ const TABLES = {
 const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true };
 /* Docs turlari va ular uchun kerakli tarif: '' — bepul, 'prem' — Premium, 'biz' — Biznes */
 const DOC_KINDS = { toy: 'prem', toyg: 'prem', loan: 'prem', gap: 'prem', yigin: '', biz: 'biz' };
+/* ---------- imkoniyatlar: admin paneldan boshqariladi ----------
+ * off — ilovada ko'rinmaydi (ma'lumotlar o'chmaydi), free — hammaga bepul, prem — faqat Premium */
+const FEAT_DEF = { shop: 'prem', toy: 'off', loan: 'off', gap: 'off', yigin: 'free', kids: 'prem', report: 'prem', excel: 'prem', remind: 'prem', trust: 'prem', usd: 'prem', plan: 'prem', confirm: 'prem', ru: 'prem', biz: 'prem' };
+const FEAT_MODES = { shop: ['off', 'free', 'prem'], toy: ['off', 'free', 'prem'], loan: ['off', 'free', 'prem'], gap: ['off', 'free', 'prem'], yigin: ['off', 'free', 'prem'], kids: ['off', 'free', 'prem'], biz: ['off', 'prem'] };
+const DOC_FEAT_ = { toy: 'toy', toyg: 'toy', loan: 'loan', gap: 'gap', yigin: 'yigin', biz: 'biz' };
+let FEAT_MEMO_ = null;
+function feat_() {
+  if (FEAT_MEMO_) return FEAT_MEMO_;
+  let o = {}; try { o = JSON.parse(meta_('features') || '{}') || {}; } catch (e) {}
+  const r = {};
+  Object.keys(FEAT_DEF).forEach(function (k) { r[k] = (FEAT_MODES[k] || ['free', 'prem']).indexOf(o[k]) >= 0 ? o[k] : FEAT_DEF[k]; });
+  return (FEAT_MEMO_ = r);
+}
+/* "off" bo'lgan bo'lim ham Premium kabi tekshiriladi: telefonda navbatda turgan eski yozuvlar yo'qolmasin */
+function featOk_(a, f) { return feat_()[f] === 'free' || premium_(a).on; }
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, kidSave: 1, kidDelete: 1, kidTx: 1, kidLogin: 1, kidAddTx: 1, kidGoals: 1, kidProfile: 1, kidLogout: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, kidSave: 1, kidDelete: 1, kidTx: 1, kidLogin: 1, kidAddTx: 1, kidGoals: 1, kidProfile: 1, kidLogout: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -270,7 +288,8 @@ function data_(accId) {
     kids: all_('Kids').filter(function (k) { return k.acc === accId; }).map(kidPub_),
     confirms: confirms,
     rate: rate_(),
-    api: 10,
+    api: 11,
+    feat: feat_(),
     marks: marks_(accId),
     prices: prices_(),
     version: meta_('version')
@@ -302,6 +321,7 @@ function prices_() {
   const on = !!(p.getProperty('TC_KEY') && p.getProperty('TC_DESK'));
   const o = { online: on, bot: p.getProperty('TG_BOT') || '' };
   Object.keys(PLANS).forEach(function (k) { const v = meta_(PLANS[k].key); o[k] = v === '' ? PLANS[k].def : Number(String(v).replace(/\s/g, '')) || 0; });
+  if (feat_().biz === 'off') o.biz = 0;
   return o;
 }
 function tc_(path, body, idem) {
@@ -421,7 +441,7 @@ const API = {
     put_('Accounts', a);
     try { notifyAdmin_('🆕 Yangi foydalanuvchi: <b>' + h_(name) + '</b> (+' + phone + ')'); } catch (e) {}
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
   },
   login: function (r) {
     const phone = normPhone_(r.phone);
@@ -431,7 +451,7 @@ const API = {
     if (!checkPw_(a, String(r.pass || ''))) { loginFail_(phone); throw new Error("Parol noto'g'ri"); }
     CacheService.getScriptCache().remove('lf_' + phone);
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
   },
   logout: function (r) {
     const rows = all_('Sessions').filter(function (x) { return x.token === String(r.token || ''); }).map(function (x) { return x._row; });
@@ -440,7 +460,7 @@ const API = {
   },
   sync: function (r) {
     const a = auth_(r), d = data_(a.id);
-    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks };
+    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
   },
   saveProfile: function (r) {
     const a = auth_(r);
@@ -525,7 +545,7 @@ const API = {
   /* Bozorlik ro'yxati (Premium): butun ro'yxat bitta qatorda, mahsulotlar JSON ko'rinishida */
   saveList: function (r) {
     const a = auth_(r), it = r.item || {};
-    if (!premium_(a).on) throw new Error("Bozorlik ro'yxati — Premium funksiya");
+    if (!featOk_(a, 'shop')) throw new Error("Bozorlik ro'yxati — Premium funksiya");
     const id = str_(it.id, 40) || uid_();
     const old = all_('Lists').filter(function (x) { return x.id === id; })[0];
     if (old && old.acc !== a.id) throw new Error("Ruxsat yo'q");
@@ -550,9 +570,9 @@ const API = {
   saveDoc: function (r) {
     const a = auth_(r), it = r.item || {}, kind = String(it.kind || '');
     if (!DOC_KINDS.hasOwnProperty(kind)) throw new Error("Noto'g'ri tur");
-    const need = DOC_KINDS[kind], p = premium_(a);
-    if (need === 'prem' && !p.on) throw new Error('Bu Premium funksiya');
-    if (need === 'biz' && !p.biz) throw new Error('Bu Biznes tarif funksiyasi');
+    const p = premium_(a);
+    if (kind === 'biz') { if (!p.biz) throw new Error('Bu Biznes tarif funksiyasi'); }
+    else if (!featOk_(a, DOC_FEAT_[kind])) throw new Error('Bu Premium funksiya');
     const id = str_(it.id, 40) || uid_();
     const rows = all_('Docs');
     const old = rows.filter(function (x) { return x.id === id; })[0];
@@ -579,7 +599,7 @@ const API = {
     let k = id ? mine.filter(function (x) { return x.id === id; })[0] : null;
     if (id && !k) throw new Error('Farzand topilmadi');
     if (!k) {
-      if (!premium_(a).on) throw new Error('Bu Premium funksiya');
+      if (!featOk_(a, 'kids')) throw new Error('Bu Premium funksiya');
       if (mine.length >= KID_MAX) throw new Error("Ko'pi bilan " + KID_MAX + " ta farzand qo'shish mumkin");
       if (!kidPinOk_(pin)) throw new Error('PIN kod 4 ta raqamdan iborat bo\'lsin');
     }
@@ -652,7 +672,7 @@ const API = {
   /* two-sided confirmation: the other person opens a link and confirms the record */
   shareTx: function (r) {
     const a = auth_(r), id = String(r.id || '');
-    if (!premium_(a).on) throw new Error("Ikki tomonlama tasdiq — Premium funksiya");
+    if (!featOk_(a, 'confirm')) throw new Error("Ikki tomonlama tasdiq — Premium funksiya");
     if (!all_('Tx').some(function (t) { return t.id === id && t.acc === a.id; })) throw new Error("Yozuv hali saqlanmagan. Birozdan keyin urinib ko'ring.");
     const ex = all_('Confirms').filter(function (c) { return c.txId === id && c.acc === a.id; })[0];
     if (ex) return { token: ex.token, status: ex.status };
@@ -784,8 +804,11 @@ function tg_(method, payload) {
 function send_(chat, text, extra) { return tg_('sendMessage', Object.assign({ chat_id: chat, text: text, parse_mode: 'HTML', disable_web_page_preview: true }, extra || {})); }
 function accByChat_(chat) { return all_('Accounts').filter(function (x) { return x.tg && x.tg === String(chat); })[0]; }
 function adminChat_() { const a = all_('Accounts').filter(function (x) { return x.phone === adminPhone_() && x.tg; })[0]; return a ? a.tg : ''; }
+/* admin Telegram ID: ADMIN_TG yoki ADMIN_PHONE akkauntiga ulangan Telegram */
+function adminTg_() { return String(prop_('ADMIN_TG') || adminChat_() || '').replace(/\D/g, ''); }
+function isAdminChat_(chat) { const t = adminTg_(); return !!t && String(chat) === t; }
 function notify_(accId, text, extra) { if (!prop_('TG_TOKEN')) return; const a = all_('Accounts').filter(function (x) { return x.id === accId; })[0]; if (a && a.tg) send_(a.tg, text, extra); }
-function notifyAdmin_(text) { if (!prop_('TG_TOKEN')) return; const c = adminChat_(); if (c) send_(c, text); }
+function notifyAdmin_(text) { if (!prop_('TG_TOKEN')) return; const c = adminTg_(); if (c) send_(c, text); }
 
 function kbMain_() { return { keyboard: [[{ text: '💎 Premium' }, { text: '📊 Hisobim' }], [{ text: '📱 Ilovani ochish' }, { text: 'ℹ️ Ilova haqida' }], [{ text: '❓ Yordam' }]], resize_keyboard: true, is_persistent: true }; }
 function kbLink_() { return { keyboard: [[{ text: '📲 Raqamni yuborish', request_contact: true }], [{ text: 'ℹ️ Ilova haqida' }, { text: '❓ Yordam' }]], resize_keyboard: true, is_persistent: true }; }
@@ -800,7 +823,8 @@ function botUpdate_(u) {
   if (!m || !m.chat || m.chat.type !== 'private') return;
   const chat = String(m.chat.id), a = accByChat_(chat), text = String(m.text || m.caption || '').trim();
   if (m.contact) return botContact_(m, chat);
-  const admin = a && a.phone === adminPhone_();
+  const admin = isAdminChat_(chat);
+  if (admin && (/^\/admin\b/.test(text) || text === '🛠 Admin panel')) return botAdminPanel_(chat);
   if (admin && m.reply_to_message) {
     const mm = String(m.reply_to_message.text || '').match(/#u(\d+)/);
     if (mm) { send_(mm[1], '💬 <b>Dasturchi javobi:</b>\n' + h_(text)); send_(chat, '✅ Javob yuborildi'); return; }
@@ -823,7 +847,7 @@ function botUpdate_(u) {
   if (!a) return send_(chat, 'Avval akkauntingizni ulang: pastdagi <b>📲 Raqamni yuborish</b> tugmasini bosing.', { reply_markup: kbLink_() });
   if (text === '💎 Premium' || cmd === '/tarif' || cmd === '/premium') return botPremium_(chat, a);
   if (text === '📊 Hisobim' || cmd === '/holat' || cmd === '/hisob') return botStatus_(chat, a);
-  const ad = adminChat_();
+  const ad = adminTg_();
   if (ad && ad !== chat) {
     if (!m.text) tg_('forwardMessage', { chat_id: ad, from_chat_id: chat, message_id: m.message_id });
     send_(ad, '✉️ <b>' + h_(a.name) + '</b> (+' + a.phone + ')\n' + h_(text || '[rasm yoki fayl — yuqorida]') + '\n\n#u' + chat + '\n<i>Javob berish uchun shu xabarga «Reply» qiling</i>');
@@ -832,6 +856,7 @@ function botUpdate_(u) {
 }
 
 function botStart_(chat, a) {
+  if (isAdminChat_(chat)) botAdminPanel_(chat);
   if (a) return send_(chat, 'Xush kelibsiz, <b>' + h_(a.name) + '</b>! 👋\n\nBu yerda Premium olishingiz, hisobingizni ko\'rishingiz va eslatmalar olishingiz mumkin. Savol bo\'lsa — shunchaki yozing.', { reply_markup: kbMain_() });
   send_(chat, 'Assalomu alaykum! 👋\n<b>Oldi-Berdi</b> — qarz daftaringiz doim cho\'ntagingizda.\n\nBot orqali:\n💎 Premium sotib olasiz\n📊 Hisobingizni ko\'rasiz\n⏰ Muddati o\'tgan qarzlar haqida eslatma olasiz\n💬 Dasturchiga yozasiz\n\nBoshlash uchun ilovada ro\'yxatdan o\'tgan raqamingizni yuboring 👇', { reply_markup: kbLink_() });
 }
@@ -852,7 +877,7 @@ function botPremium_(chat, a) {
   const p = premium_(a), pr = prices_();
   let t = '💎 <b>Oldi-Berdi Premium</b>\n\n';
   t += p.trial ? '🎁 Holat: <b>sinov muddati — ' + fdate_(p.until) + ' gacha</b>\nSinov tugagach ilova bepul rejimda ishlayveradi.\n\n' : p.on ? '✅ Holat: <b>faol' + (p.until ? ' — ' + fdate_(p.until) + ' gacha' : ' (muddatsiz)') + '</b>\n\n' : '🆓 Holat: <b>bepul rejim</b>\nAsosiy imkoniyatlar bepul. Premium qo\'shimcha imkoniyatlarni ochadi.\n\n';
-  t += 'Premium\'da:\n🛒 Bozorlik ro\'yxati\n💍 To\'yona daftari\n🏦 Kredit va nasiyalar kalendari\n👥 Gap boshqaruvi\n📊 Oylik hisobot va grafiklar\n📥 Excel fayl\n💬 SMS eslatmalar\n⭐ Ishonch reytingi\n💵 Dollar va MB kursi\n🗓 Bo\'lib to\'lash\n🤝 Ikki tomonlama tasdiq\n🇷🇺 Rus tili\n⏰ Har kuni botda eslatma';
+  t += 'Premium\'da:\n' + premList_().join('\n') + '\n⏰ Har kuni botda eslatma';
   const rows = [];
   if (p.canTrial) { rows.push([{ text: '🎁 ' + TRIAL_DAYS + ' kun bepul sinab ko\'rish', callback_data: 'trial' }]); t += '\n\nPremium\'ni <b>' + TRIAL_DAYS + ' kun bepul</b> sinab ko\'rishingiz mumkin — majburiy emas.'; }
   if (pr.online && !(p.on && !p.until)) {
@@ -948,8 +973,10 @@ function botStatus_(chat, a) {
   send_(chat, t, { reply_markup: { inline_keyboard: [[btnApp_()]] } });
 }
 
+const PREM_LBL_ = { shop: '🛒 Bozorlik ro\'yxati', toy: '💍 To\'yona daftari', loan: '🏦 Kredit va nasiyalar kalendari', gap: '👥 Gap boshqaruvi', yigin: '💰 Pul yig\'ish', kids: '👧 Farzandlar xazinasi', report: '📊 Oylik hisobot va grafiklar', excel: '📥 Excel fayl', remind: '💬 SMS eslatmalar', trust: '⭐ Ishonch reytingi', usd: '💵 Dollar va MB kursi', plan: '🗓 Bo\'lib to\'lash', confirm: '🤝 Ikki tomonlama tasdiq', ru: '🇷🇺 Rus tili' };
+function premList_() { const f = feat_(); return Object.keys(PREM_LBL_).filter(function (k) { return f[k] === 'prem'; }).map(function (k) { return PREM_LBL_[k]; }); }
 function botAbout_(chat, a) {
-  send_(chat, '📒 <b>Oldi-Berdi</b> — qarz daftari ilovasi\n\nKimga qancha qarz berdingiz, kimdan qancha oldingiz — hammasi bir joyda. Ma\'lumotlar internetda saqlanadi: istalgan telefondan raqam va parol bilan kirasiz.\n\n<b>Bepul:</b>\n✅ Qarz berdim / oldim / qaytardi\n✅ Rasm va izoh\n✅ Muddat nazorati\n✅ Kontaktlardan tanlash\n✅ PIN va barmoq izi\n\n<b>Premium:</b> bozorlik ro\'yxati, hisobot, Excel, SMS eslatma, ishonch reytingi, dollar, bo\'lib to\'lash, ikki tomonlama tasdiq, rus tili.\n\n<b>O\'rnatish:</b>\n🤖 Android — «Android uchun yuklash» tugmasi\n🍏 iPhone — havolani Safari\'da oching → «Ulashish» → «Bosh ekranga qo\'shish»', { reply_markup: { inline_keyboard: [[btnApp_()], [{ text: '🤖 Android uchun yuklash', url: appUrl_() + 'Oldi-Berdi.apk' }], [{ text: '🍏 iPhone / brauzer', url: appUrl_() }]] } });
+  send_(chat, '📒 <b>Oldi-Berdi</b> — qarz daftari ilovasi\n\nKimga qancha qarz berdingiz, kimdan qancha oldingiz — hammasi bir joyda. Ma\'lumotlar internetda saqlanadi: istalgan telefondan raqam va parol bilan kirasiz.\n\n<b>Bepul:</b>\n✅ Qarz berdim / oldim / qaytardi\n✅ Rasm va izoh\n✅ Muddat nazorati\n✅ Kontaktlardan tanlash\n✅ PIN va barmoq izi\n\n<b>Premium:</b> ' + premList_().map(function (x) { return x.replace(/^\S+\s/, ''); }).join(', ') + '.\n\n<b>O\'rnatish:</b>\n🤖 Android — «Android uchun yuklash» tugmasi\n🍏 iPhone — havolani Safari\'da oching → «Ulashish» → «Bosh ekranga qo\'shish»', { reply_markup: { inline_keyboard: [[btnApp_()], [{ text: '🤖 Android uchun yuklash', url: appUrl_() + 'Oldi-Berdi.apk' }], [{ text: '🍏 iPhone / brauzer', url: appUrl_() }]] } });
 }
 
 function botHelp_(chat, a) {
@@ -1052,6 +1079,8 @@ function botSetup() {
   const w = tg_('setWebhook', { url: url, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
   tg_('setMyCommands', { commands: [{ command: 'start', description: 'Boshlash' }, { command: 'tarif', description: 'Premium narxlari' }, { command: 'holat', description: 'Mening hisobim' }, { command: 'ilova', description: 'Ilova haqida' }, { command: 'yordam', description: 'Yordam' }] });
   tg_('setChatMenuButton', { menu_button: { type: 'web_app', text: 'Ilova', web_app: { url: appUrl_() } } });
+  const adm = adminTg_();
+  if (adm) tg_('setMyCommands', { scope: { type: 'chat', chat_id: Number(adm) }, commands: [{ command: 'admin', description: '🛠 Admin panel' }, { command: 'start', description: 'Boshlash' }, { command: 'stat', description: 'Statistika' }, { command: 'tarif', description: 'Premium narxlari' }, { command: 'holat', description: 'Mening hisobim' }] });
   ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'kunlik') ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('kunlik').timeBased().everyDays(1).atHour(9).create();
   const msg = 'Bot: @' + me.result.username + ' | webhook: ' + url + ' → ' + (w && w.ok ? 'OK' : JSON.stringify(w));
@@ -1199,3 +1228,172 @@ function setMeta_(k, v) {
   const r = all_('Meta').filter(function (x) { return x.key === k; })[0];
   put_('Meta', { key: k, value: v }, r ? r._row : 0);
 }
+
+/* =====================================================================
+ * ADMIN PANEL — Telegram Mini App (admin.html)
+ * Botda /admin → «Admin panelni ochish». Har bir so'rov Telegram imzosi (initData)
+ * bilan tekshiriladi: faqat admin Telegram ID'si o'ta oladi.
+ * ===================================================================== */
+function adminUrl_() { return appUrl_() + 'admin.html'; }
+function botAdminPanel_(chat) {
+  return send_(chat, '🛠 <b>Admin panel</b>\nMijozlar, tariflar, imkoniyatlar, narxlar va xabarlar — hammasi shu yerda.', { reply_markup: { inline_keyboard: [[{ text: '🛠 Admin panelni ochish', web_app: { url: adminUrl_() } }]] } });
+}
+function hex_(b) { return b.map(function (x) { return ('0' + ((x < 0 ? x + 256 : x).toString(16))).slice(-2); }).join(''); }
+function admAuth_(r) {
+  const tok = prop_('TG_TOKEN'), init = String(r.init || '');
+  if (!tok || !init) throw new Error('ADMIN');
+  let hash = ''; const kv = [], f = {};
+  init.split('&').forEach(function (pair) {
+    const i = pair.indexOf('='); if (i < 1) return;
+    const k = decodeURIComponent(pair.slice(0, i)), v = decodeURIComponent(pair.slice(i + 1));
+    if (k === 'hash') hash = v; else { kv.push([k, v]); f[k] = v; }
+  });
+  kv.sort(function (x, y) { return x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0; });
+  const B = function (x) { return Utilities.newBlob(x).getBytes(); };
+  const secret = Utilities.computeHmacSha256Signature(B(tok), B('WebAppData'));
+  const sig = hex_(Utilities.computeHmacSha256Signature(B(kv.map(function (x) { return x[0] + '=' + x[1]; }).join('\n')), secret));
+  if (!hash || sig !== hash) throw new Error('ADMIN');
+  if (!(Date.now() / 1000 - Number(f.auth_date || 0) < 86400)) throw new Error('ADMIN_OLD');
+  let u = {}; try { u = JSON.parse(f.user || '{}'); } catch (e) {}
+  if (!isAdminChat_(String(u.id || ''))) throw new Error('ADMIN');
+  return u;
+}
+function tariff_(a) { const p = premium_(a); return p.biz ? 'biz' : p.on ? (p.trial ? 'trial' : 'prem') : 'free'; }
+function dayOf_(ms) { return Utilities.formatDate(new Date(Number(ms) || 0), Session.getScriptTimeZone(), 'yyyy-MM-dd'); }
+function admAcc_(id) { const a = all_('Accounts').filter(function (x) { return x.id === String(id || ''); })[0]; if (!a) throw new Error('Mijoz topilmadi'); return a; }
+function admCounts_() {
+  const c = { p: {}, t: {}, last: {} };
+  const bump = function (acc, ms) { ms = Number(ms) || 0; if (ms > (c.last[acc] || 0)) c.last[acc] = ms; };
+  all_('People').forEach(function (x) { c.p[x.acc] = (c.p[x.acc] || 0) + 1; bump(x.acc, x.updatedAt); });
+  all_('Tx').forEach(function (x) { c.t[x.acc] = (c.t[x.acc] || 0) + 1; bump(x.acc, x.updatedAt || x.createdAt); });
+  all_('Sessions').forEach(function (x) { bump(x.acc, x.createdAt); });
+  return c;
+}
+function admRow_(a, c) {
+  const p = premium_(a);
+  return { id: a.id, name: a.name, phone: a.phone, createdAt: Number(a.createdAt) || 0, tg: !!a.tg, t: tariff_(a), until: p.until || '', bizUntil: p.bizUntil || '', canTrial: !!p.canTrial,
+    people: c.p[a.id] || 0, tx: c.t[a.id] || 0, last: Math.max(c.last[a.id] || 0, Number(a.createdAt) || 0), admin: a.phone === adminPhone_() };
+}
+/* Premium yoki Biznes: v = kun soni | 'ha' (muddatsiz) | '0' (o'chirish) */
+function setPlan_(a, kind, v) {
+  v = String(v || '').toLowerCase();
+  const f = kind === 'biz' ? 'biz' : 'premium';
+  if (v === 'ha') { a[f] = 'ha'; put_('Accounts', a, a._row); return 'muddatsiz'; }
+  if (v === '0') { a[f] = ''; put_('Accounts', a, a._row); return "o'chirildi"; }
+  const n = parseInt(v, 10);
+  if (!(n > 0 && n <= 3650)) throw new Error('Kun sonini yozing (1–3650)');
+  return fdate_(kind === 'biz' ? grantBiz_(a.id, n) : grant_(a.id, n)) + ' gacha';
+}
+Object.assign(API, {
+  admMe: function (r) { const u = admAuth_(r); return { me: { id: u.id, name: [u.first_name, u.last_name].filter(String).join(' ') } }; },
+  admStats: function (r) {
+    admAuth_(r);
+    const acc = all_('Accounts'), pay = all_('Payments').filter(function (x) { return x.status === 'paid'; }), td = today_();
+    const t = { free: 0, trial: 0, prem: 0, biz: 0 }; acc.forEach(function (a) { t[tariff_(a)]++; });
+    const signDays = {}; acc.forEach(function (a) { const d = dayOf_(a.createdAt); signDays[d] = (signDays[d] || 0) + 1; });
+    const signups = []; for (let i = 29; i >= 0; i--) { const d = addDays_(td, -i); signups.push({ d: d, n: signDays[d] || 0 }); }
+    const since = function (n) { const d = addDays_(td, -n + 1); return acc.filter(function (a) { return dayOf_(a.createdAt) >= d; }).length; };
+    const revM = {}; pay.forEach(function (x) { const m = dayOf_(x.paidAt).slice(0, 7); revM[m] = (revM[m] || 0) + (Number(x.amount) || 0); });
+    const rev = []; let ym = td.slice(0, 7);
+    for (let i = 0; i < 6; i++) { rev.unshift({ m: ym, s: revM[ym] || 0 }); const y = +ym.slice(0, 4), mo = +ym.slice(5, 7) - 1; ym = mo < 1 ? (y - 1) + '-12' : y + '-' + ('0' + mo).slice(-2); }
+    const sum = function (l) { return l.reduce(function (z, x) { return z + (Number(x.amount) || 0); }, 0); };
+    const mon = pay.filter(function (x) { return dayOf_(x.paidAt).slice(0, 7) === td.slice(0, 7); });
+    const newest = acc.slice().sort(function (x, y) { return (Number(y.createdAt) || 0) - (Number(x.createdAt) || 0); }).slice(0, 5), c = admCounts_();
+    return { users: acc.length, tg: acc.filter(function (x) { return x.tg; }).length, tariffs: t, today: since(1), week: since(7), month: since(30),
+      revMonth: sum(mon), payMonth: mon.length, revTotal: sum(pay), payTotal: pay.length, signups: signups, rev: rev,
+      newest: newest.map(function (a) { return admRow_(a, c); }), feat: feat_(), prices: prices_(), bot: prop_('TG_BOT'), today_: td };
+  },
+  admUsers: function (r) {
+    admAuth_(r);
+    const c = admCounts_();
+    return { users: all_('Accounts').map(function (a) { return admRow_(a, c); }).sort(function (x, y) { return y.createdAt - x.createdAt; }) };
+  },
+  admUser: function (r) {
+    admAuth_(r);
+    const a = admAcc_(r.id), c = admCounts_(), p = premium_(a);
+    const docs = {}; all_('Docs').forEach(function (d) { if (d.acc === a.id) docs[d.kind] = (docs[d.kind] || 0) + 1; });
+    return { user: Object.assign(admRow_(a, c), {
+      premiumRaw: String(a.premium || ''), bizRaw: String(a.biz || ''), trialEnd: String(a.trialEnd || ''), trial: !!p.trial, trialUsed: !!p.trialUsed,
+      lists: all_('Lists').filter(function (x) { return x.acc === a.id; }).length, kids: all_('Kids').filter(function (x) { return x.acc === a.id; }).length, docs: docs,
+      sessions: all_('Sessions').filter(function (x) { return x.acc === a.id; }).length, pin: !!a.pinHash, currency: a.currency || "so'm" }),
+      payments: all_('Payments').filter(function (x) { return x.acc === a.id; }).map(clean_).sort(function (x, y) { return (Number(y.createdAt) || 0) - (Number(x.createdAt) || 0); }) };
+  },
+  admSetPlan: function (r) {
+    admAuth_(r);
+    const a = admAcc_(r.id), kind = r.kind === 'biz' ? 'biz' : 'prem', v = String(r.v || '');
+    const until = setPlan_(a, kind, v);
+    if (r.notify && v !== '0') notify_(a.id, kind === 'biz' ? '🏪 Sizga <b>Biznes</b> tarif yoqildi — ' + until + '!' : '🎉 Sizga <b>Premium</b> yoqildi — ' + until + '!\nIlovani oching, hammasi ochiq.');
+    return { until: until };
+  },
+  admTrial: function (r) {
+    admAuth_(r);
+    const a = admAcc_(r.id);
+    if (r.v === 'start') { a.trialEnd = ''; put_('Accounts', a, a._row); startTrial_(a); }
+    else if (r.v === 'end') { a.trialEnd = addDays_(today_(), -1); put_('Accounts', a, a._row); }
+    else { a.trialEnd = ''; put_('Accounts', a, a._row); }
+    return {};
+  },
+  admPass: function (r) {
+    admAuth_(r);
+    const a = admAcc_(r.id);
+    let pass = ''; while (pass.length < 6) pass += String(Math.floor(Math.random() * 10));
+    a.salt = uid_(); a.hash = pwHashV2_(a.salt, pass); a.pinSalt = ''; a.pinHash = '';
+    put_('Accounts', a, a._row);
+    delRows_('Sessions', all_('Sessions').filter(function (x) { return x.acc === a.id; }).map(function (x) { return x._row; }));
+    let sent = false;
+    if (r.notify && a.tg) { const m = send_(a.tg, '🔑 <b>Yangi vaqtinchalik parol</b>: <code>' + pass + '</code>\nIlovaga shu parol bilan kiring, keyin Profil → «Parolni o\'zgartirish» orqali o\'zingiznikini qo\'ying.'); sent = !!(m && m.ok); }
+    return { pass: pass, sent: sent };
+  },
+  admLogout: function (r) {
+    admAuth_(r);
+    const a = admAcc_(r.id), rows = all_('Sessions').filter(function (x) { return x.acc === a.id; }).map(function (x) { return x._row; });
+    delRows_('Sessions', rows);
+    return { n: rows.length };
+  },
+  admMsg: function (r) {
+    admAuth_(r);
+    const a = admAcc_(r.id), text = str_(r.text, 3500).trim();
+    if (!text) throw new Error('Xabar matnini yozing');
+    if (!a.tg) throw new Error('Bu mijoz botga ulanmagan');
+    const m = send_(a.tg, '💬 <b>Oldi-Berdi:</b>\n' + h_(text));
+    if (!(m && m.ok)) throw new Error('Yuborilmadi (mijoz botni bloklagan bo\'lishi mumkin)');
+    return {};
+  },
+  admBroadcast: function (r) {
+    admAuth_(r);
+    const text = str_(r.text, 3500).trim(), to = String(r.to || 'all');
+    if (!text) throw new Error('Xabar matnini yozing');
+    let n = 0, bad = 0;
+    all_('Accounts').forEach(function (a) {
+      if (!a.tg || isAdminChat_(a.tg)) return;
+      if (to !== 'all' && tariff_(a) !== to && !(to === 'paid' && (tariff_(a) === 'prem' || tariff_(a) === 'biz'))) return;
+      const m = send_(a.tg, '📢 ' + h_(text));
+      if (m && m.ok) n++; else bad++;
+      Utilities.sleep(50);
+    });
+    return { n: n, bad: bad };
+  },
+  admFeat: function (r) {
+    admAuth_(r);
+    const f = String(r.f || ''), mode = String(r.mode || '');
+    if (!FEAT_DEF.hasOwnProperty(f) || (FEAT_MODES[f] || ['free', 'prem']).indexOf(mode) < 0) throw new Error("Noto'g'ri sozlama");
+    const cur = feat_(), o = {}; Object.keys(cur).forEach(function (k) { o[k] = cur[k]; }); o[f] = mode;
+    setMeta_('features', JSON.stringify(o)); FEAT_MEMO_ = null;
+    return { feat: feat_() };
+  },
+  admPrices: function (r) {
+    admAuth_(r);
+    ['month', 'year', 'biz'].forEach(function (k) {
+      if (r[k] === undefined || r[k] === null || r[k] === '') return;
+      const n = Math.round(Number(String(r[k]).replace(/\s/g, '')));
+      if (!(n >= 0 && n <= 100000000)) throw new Error("Narx noto'g'ri");
+      setMeta_(PLANS[k].key, String(n));
+    });
+    return { prices: prices_() };
+  },
+  admPayments: function (r) {
+    admAuth_(r);
+    const names = {}; all_('Accounts').forEach(function (a) { names[a.id] = a.name; });
+    return { payments: all_('Payments').map(function (x) { const o = clean_(x); o.name = names[x.acc] || ''; return o; }).sort(function (x, y) { return (Number(y.createdAt) || 0) - (Number(x.createdAt) || 0); }).slice(0, 300) };
+  }
+});
