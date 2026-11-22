@@ -225,7 +225,11 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 @keyframes su{from{transform:translateY(40px);opacity:0}}
 @keyframes fi{from{opacity:0}}
 /* ============ katta ekran (kompyuter) ============ */
-.side-logo,.fab-l{display:none}
+.side-logo,.fab-l,.side-foot{display:none}
+.auth-top{position:relative}
+.site-back{position:absolute;top:14px;left:12px;display:inline-flex;align-items:center;gap:6px;color:#fff;opacity:.85;font-weight:700;font-size:13px;text-decoration:none;padding:6px 8px;border-radius:10px}
+.auth-top:has(.site-back){padding-top:56px}
+.site-back:hover{opacity:1}.site-back svg{width:16px;height:16px}
 @media (min-width:1000px){
  .auth{display:grid;grid-template-columns:minmax(420px,1fr) minmax(460px,1fr);min-height:100vh;background:var(--bg)}
  .auth-top{background:radial-gradient(70% 60% at 80% 10%,rgba(191,242,111,.18),transparent 70%),linear-gradient(160deg,var(--hero-a),var(--hero-b));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;position:relative;overflow:hidden}
@@ -268,6 +272,12 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
  .upd,.toast{left:calc(50% + 126px)}
  .upd{bottom:24px}
  #app:has(.lock){max-width:none}
+ .site-back{top:28px;left:auto;right:28px;z-index:2;margin:0;font-size:13.5px;background:rgba(255,255,255,.12);padding:8px 14px;border-radius:12px}
+ .side-foot{display:flex;flex-direction:column;gap:4px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+ .side-link{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:700;color:var(--muted);padding:6px 8px;border-radius:14px;text-decoration:none;width:100%;text-align:left}
+ .side-link:hover{background:var(--surface-2);color:var(--fg)}
+ .side-link svg{width:22px;height:22px}
+ .side-link.out:hover{background:var(--neg-bg);color:var(--neg)}
  .lock{justify-content:center;align-items:center;background:radial-gradient(45% 55% at 85% 15%,rgba(191,242,111,.16),transparent 70%),radial-gradient(40% 50% at 10% 90%,rgba(255,255,255,.08),transparent 70%),linear-gradient(160deg,var(--hero-a),var(--hero-b));position:relative;overflow:hidden}
  .lock:after{content:"";position:absolute;right:-140px;bottom:-140px;width:440px;height:440px;border-radius:50%;border:64px solid rgba(191,242,111,.08);pointer-events:none}
  .lock>*{position:relative;z-index:1}
@@ -561,8 +571,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=36;
-const WHATS_NEW=["PIN qulf endi ixtiyoriy: Profil → «PIN qulf qo'yish» yoki «PIN qulfni o'chirish»","Kompyuterda katta ekranga moslashgan ko'rinish va qulf ekrani"];
+const APP_VERSION=37;
+const WHATS_NEW=["Kompyuterda chap menyuda «Chiqish» va «Bosh sahifa» tugmalari","Kirish sahifasidan asosiy saytga qaytish mumkin"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -791,6 +801,8 @@ async function api(action,data){
  let j;try{j=await r.json()}catch(e){throw new Error("Server javob bermadi. Birozdan keyin urinib ko'ring.")}
  if(!j.ok){if(j.error==='AUTH'){if(S.acc){logout();toast('Sessiya tugadi, qayta kiring')}throw new Error('Qayta kiring')}throw new Error(j.error||'Xatolik yuz berdi')}
  return j}
+/* asosiy sayt (sotuv sahifasi) — domen ulangach config.js da window.OLDIBERDI_SITE ni o'zgartiring */
+const SITE_URL=String(window.OLDIBERDI_SITE||'https://xusniddin-del.github.io/oldiberdi-sayt/');
 const DEV=Object.assign({telegram:'mot_075',phone:''},window.OLDIBERDI_DEV||{});
 /* ============ installment reminders (To'ladi / To'lamadi) ============ */
 function isDaily(plan){return Array.isArray(plan)&&plan.length>1&&addDays(plan[0].d,1)===plan[1].d}
@@ -949,7 +961,7 @@ const col=k=>`u/${S.acc.id}/${k}`;
 function renderAuth(){
  if(S.authTab==='kid')return renderKidAuth();
  const reg=S.authTab==='reg';
- $('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${langSwitch()}${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Qarz daftaringiz — doim cho'ntagingizda</p>${Store.cloud?'':'<div class="banner" style="display:inline-block;margin-top:14px">Internet bazasi ulanmagan: ma\'lumot faqat shu qurilmada saqlanadi</div>'}</div>
+ $('#app').innerHTML=`<div class="auth"><div class="auth-top pad"><a class="site-back" href="${esc(SITE_URL)}">${I.left} Bosh sahifa</a>${langSwitch()}${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Qarz daftaringiz — doim cho'ntagingizda</p>${Store.cloud?'':'<div class="banner" style="display:inline-block;margin-top:14px">Internet bazasi ulanmagan: ma\'lumot faqat shu qurilmada saqlanadi</div>'}</div>
  <div class="pad"><div class="auth-card"><div class="tabs t3"><button data-act="authTab" data-v="login" class="${reg?'':'on'}">Kirish</button><button data-act="authTab" data-v="reg" class="${reg?'on':''}">Ro'yxatdan o'tish</button><button data-act="authTab" data-v="kid">Farzand</button></div>
  <form data-form="${reg?'register':'login'}" autocomplete="on">
  ${reg?`<div class="field"><label for="a-name">Ismingiz</label><input class="inp" id="a-name" name="name" autocomplete="name" placeholder="Masalan: Xusniddin" required></div>`:''}
@@ -1094,7 +1106,7 @@ function render(){
  if(render._focus){const el=document.getElementById(render._focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}render._focus=null}
 }
 function nav(){const b=(v,ic,l)=>`<button data-act="go" data-v="${v}" class="${S.view===v||(v==='people'&&S.view==='person')||(v==='history'&&S.view==='report')||(v==='home'&&['lists','list','toyona','toy','loans','groups','group','kids','kid'].includes(S.view))?'on':''}"><span class="ni">${I[ic]}</span>${l}</button>`;
- return `<nav class="nav"><div class="nav-in"><div class="side-logo">${LOGO}<b>Oldi<span>-</span>Berdi</b></div>${b('home','home','Asosiy')}${b('people','users','Odamlar')}<div class="fab-w"><button class="fab" data-act="newTx" aria-label="Yangi yozuv">${I.plus}<span class="fab-l">Yangi yozuv</span></button></div>${b('history','clock','Tarix')}${b('profile','user','Profil')}</div></nav>`}
+ return `<nav class="nav"><div class="nav-in"><div class="side-logo">${LOGO}<b>Oldi<span>-</span>Berdi</b></div>${b('home','home','Asosiy')}${b('people','users','Odamlar')}<div class="fab-w"><button class="fab" data-act="newTx" aria-label="Yangi yozuv">${I.plus}<span class="fab-l">Yangi yozuv</span></button></div>${b('history','clock','Tarix')}${b('profile','user','Profil')}<div class="side-foot"><a class="side-link" href="${esc(SITE_URL)}" target="_blank" rel="noopener"><span class="ni">${I.globe}</span>Bosh sahifa (sayt)</a><button class="side-link out" data-act="logout"><span class="ni">${I.logout}</span>Chiqish</button></div></div></nav>`}
 function loadingNote(){if(S.stale)return `<div class="banner">Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.</div>`;if(!S.loaded.p||!S.loaded.t)return `<div class="empty"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div><p>Yuklanmoqda…</p></div>`;return ''}
 function txRow(t,showPerson=true){const p=S.people[t.pid]||{name:"O'chirilgan odam"};const m=T[t.type]||T.lend;
  return `<button class="item" data-act="txView" data-id="${t.id}"><div class="ticon ${m.cls}">${I[m.icon]}${t.photo?`<span class="thumb-dot">${I.img}</span>`:''}</div><div class="mid"><div class="t1">${showPerson?esc(p.name):esc(m.label)}${S.confirms[t.id]?.status==='confirmed'?' <span class="mini-ok" title="Tasdiqlangan">✓</span>':''}${(t.plan||[]).length?' <span class="badge" style="background:var(--surface-2);color:var(--muted)">grafik</span>':''}</div><div class="t2">${showPerson?esc(m.short)+' · ':''}${fdate(t.date)}${t.due&&(t.type==='lend'||t.type==='borrow')?' · muddat '+fdate(t.due):''}${t.note?' · '+esc(t.note):''}</div></div><div class="r"><b class="num ${t.type==='lend'||t.type==='got'?'pos':'neg'}">${fmt(t.amount)}</b><small>${curOf(t)}</small></div></button>`}
@@ -1504,7 +1516,7 @@ function kidOut(expired){if(!expired&&K.token)api('kidLogout',{token:K.token}).c
 function kidAvatar(k,size){const p=k.photo||'';if(p.startsWith('d:')){const c=PH[p]||LS.get('ph_'+p);if(c){PH[p]=c;return avatar({name:k.name,photo:c},size)}kidLoadPh(p);return avatar({name:k.name},size)}return avatar({name:k.name,photo:p},size)}
 function kidLoadPh(p){if(phWait[p])return;phWait[p]=kapi('kidPhoto',{id:p.slice(2)}).then(j=>{PH[p]=j.data;LS.set('ph_'+p,j.data);if(K.kid)renderKid()}).catch(()=>{setTimeout(()=>{delete phWait[p]},30000)})}
 function renderKidAuth(){
- $('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${langSwitch()}<div style="width:120px;margin:0 auto">${CHEST}</div><h1>Xazina</h1><p>O'z pulingni yig', orzuingga yet!</p></div>
+ $('#app').innerHTML=`<div class="auth"><div class="auth-top pad"><a class="site-back" href="${esc(SITE_URL)}">${I.left} Bosh sahifa</a>${langSwitch()}<div style="width:120px;margin:0 auto">${CHEST}</div><h1>Xazina</h1><p>O'z pulingni yig', orzuingga yet!</p></div>
  <div class="pad"><div class="auth-card"><div class="tabs t3"><button data-act="authTab" data-v="login">Kirish</button><button data-act="authTab" data-v="reg">Ro'yxatdan o'tish</button><button data-act="authTab" data-v="kid" class="on">Farzand</button></div>
  <form data-form="kidLogin" autocomplete="off">
  <div class="field"><label for="k-phone">Ota-onangizning telefon raqami</label><input class="inp" id="k-phone" name="phone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67" required></div>
@@ -1819,7 +1831,7 @@ document.addEventListener('keyup',e=>{if(e.target.closest&&e.target.closest('[da
 let CF=null;
 async function renderConfirm(c){
  CF={c,d:null,state:''};
- $('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${langSwitch()}${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Qarz yozuvini tasdiqlash</p></div><div class="pad"><div class="auth-card" id="cf-box"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div></div></div></div>`;
+ $('#app').innerHTML=`<div class="auth"><div class="auth-top pad"><a class="site-back" href="${esc(SITE_URL)}">${I.left} Bosh sahifa</a>${langSwitch()}${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Qarz yozuvini tasdiqlash</p></div><div class="pad"><div class="auth-card" id="cf-box"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div></div></div></div>`;
  try{CF.d=await api('getConfirm',{c})}catch(e){$('#cf-box').innerHTML=`<b>${esc(e.message)}</b><p class="hint">Havolani yuborgan odamdan yangisini so'rang.</p><a class="btn btn-ghost" style="width:100%" href="./">Ilovani ochish</a>`;return}
  drawConfirm()}
 function drawConfirm(){const d=CF.d;const amt=d.cur==='USD'?'$'+fmt(d.amount):fmt(d.amount)+' '+(d.currency||"so'm");const f=`<b>${esc(d.from)}</b>`,a=`<b class="num">${esc(amt)}</b>`;
