@@ -223,6 +223,50 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 .sheet-head h3{margin:0;font-size:19px;letter-spacing:-.01em}
 @keyframes su{from{transform:translateY(40px);opacity:0}}
 @keyframes fi{from{opacity:0}}
+/* ============ katta ekran (kompyuter) ============ */
+.side-logo,.fab-l{display:none}
+@media (min-width:1000px){
+ .auth{display:grid;grid-template-columns:minmax(420px,1fr) minmax(460px,1fr);min-height:100vh;background:var(--bg)}
+ .auth-top{background:radial-gradient(70% 60% at 80% 10%,rgba(191,242,111,.18),transparent 70%),linear-gradient(160deg,var(--hero-a),var(--hero-b));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;position:relative;overflow:hidden}
+ .auth-top:after{content:"";position:absolute;right:-110px;bottom:-110px;width:360px;height:360px;border-radius:50%;border:56px solid rgba(191,242,111,.1)}
+ .auth-top .logo{transform:scale(1.6);margin-bottom:22px}
+ .auth-top h1{font-size:46px}
+ .auth-top p{font-size:18px}
+ .auth-top .lang-sw{position:absolute;top:24px;left:24px;z-index:2}
+ .auth>.pad{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:48px}
+ .auth-card{width:100%;max-width:440px;padding:28px;margin-bottom:22px}
+ .auth .feat{width:100%;max-width:440px;margin:0}
+ #app:has(.nav){max-width:none;padding-left:252px}
+ #app:has(.auth){max-width:none}
+ .main{max-width:1060px;margin:0 auto;padding:0 28px}
+ .main .pad{padding-left:0;padding-right:0}
+ .spacer{height:40px}
+ .nav{top:0;right:auto;width:252px;padding:0}
+ .nav-in{max-width:none;height:100%;margin:0;display:flex;flex-direction:column;align-items:stretch;gap:4px;border-top:0;border-right:1px solid var(--line);padding:22px 16px;box-shadow:none}
+ .side-logo{order:-2;display:flex;align-items:center;gap:10px;padding:0 8px 22px;font-size:19px;letter-spacing:-.02em}
+ .side-logo .logo{width:40px;height:40px;margin:0}
+ .side-logo b span{color:var(--brand)}
+ .nav button{flex-direction:row;justify-content:flex-start;gap:12px;font-size:15px;padding:6px 8px;border-radius:14px}
+ .nav button:hover{background:var(--surface-2)}
+ .nav button.on{background:var(--pos-bg)}
+ .nav button.on .ni{background:none}
+ .ni{padding:6px}
+ .fab-w{order:-1;margin-bottom:14px}
+ .nav .fab{width:100%;height:48px;border-radius:14px;margin:0;border:0;display:flex;flex-direction:row;justify-content:center;gap:8px;font-size:15px;font-weight:800;color:#fff}
+ .nav .fab:hover{filter:brightness(1.06);background:linear-gradient(150deg,#2fd17a,var(--brand-deep))}
+ .nav .fab svg{width:20px;height:20px}
+ .fab-l{display:inline}
+ .main .hero.pad{border-radius:28px;margin-top:22px;padding:26px 28px}
+ .bal-card{margin-top:0}
+ .home-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;margin-top:22px}
+ .home-cols>div>:first-child{margin-top:0}
+ .topbar{padding-top:24px}
+ .sheet-wrap{align-items:center;padding:24px}
+ .sheet{max-width:540px;max-height:88vh;border-radius:26px;padding:10px 26px 24px}
+ .grab{display:none}
+ .upd,.toast{left:calc(50% + 126px)}
+ .upd{bottom:24px}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 .picked{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1.5px solid var(--brand);border-radius:14px;padding:8px 10px}
@@ -505,8 +549,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=34;
-const WHATS_NEW=["Bosh sahifa soddalashtirildi: eng kerakli xizmatlar qoldi","Bo'limlar endi server orqali yangilanadi — ilovani qayta o'rnatish shart emas"];
+const APP_VERSION=35;
+const WHATS_NEW=["Kompyuterda endi katta ekranga moslashgan ko'rinish: chap tomonda menyu, keng sahifalar","Kirish sahifasi kompyuterda ikki tomonlama"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1028,14 +1072,14 @@ function render(){
  const y=window.scrollY;const keep=render._last===S.view+'|'+S.pid+'|'+S.lid+'|'+S.did+'|'+S.kidId;
  const v=S.view;
  let body=v==='home'?vHome():v==='people'?vPeople():v==='person'?vPerson():v==='history'?vHistory():v==='report'?vReport():v==='lists'?vLists():v==='list'?vList():v==='toyona'?vToyona():v==='toy'?vToy():v==='loans'?vLoans():v==='groups'?vGroups():v==='group'?vGroup():v==='kids'?vKids():v==='kid'?vKid():vProfile();
- $('#app').innerHTML=body+'<div class="spacer"></div>'+nav()+(S.newVer?`<div class="upd" role="status"><span>Ilovaning yangi versiyasi chiqdi</span><button class="btn" data-act="reloadApp">Yangilash</button></div>`:'');
+ $('#app').innerHTML='<main class="main">'+body+'<div class="spacer"></div></main>'+nav()+(S.newVer?`<div class="upd" role="status"><span>Ilovaning yangi versiyasi chiqdi</span><button class="btn" data-act="reloadApp">Yangilash</button></div>`:'');
  if(keep)window.scrollTo(0,y);else window.scrollTo(0,0);
  render._last=S.view+'|'+S.pid+'|'+S.lid+'|'+S.did+'|'+S.kidId;
  // restore focus on search inputs
  if(render._focus){const el=document.getElementById(render._focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}render._focus=null}
 }
 function nav(){const b=(v,ic,l)=>`<button data-act="go" data-v="${v}" class="${S.view===v||(v==='people'&&S.view==='person')||(v==='history'&&S.view==='report')||(v==='home'&&['lists','list','toyona','toy','loans','groups','group','kids','kid'].includes(S.view))?'on':''}"><span class="ni">${I[ic]}</span>${l}</button>`;
- return `<nav class="nav"><div class="nav-in">${b('home','home','Asosiy')}${b('people','users','Odamlar')}<div><button class="fab" data-act="newTx" aria-label="Yangi yozuv">${I.plus}</button></div>${b('history','clock','Tarix')}${b('profile','user','Profil')}</div></nav>`}
+ return `<nav class="nav"><div class="nav-in"><div class="side-logo">${LOGO}<b>Oldi<span>-</span>Berdi</b></div>${b('home','home','Asosiy')}${b('people','users','Odamlar')}<div class="fab-w"><button class="fab" data-act="newTx" aria-label="Yangi yozuv">${I.plus}<span class="fab-l">Yangi yozuv</span></button></div>${b('history','clock','Tarix')}${b('profile','user','Profil')}</div></nav>`}
 function loadingNote(){if(S.stale)return `<div class="banner">Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.</div>`;if(!S.loaded.p||!S.loaded.t)return `<div class="empty"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div><p>Yuklanmoqda…</p></div>`;return ''}
 function txRow(t,showPerson=true){const p=S.people[t.pid]||{name:"O'chirilgan odam"};const m=T[t.type]||T.lend;
  return `<button class="item" data-act="txView" data-id="${t.id}"><div class="ticon ${m.cls}">${I[m.icon]}${t.photo?`<span class="thumb-dot">${I.img}</span>`:''}</div><div class="mid"><div class="t1">${showPerson?esc(p.name):esc(m.label)}${S.confirms[t.id]?.status==='confirmed'?' <span class="mini-ok" title="Tasdiqlangan">✓</span>':''}${(t.plan||[]).length?' <span class="badge" style="background:var(--surface-2);color:var(--muted)">grafik</span>':''}</div><div class="t2">${showPerson?esc(m.short)+' · ':''}${fdate(t.date)}${t.due&&(t.type==='lend'||t.type==='borrow')?' · muddat '+fdate(t.due):''}${t.note?' · '+esc(t.note):''}</div></div><div class="r"><b class="num ${t.type==='lend'||t.type==='got'?'pos':'neg'}">${fmt(t.amount)}</b><small>${curOf(t)}</small></div></button>`}
@@ -1048,7 +1092,7 @@ function vHome(){
  const od=Object.values(S.people).map(p=>({p,d:overdueOf(p.id)})).filter(x=>x.d).sort((a,b)=>a.d.localeCompare(b.d));
  const recent=txSorted(Object.values(S.tx)).slice(0,6);
  return `<section class="hero pad"><div class="hero-top"><div><div class="greet">${greet()},</div><div class="hname">${esc(S.acc.name)}</div><span class="mode-pill ${Store.cloud?'':'off'}"><i></i>${Store.cloud?'Onlayn · sinxronlangan':'Faqat shu qurilmada'}</span></div><button data-act="go" data-v="profile" aria-label="Profil">${avatar(S.acc,46)}</button></div></section>
- <div class="pad"><div class="bal-card"><div class="bal-label">Sof balans <span class="mut">${Object.keys(S.people).length} kishi</span></div><div class="bal-big num ${net>0?'pos':net<0?'neg':''}">${net<0?'−':''}${money(net)}</div><div class="bal-sub">${net>0?'Umumiy hisobda sizga qaytishi kerak':net<0?"Umumiy hisobda siz qaytarishingiz kerak":"Hamma hisob-kitob teng"}</div>
+ <div class="pad home-cols"><div class="hc-a"><div class="bal-card"><div class="bal-label">Sof balans <span class="mut">${Object.keys(S.people).length} kishi</span></div><div class="bal-big num ${net>0?'pos':net<0?'neg':''}">${net<0?'−':''}${money(net)}</div><div class="bal-sub">${net>0?'Umumiy hisobda sizga qaytishi kerak':net<0?"Umumiy hisobda siz qaytarishingiz kerak":"Hamma hisob-kitob teng"}</div>
  ${usdOn()&&Object.values(S.tx).some(isUSD)?`<span class="rate-chip num">1 $ = ${fmt(rate())} so'm · MB kursi${S.rate&&S.rate.date?' · '+esc(S.rate.date):''}</span>`:''}
  <div class="bal-split"><button class="tile p" data-act="peopleFilter" data-v="owe"><span>Menga qarzdorlar</span><b class="num">${money(owe)}</b><small>${oweN} kishi</small></button><button class="tile n" data-act="peopleFilter" data-v="debt"><span>Mening qarzlarim</span><b class="num">${money(debt)}</b><small>${debtN} kishi</small></button></div></div>
  ${(()=>{const rl=remindList();return rl.length?`<button class="rem-card" data-act="remCenter"><span class="qi">${I.bell}</span><span class="mid"><b>Eslatish kerak · ${rl.length} kishi ${lk('remind')}</b><small>${rl.slice(0,3).map(x=>esc(x.p.name)).join(', ')}${rl.length>3?' va boshqalar':''}</small></span><span class="go">${I.left}</span></button>`:''})()}
@@ -1059,11 +1103,12 @@ function vHome(){
  ${quickBtns()}
  <form class="quick-in" data-form="quick" autocomplete="off"><div class="qk-wrap"><input id="qk" aria-label="Tez yozish" placeholder="Tez yozish: «Akmalga 500 ming berdim»"><button class="qk-go" aria-label="Davom etish">${I.send}</button></div></form>
  ${toolsGrid()}
+ </div><div class="hc-b">
  ${loadingNote()}
  ${od.length?`<div class="sec-head"><h2>Muddati o'tganlar</h2><span class="badge warn">${od.length}</span></div><div class="card list">${od.slice(0,5).map(x=>personRow(x.p)).join('')}</div>`:''}
  <div class="sec-head"><h2>So'nggi yozuvlar</h2>${recent.length?'<span class="sec-links"><button class="link" data-act="go" data-v="report">Hisobot</button><button class="link" data-act="go" data-v="history">Hammasi</button></span>':''}</div>
  ${recent.length?`<div class="card list">${recent.map(t=>txRow(t)).join('')}</div>`:(S.loaded.t?`<div class="card empty"><div class="ei">${I.book}</div><b>Daftar hali bo'sh</b>Pastdagi yashil «+» tugmasini bosib birinchi qarzni yozing.</div>`:'')}
- </div>`}
+ </div></div>`}
 function vPeople(){
  const q=S.pq.toLowerCase().trim();const qd=q.replace(/\D/g,'');
  let list=Object.values(S.people).filter(p=>!q||p.name.toLowerCase().includes(q)||(qd&&(p.phone||'').includes(qd)));
