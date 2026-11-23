@@ -330,13 +330,13 @@ function plan_(v) {
 const FLIP = { lend: 'borrow', borrow: 'lend', got: 'paid', paid: 'got' };
 
 /* ---------- online payment (TezCheck) ---------- */
-const PLANS = { month: { days: 30, key: 'price_month', def: 59000, title: 'Oldi-Berdi Premium — 1 oy' }, year: { days: 365, key: 'price_year', def: 588000, title: 'Oldi-Berdi Premium — 1 yil' }, biz: { days: 30, key: 'price_biz', def: 99000, title: 'Oldi-Berdi Biznes — 1 oy', biz: true } };
+const PLANS = { month: { days: 30, key: 'price_month', def: 59000, title: 'Oldi-Berdi Premium — 1 oy' }, year: { days: 365, key: 'price_year', def: 588000, title: 'Oldi-Berdi Premium — 1 yil' }, biz: { days: 30, key: 'price_biz', def: 49000, title: 'Oldi-Berdi Biznes — 1 oy', biz: true }, bizyear: { days: 365, key: 'price_biz_year', def: 490000, title: 'Oldi-Berdi Biznes — 1 yil', biz: true } };
 function prices_() {
   const p = PropertiesService.getScriptProperties();
   const on = !!(p.getProperty('TC_KEY') && p.getProperty('TC_DESK'));
   const o = { online: on, bot: p.getProperty('TG_BOT') || '' };
   Object.keys(PLANS).forEach(function (k) { const v = meta_(PLANS[k].key); o[k] = v === '' ? PLANS[k].def : Number(String(v).replace(/\s/g, '')) || 0; });
-  if (feat_().biz === 'off') o.biz = 0;
+  if (feat_().biz === 'off') { o.biz = 0; o.bizyear = 0; }
   return o;
 }
 function tc_(path, body, idem) {
@@ -386,7 +386,8 @@ function grantBiz_(accId, days) {
   if (!a) return '';
   const v = String(a.biz || '').trim().toLowerCase();
   if (v && !/^\d{4}-\d{2}-\d{2}$/.test(v) && bizUntil_(a)) return 'ha';
-  const from = /^\d{4}-\d{2}-\d{2}$/.test(v) && v >= today_() ? v : today_();
+  let from = /^\d{4}-\d{2}-\d{2}$/.test(v) && v >= today_() ? v : today_();
+  const tr = bizTrial_(a); if (tr && tr > from) from = tr;   // sinov tugagan kundan davom etadi
   a.biz = addDays_(from, days);
   put_('Accounts', a, a._row);
   return a.biz;
@@ -786,12 +787,14 @@ function botUpdate_(u) {
   if (cmd === '/start') {
     const pl = (text.split(/\s+/)[1] || '').toLowerCase();
     if (pl === 'premium') { if (a) return botPremium_(chat, a); CacheService.getScriptCache().put('tgp' + chat, '1', 3600); }
+    if (pl === 'biz') { if (a) return botBiz_(chat, a); CacheService.getScriptCache().put('tgp' + chat, 'biz', 3600); }
     return botStart_(chat, a);
   }
   if (text === 'ℹ️ Ilova haqida' || cmd === '/ilova') return botAbout_(chat, a);
   if (text === '📱 Ilovani ochish' || cmd === '/ochish') return send_(chat, '👇 Ilovani shu yerdan oching:', { reply_markup: { inline_keyboard: [[btnApp_()], [{ text: '🌐 Brauzerda ochish', url: appUrl_() }]] } });
   if (text === '❓ Yordam' || cmd === '/yordam') return botHelp_(chat, a);
   if (!a) return send_(chat, 'Avval akkauntingizni ulang: pastdagi <b>📲 Raqamni yuborish</b> tugmasini bosing.', { reply_markup: kbLink_() });
+  if (cmd === '/biznes') return botBiz_(chat, a);
   if (text === '💎 Premium' || cmd === '/tarif' || cmd === '/premium') return botPremium_(chat, a);
   if (text === '📊 Hisobim' || cmd === '/holat' || cmd === '/hisob') return botStatus_(chat, a);
   const ad = adminTg_();
@@ -817,10 +820,12 @@ function botContact_(m, chat) {
   all_('Accounts').forEach(function (x) { if (x.tg === chat && x.id !== a.id) { x.tg = ''; put_('Accounts', x, x._row); } });
   a.tg = chat; put_('Accounts', a, a._row);
   send_(chat, '✅ Akkaunt ulandi: <b>' + h_(a.name) + '</b>\n\nEndi:\n💎 <b>Premium</b> — tarif va to\'lov\n📊 <b>Hisobim</b> — kim qancha qarzdor\n⏰ Muddati o\'tgan qarzlar haqida har kuni ertalab xabar (Premium)\n💬 Istalgan savolni shu yerga yozing — dasturchiga boradi', { reply_markup: kbMain_() });
-  if (CacheService.getScriptCache().get('tgp' + chat)) { CacheService.getScriptCache().remove('tgp' + chat); botPremium_(chat, a); }
+  const pend = CacheService.getScriptCache().get('tgp' + chat);
+  if (pend) { CacheService.getScriptCache().remove('tgp' + chat); if (pend === 'biz') botBiz_(chat, a); else botPremium_(chat, a); }
 }
 
 function botPremium_(chat, a) {
+  if (mode_(a) === 'biz') return botBiz_(chat, a);
   const p = premium_(a), pr = prices_();
   let t = '💎 <b>Oldi-Berdi Premium</b>\n\n';
   t += p.trial ? '🎁 Holat: <b>sinov muddati — ' + fdate_(p.until) + ' gacha</b>\nSinov tugagach ilova bepul rejimda ishlayveradi.\n\n' : p.on ? '✅ Holat: <b>faol' + (p.until ? ' — ' + fdate_(p.until) + ' gacha' : ' (muddatsiz)') + '</b>\n\n' : '🆓 Holat: <b>bepul rejim</b>\nAsosiy imkoniyatlar bepul. Premium qo\'shimcha imkoniyatlarni ochadi.\n\n';
@@ -832,8 +837,28 @@ function botPremium_(chat, a) {
     if (pr.year > 0) rows.push([{ text: '🔥 1 yil — ' + sum_(pr.year) + (pct ? ' (−' + pct + '%)' : ''), callback_data: 'buy:year' }]);
     if (save > 0) t += '\n\n🔥 <b>Yillik tarif foydali:</b> oyiga ' + sum_(Math.round(pr.year / 12)) + ' — <s>' + sum_(full) + '</s> o\'rniga <b>' + sum_(pr.year) + '</b>, ' + sum_(save) + ' tejaysiz.';
     if (pr.month > 0) rows.push([{ text: '1 oy — ' + sum_(pr.month), callback_data: 'buy:month' }]);
-    if (pr.biz > 0) { rows.push([{ text: '🏪 Biznes — ' + sum_(pr.biz) + ' / oy', callback_data: 'buy:biz' }]); t += '\n\n🏪 <b>Biznes tarif</b> (do\'konlar uchun): Premium\'dagi hammasi + do\'kon nomi eslatmalarda, qarzdorlar ro\'yxatini yuborish — oyiga ' + sum_(pr.biz) + '.'; }
     t += '\n\n' + (p.on && !p.trial ? 'Uzaytirish' : 'Sotib olish') + ' uchun tarifni tanlang 👇\n<i>Click, Payme, Uzum yoki karta orqali</i>';
+  }
+  send_(chat, t, rows.length ? { reply_markup: { inline_keyboard: rows } } : {});
+}
+
+/* Biznes tariflari: ilovadagi «Biznes'ni ulash» tugmasi botni ?start=biz bilan ochadi */
+function botBiz_(chat, a) {
+  const p = premium_(a), pr = prices_();
+  let t = '🏪 <b>Oldi-Berdi Biznes</b> — do\'kon va savdo uchun\n\n';
+  t += p.biz ? (p.bizTrial ? '🎁 Holat: <b>sinov — ' + fdate_(p.bizUntil) + ' gacha</b>\n\n' : '✅ Holat: <b>faol' + (p.bizUntil ? ' — ' + fdate_(p.bizUntil) + ' gacha' : ' (muddatsiz)') + '</b>\n\n') : '⏳ Holat: <b>faol emas</b>\nMa\'lumotlaringiz joyida, yozuv qo\'shish ishlaydi.\n\n';
+  t += '🧾 Tovar bilan nasiya\n📣 Ommaviy eslatma — muddati o\'tganlarga ketma-ket SMS\n📋 Qarzdorlar ro\'yxati — Telegram yoki Excel\n🌙 Kechki hisobot — har kuni 20:00 da\n📥 Tez ko\'chirish — qog\'oz daftar yoki Excel\'dan\n🏷 Do\'kon nomi va manzili eslatmalarda\n➕ SMS eslatma, bo\'lib to\'lash, dollar kursi, hisobot va Excel';
+  const rows = [];
+  if (!(pr.biz > 0 || pr.bizyear > 0)) { send_(chat, t + '\n\nBiznes tarif hozircha sotuvda emas.'); return; }
+  const full = pr.biz * 12, save = pr.biz > 0 && pr.bizyear > 0 ? full - pr.bizyear : 0, pct = save > 0 ? Math.round(save / full * 100) : 0;
+  if (pr.online && !(p.biz && !p.bizUntil)) {
+    if (pr.bizyear > 0) rows.push([{ text: '🔥 1 yil — ' + sum_(pr.bizyear) + (pct ? ' (−' + pct + '%)' : ''), callback_data: 'buy:bizyear' }]);
+    if (pr.biz > 0) rows.push([{ text: '1 oy — ' + sum_(pr.biz), callback_data: 'buy:biz' }]);
+    if (save > 0) t += '\n\n🔥 <b>Yillik foydali:</b> <s>' + sum_(full) + '</s> o\'rniga <b>' + sum_(pr.bizyear) + '</b> — ' + sum_(save) + ' tejaysiz.';
+    t += '\n\n' + (p.biz && !p.bizTrial ? 'Uzaytirish' : 'Ulash') + ' uchun tarifni tanlang 👇\n<i>Click, Payme, Uzum yoki karta orqali</i>';
+    if (p.bizTrial) t += '\n<i>Hozir to\'lasangiz, muddat sinov tugagan kundan boshlab qo\'shiladi.</i>';
+  } else if (!(p.biz && !p.bizUntil)) {
+    t += '\n\n💰 Narx: ' + (pr.biz > 0 ? '1 oy — <b>' + sum_(pr.biz) + '</b>' : '') + (pr.bizyear > 0 ? (pr.biz > 0 ? ', ' : '') + '1 yil — <b>' + sum_(pr.bizyear) + '</b>' : '') + '\nUlash uchun shu yerga yozing — dasturchi yoqib beradi.';
   }
   send_(chat, t, rows.length ? { reply_markup: { inline_keyboard: rows } } : {});
 }
@@ -859,6 +884,7 @@ function botCallback_(q) {
     tg_('answerCallbackQuery', { callback_query_id: q.id, text: r.already ? 'Bu to\'lov allaqachon belgilangan' : (d.indexOf('ip:') === 0 ? '✅ To\'ladi — yozib qo\'yildi' : '❌ To\'lamadi — ertaga yana eslatamiz') });
     return;
   }
+  if (d === 'biz') { tg_('answerCallbackQuery', { callback_query_id: q.id }); return botBiz_(chat, a); }
   if (d === 'trial') {
     const l = LockService.getScriptLock(); l.waitLock(20000);
     let ok = false;
@@ -870,7 +896,7 @@ function botCallback_(q) {
     tg_('answerCallbackQuery', { callback_query_id: q.id, text: 'To\'lov havolasi tayyorlanmoqda…' });
     let r;
     try { r = createBill_(a, d.slice(4), ''); } catch (e) { send_(chat, '⚠️ ' + h_(e.message)); return; }
-    send_(chat, '💳 <b>' + h_(PLANS[d.slice(4)].title) + '</b>\nSumma: <b>' + sum_(r.amount) + '</b>\n\n1) «To\'lash» tugmasini bosing va to\'lovni qiling\n2) Qaytib, «To\'ladim — tekshirish» ni bosing\n\nPremium to\'lov tushishi bilan o\'zi yoqiladi.', { reply_markup: { inline_keyboard: [[{ text: '💳 To\'lash', url: r.url }], [{ text: '✅ To\'ladim — tekshirish', callback_data: 'chk:' + r.bill }]] } });
+    send_(chat, '💳 <b>' + h_(PLANS[d.slice(4)].title) + '</b>\nSumma: <b>' + sum_(r.amount) + '</b>\n\n1) «To\'lash» tugmasini bosing va to\'lovni qiling\n2) Qaytib, «To\'ladim — tekshirish» ni bosing\n\n' + (PLANS[d.slice(4)].biz ? 'Biznes' : 'Premium') + ' to\'lov tushishi bilan o\'zi yoqiladi.', { reply_markup: { inline_keyboard: [[{ text: '💳 To\'lash', url: r.url }], [{ text: '✅ To\'ladim — tekshirish', callback_data: 'chk:' + r.bill }]] } });
     return;
   }
   if (d.indexOf('chk:') === 0) {
@@ -1002,7 +1028,7 @@ function kunlik() {
     } else
     if (p.until && (p.until === in3 || p.until === td)) send_(a.tg, '⏰ Premium ' + (p.until === td ? '<b>bugun</b> tugaydi' : '3 kundan keyin (' + fdate_(p.until) + ') tugaydi') + '.\nUzaytirish uchun «💎 Premium» tugmasini bosing.', { reply_markup: kbMain_() });
     else if (p.until && p.until === addDays_(td, -1)) send_(a.tg, 'Premium muddati tugadi. Qayta yoqish uchun «💎 Premium» tugmasini bosing.', { reply_markup: kbMain_() });
-    if (!p.on) return;
+    if (p.biz && p.bizUntil && mode_(a) === 'biz' && (p.bizUntil === in3 || p.bizUntil === td)) send_(a.tg, (p.bizTrial ? '🎁 Biznes sinov ' : '🏪 Biznes ') + (p.bizUntil === td ? '<b>bugun</b> tugaydi' : '3 kundan keyin (' + fdate_(p.bizUntil) + ') tugaydi') + '.\nMa\'lumotlar o\'chmaydi. Davom ettirish uchun /biznes yoki ilovadagi «Biznes\'ni uzaytirish».', { reply_markup: { inline_keyboard: [[{ text: '🏪 Biznes tariflari', callback_data: 'biz' }]] } });
     const people = peopleBy[a.id] || {}, b = balances_(a.id), od = [], soon = [];
     Object.keys(b.bal).forEach(function (pid) {
       const v = b.bal[pid], d = b.due[pid]; if (v <= 0.5 || !d || !people[pid]) return;
@@ -1012,7 +1038,7 @@ function kunlik() {
     let t = 'Xayrli tong, ' + h_(a.name) + '! ☀️\n';
     if (soon.length) t += '\n📅 <b>Muddati yaqin:</b>\n' + soon.map(function (x) { return '• ' + h_(x.n) + ' — ' + sum_(x.v) + (x.d === td ? ' (bugun)' : ' (ertaga)'); }).join('\n') + '\n';
     if (od.length) t += '\n⏰ <b>Muddati o\'tgan:</b>\n' + od.slice(0, 10).map(function (x) { return '• ' + h_(x.n) + ' — ' + sum_(x.v) + ' (' + fdate_(x.d) + ')'; }).join('\n') + '\n';
-    t += '\nIlovadan bir bosishda SMS eslatma yuborishingiz mumkin.';
+    t += p.on ? '\nIlovadan bir bosishda SMS eslatma yuborishingiz mumkin.' : '';
     send_(a.tg, t, { reply_markup: { inline_keyboard: [[btnApp_()]] } });
     Utilities.sleep(60);
   });
@@ -1250,7 +1276,7 @@ function admCounts_() {
 function admRow_(a, c) {
   const p = premium_(a);
   return { id: a.id, name: a.name, phone: a.phone, createdAt: Number(a.createdAt) || 0, tg: !!a.tg, t: tariff_(a), until: p.until || '', bizUntil: p.bizUntil || '', canTrial: !!p.canTrial,
-    people: c.p[a.id] || 0, tx: c.t[a.id] || 0, last: Math.max(c.last[a.id] || 0, Number(a.createdAt) || 0), admin: a.phone === adminPhone_() };
+    mode: mode_(a), bizTrial: !!p.bizTrial, people: c.p[a.id] || 0, tx: c.t[a.id] || 0, last: Math.max(c.last[a.id] || 0, Number(a.createdAt) || 0), admin: a.phone === adminPhone_() };
 }
 /* Premium yoki Biznes: v = kun soni | 'ha' (muddatsiz) | '0' (o'chirish) */
 function setPlan_(a, kind, v) {
@@ -1268,6 +1294,7 @@ Object.assign(API, {
     admAuth_(r);
     const acc = all_('Accounts'), pay = all_('Payments').filter(function (x) { return x.status === 'paid'; }), td = today_();
     const t = { free: 0, trial: 0, prem: 0, biz: 0 }; acc.forEach(function (a) { t[tariff_(a)]++; });
+    const modes = { std: 0, biz: 0, none: 0 }; acc.forEach(function (a) { modes[mode_(a) || 'none']++; });
     const signDays = {}; acc.forEach(function (a) { const d = dayOf_(a.createdAt); signDays[d] = (signDays[d] || 0) + 1; });
     const signups = []; for (let i = 29; i >= 0; i--) { const d = addDays_(td, -i); signups.push({ d: d, n: signDays[d] || 0 }); }
     const since = function (n) { const d = addDays_(td, -n + 1); return acc.filter(function (a) { return dayOf_(a.createdAt) >= d; }).length; };
@@ -1277,7 +1304,7 @@ Object.assign(API, {
     const sum = function (l) { return l.reduce(function (z, x) { return z + (Number(x.amount) || 0); }, 0); };
     const mon = pay.filter(function (x) { return dayOf_(x.paidAt).slice(0, 7) === td.slice(0, 7); });
     const newest = acc.slice().sort(function (x, y) { return (Number(y.createdAt) || 0) - (Number(x.createdAt) || 0); }).slice(0, 5), c = admCounts_();
-    return { users: acc.length, tg: acc.filter(function (x) { return x.tg; }).length, tariffs: t, today: since(1), week: since(7), month: since(30),
+    return { users: acc.length, tg: acc.filter(function (x) { return x.tg; }).length, tariffs: t, modes: modes, today: since(1), week: since(7), month: since(30),
       revMonth: sum(mon), payMonth: mon.length, revTotal: sum(pay), payTotal: pay.length, signups: signups, rev: rev,
       newest: newest.map(function (a) { return admRow_(a, c); }), feat: feat_(), prices: prices_(), bot: prop_('TG_BOT'), today_: td };
   },
@@ -1291,7 +1318,7 @@ Object.assign(API, {
     const a = admAcc_(r.id), c = admCounts_(), p = premium_(a);
     const docs = {}; all_('Docs').forEach(function (d) { if (d.acc === a.id) docs[d.kind] = (docs[d.kind] || 0) + 1; });
     return { user: Object.assign(admRow_(a, c), {
-      premiumRaw: String(a.premium || ''), bizRaw: String(a.biz || ''), trialEnd: String(a.trialEnd || ''), trial: !!p.trial, trialUsed: !!p.trialUsed,
+      premiumRaw: String(a.premium || ''), bizRaw: String(a.biz || ''), bizTrialEnd: String(a.bizTrialEnd || ''), trialEnd: String(a.trialEnd || ''), trial: !!p.trial, trialUsed: !!p.trialUsed,
       lists: all_('Lists').filter(function (x) { return x.acc === a.id; }).length, docs: docs,
       sessions: all_('Sessions').filter(function (x) { return x.acc === a.id; }).length, pin: !!a.pinHash, currency: a.currency || "so'm" }),
       payments: all_('Payments').filter(function (x) { return x.acc === a.id; }).map(clean_).sort(function (x, y) { return (Number(y.createdAt) || 0) - (Number(x.createdAt) || 0); }) };
@@ -1361,7 +1388,7 @@ Object.assign(API, {
   },
   admPrices: function (r) {
     admAuth_(r);
-    ['month', 'year', 'biz'].forEach(function (k) {
+    ['month', 'year', 'biz', 'bizyear'].forEach(function (k) {
       if (r[k] === undefined || r[k] === null || r[k] === '') return;
       const n = Math.round(Number(String(r[k]).replace(/\s/g, '')));
       if (!(n >= 0 && n <= 100000000)) throw new Error("Narx noto'g'ri");

@@ -629,8 +629,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=45;
-const WHATS_NEW=["Biznes yo'li: do'kon uchun alohida bosh sahifa — jami nasiya, muddati o'tganlar, bugun qaytgan pul","Tovar bilan nasiya: nomi, soni, narxi — summa o'zi hisoblanadi","Ommaviy eslatma: muddati o'tganlarga ketma-ket SMS","Qarzdorlar ro'yxati Telegram'ga yoki Excel'ga","Tez ko'chirish: qog'oz daftarni yoki Excel/CSV faylni ko'chirish","Kechki hisobot: har kuni 20:00 da Telegram'da"];
+const APP_VERSION=46;
+const WHATS_NEW=["Biznes tarifi endi yillik ham bor — 12 oyga arzonroq","Biznes'ni ilovadan yoki Telegram botdan to'g'ridan-to'g'ri ulaysiz","Sinov paytida to'lasangiz, muddat sinov tugagan kundan qo'shiladi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1668,8 +1668,8 @@ function bizSheet(){if(!S.prices){try{S.prices=JSON.parse(LS.get('oldiberdi_pric
  const n=bizLeft();
  openSheet('Biznes tarif',`${isBiz()?`<div class="prem-hit on">${I.check}<b>${p.bizTrial?`${tr('Biznes sinov')}: ${n} ${tr('kun qoldi')}`:p.bizUntil?`Biznes faol · ${fdate(p.bizUntil)} gacha`:'Biznes faol'}</b></div>`:`<div class="prem-hit">${I.shop}<b>Do'konlar va savdogarlar uchun</b></div>`}
  <ul class="prem-list">${F.map(([a,b])=>`<li><span class="pi">${I.check}</span><span><b>${a}</b><small>${b}</small></span></li>`).join('')}</ul>
- ${bizPriceBox(P)}
- <a class="btn btn-primary" style="width:100%" href="https://t.me/${esc(botName())}?start=biz" target="_blank" rel="noopener">${I.shop} ${isBiz()&&!p.bizTrial?"Biznes'ni uzaytirish":"Biznes'ni ulash"}</a>
+ ${payOnline()&&(P.biz>0||P.bizyear>0)&&!(isBiz()&&!p.bizUntil)?`<div class="sec-mini">${isBiz()&&!p.bizTrial?"Biznes'ni uzaytirish":'Tarifni tanlang'}</div>${P.bizyear>0?`<button class="plan-btn" data-act="payStart" data-v="bizyear"><span><b>1 yil</b><small>${P.biz>0&&P.biz*12>P.bizyear?fmt(P.biz*12-P.bizyear)+" so'm tejaysiz":'12 oy'}</small></span><span class="pr num">${fmt(P.bizyear)} <small>so'm</small></span></button>`:''}${P.biz>0?`<button class="plan-btn" data-act="payStart" data-v="biz"><span><b>1 oy</b><small>30 kun</small></span><span class="pr num">${fmt(P.biz)} <small>so'm</small></span></button>`:''}<p class="hint" style="text-align:center;margin:10px 0 14px">Click, Payme, Uzum yoki bank kartasi orqali.${p.bizTrial?' Muddat sinov tugagan kundan boshlab qo\'shiladi.':''}</p>`:bizPriceBox(P)}
+ <a class="btn ${payOnline()?'btn-ghost':'btn-primary'}" style="width:100%" href="https://t.me/${esc(botName())}?start=biz" target="_blank" rel="noopener">${I.shop} ${isBiz()&&!p.bizTrial?"Biznes'ni uzaytirish":"Biznes'ni ulash"}</a>
  <p class="hint" style="text-align:center;margin:10px 0 0">To'lov Telegram botimiz orqali. To'lovdan keyin tarif o'zi yoqiladi. Muddat tugasa ham ma'lumotlar o'chmaydi.</p>`,'biz')}
 function bizPriceBox(P){if(!(P.biz>0||P.bizyear>0))return '';const full=P.biz*12,save=P.biz>0&&P.bizyear>0?full-P.bizyear:0;
  return `<div class="sec-mini">Narxlar</div><div class="price-box">${P.bizyear>0?`<div class="pb-row best"><span class="pb-l"><b>1 yil</b>${save>0?`<span class="pb-tag">−${Math.round(save/full*100)}%</span>`:''}<small>${save>0?`<span class="num">${fmt(save)}</span> so'm tejaysiz`:'12 oy'}</small></span><span class="pb-r">${save>0?`<s class="num">${fmt(full)}</s>`:''}<b class="num">${fmt(P.bizyear)} <small>so'm</small></b></span></div>`:''}${P.biz>0?`<div class="pb-row"><span class="pb-l"><b>1 oy</b><small>30 kun</small></span><span class="pb-r"><b class="num">${fmt(P.biz)} <small>so'm</small></b></span></div>`:''}</div>`}

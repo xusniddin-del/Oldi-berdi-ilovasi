@@ -164,6 +164,8 @@ h1.page{font-size:24px;font-weight:800;letter-spacing:-.03em;margin:8px 2px 2px}
 .inp{width:100%;height:46px;border:1px solid var(--line);border-radius:13px;background:var(--surface-2);padding:0 13px;font-size:16px;outline:none;color:var(--fg)}
 .inp:focus{border-color:var(--brand);background:var(--surface)}
 textarea.inp{height:auto;min-height:130px;padding:12px 13px;resize:vertical;line-height:1.45}
+.mtag{font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;background:var(--surface-2,#eef3ef);color:var(--muted);margin-left:6px;vertical-align:1px;white-space:nowrap}.mtag.biz{background:var(--plum-bg);color:var(--plum)}
+.modes2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modes2 button{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;border:1px solid var(--line);background:none;font:inherit;color:inherit;cursor:pointer;text-align:left}.modes2 span{font-size:24px}.modes2 small{display:block;color:var(--muted);font-size:12px}.modes2 b{font-size:20px}
 .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .price-grid .field{margin:0}
 .unit{position:relative}.unit .inp{padding-right:54px}.unit::after{content:"so'm";position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--faint);font-weight:700}
@@ -450,6 +452,8 @@ function vHome(d){
   <div class="sec"><h2>Tariflar</h2><span class="hint">${s.users} mijoz</span></div>
   <div class="card pad"><div class="stack">${seg('free')}${seg('trial')}${seg('prem')}${seg('biz')}</div>
    <div class="legend">${['free','trial','prem','biz'].map(k=>`<button data-flt="${k}"><i class="dot c-${k}"></i>${TL[k]}<b class="num">${T[k]}</b></button>`).join('')}</div></div>
+  ${s.modes?`<div class="sec"><h2>Yo'nalishlar</h2><span class="hint">${s.modes.none?s.modes.none+' tasi hali tanlamagan':''}</span></div>
+  <div class="card pad modes2"><button data-flt="mstd"><span>👤</span><div><small>Standart</small><b class="num">${s.modes.std}</b></div></button><button data-flt="mbiz"><span>🏪</span><div><small>Biznes</small><b class="num">${s.modes.biz}</b></div></button></div>`:''}
   <div class="sec"><h2>Eng yangi mijozlar</h2><button class="lnk" data-go="users">Hammasi →</button></div>
   <div class="card list">${s.newest.length?s.newest.map(userRow).join(''):`<div class="empty"><b>Hali mijoz yo'q</b></div>`}</div>`;
   return `${kp}<div class="dash"><div>${att}${left}</div><div>${right}</div></div>`;
@@ -461,18 +465,20 @@ function barChart(vals,labels,color,money){
   const lab=labels.map((l,i)=>l===''?'':`<text class="ax" x="${(i*bw+bw/2).toFixed(1)}" y="${H-4}" text-anchor="middle">${l}</text>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" role="img">${bars}${lab}<line x1="0" x2="${W}" y1="${H-18}" y2="${H-18}" stroke="var(--line)"/></svg>`;
 }
+const ML={std:'Standart',biz:'Biznes'};
+function modeTag(u){return u.mode?` <span class="mtag ${u.mode}">${u.mode==='biz'?'🏪':'👤'} ${ML[u.mode]}</span>`:''}
 function untilTxt(u){if(u.t==='free')return '';const s=u.t==='biz'?(u.bizUntil||u.until):u.until;if(!s)return 'muddatsiz';const n=daysTo(s);return n<0?'tugagan':n===0?'bugun tugaydi':n+' kun qoldi'}
 function userRow(u){
   const sub=[fphone(u.phone),u.tx?u.tx+' yozuv':''].filter(Boolean).join(' · ');
   const ut=untilTxt(u);
-  return `<button class="row" data-user="${esc(u.id)}">${ava(u)}<div class="mid"><div class="t1">${esc(u.name)}${u.admin?' 👑':''}</div><div class="t2">${sub}</div></div>
+  return `<button class="row" data-user="${esc(u.id)}">${ava(u)}<div class="mid"><div class="t1">${esc(u.name)}${u.admin?' 👑':''}${modeTag(u)}</div><div class="t2">${sub}</div></div>
   <div class="ucols"><span class="num">${u.people}</span><span>${ago(u.last)}</span><span>${ago(u.createdAt)}</span></div>
   <span class="rcol"><span class="tag ${u.t}">${TL[u.t]}</span>${ut?`<div class="t2">${ut}</div>`:u.tg?'<div class="t2" style="color:var(--sky)">● botda</div>':''}</span></button>`;
 }
 
 /* ---------- Mijozlar ---------- */
-const FLT=[['all','Hammasi'],['new','Yangi · 7 kun'],['active','Faol'],['trial','Sinov'],['prem','Premium'],['biz','Biznes'],['free','Bepul'],['tg','Botda'],['trialEnd','Sinovi tugayapti'],['premEnd','Premium tugayapti'],['today','Bugungi']];
-function flt(u,f){const wk=Date.now()-7*864e5;switch(f){case 'all':return true;case 'new':return u.createdAt>=wk;case 'active':return u.last>=wk;case 'tg':return u.tg;
+const FLT=[['all','Hammasi'],['new','Yangi · 7 kun'],['active','Faol'],['trial','Sinov'],['prem','Premium'],['biz','Biznes'],['free','Bepul'],['mstd','👤 Standart'],['mbiz','🏪 Biznes yo\'li'],['tg','Botda'],['trialEnd','Sinovi tugayapti'],['premEnd','Premium tugayapti'],['today','Bugungi']];
+function flt(u,f){const wk=Date.now()-7*864e5;switch(f){case 'all':return true;case 'new':return u.createdAt>=wk;case 'active':return u.last>=wk;case 'tg':return u.tg;case 'mstd':return u.mode==='std';case 'mbiz':return u.mode==='biz';
  case 'trialEnd':return u.t==='trial'&&daysTo(u.until)<=3;case 'premEnd':return (u.t==='prem'||u.t==='biz')&&!u.admin&&daysTo(u.until)<=7&&daysTo(u.until)>=0;case 'today':return ymd(new Date(u.createdAt))===ymd(new Date());default:return u.t===f}}
 const SORTS={new:['Yangi avval',(a,b)=>b.createdAt-a.createdAt],active:['Faol avval',(a,b)=>b.last-a.last],tx:["Ko'p yozuv",(a,b)=>b.tx-a.tx],name:['Ism bo\'yicha',(a,b)=>String(a.name).localeCompare(String(b.name))]};
 function vUsers(){
@@ -510,7 +516,7 @@ function userHtml(u,pays,loading){
    <div class="grid4">${[['30','+30 kun'],['90','+90 kun'],['365','+1 yil'],['ha','Cheksiz']].map(([v,l])=>`<button class="btn btn-ghost btn-sm" data-plan="${kind}" data-v="${v}" ${dis}>${l}</button>`).join('')}</div>
    <div class="custom"><input class="inp num" id="pd-${kind}" inputmode="numeric" placeholder="Kun soni"><button class="btn btn-primary btn-sm" data-plan="${kind}" data-v="custom" ${dis}>Qo'shish</button><button class="btn btn-danger btn-sm" data-plan="${kind}" data-v="0" ${dis}>O'chirish</button></div></div>`;
   const premCur=u.t==='prem'||u.t==='trial'||u.t==='biz'?(u.t==='trial'?'Sinov · ':'')+(u.until?fdate(u.until)+' gacha':'muddatsiz'):"yo'q";
-  const bizCur=u.t==='biz'?(u.bizUntil?fdate(u.bizUntil)+' gacha':'muddatsiz'):"yo'q";
+  const bizCur=u.t==='biz'?(u.bizTrial?'Sinov · ':'')+(u.bizUntil?fdate(u.bizUntil)+' gacha':'muddatsiz'):"yo'q";
   const docs=u.docs?Object.keys(u.docs).map(k=>`${u.docs[k]} ${DOCN[k]||k}`).join(', '):'';
   const T=S.utab;
   const tabs=[['plan','Tarif'],['info',"Ma'lumot"],['sec','Xavfsizlik'],['pay',"To'lovlar"+(pays&&pays.length?` · ${pays.length}`:'')]];
@@ -559,7 +565,9 @@ function vFeat(){
   <div class="card pad"><div class="price-grid"><div class="field"><label for="pr-month">Premium · 1 oy</label><div class="unit"><input class="inp num" id="pr-month" inputmode="numeric" value="${fmt(Pr.month)}"></div></div>
    <div class="field"><label for="pr-year">Premium · 1 yil</label><div class="unit"><input class="inp num" id="pr-year" inputmode="numeric" value="${fmt(Pr.year)}"></div></div></div>
    <div id="save-note">${saveNote(Pr.month,Pr.year)}</div>
-   <div class="field"><label for="pr-biz">Biznes · 1 oy</label><div class="unit"><input class="inp num" id="pr-biz" inputmode="numeric" value="${fmt(Pr.biz)}" ${F.biz==='off'?'disabled placeholder="Biznes o\'chiq"':''}></div></div>
+   <div class="price-grid" style="margin-top:12px"><div class="field"><label for="pr-biz">Biznes · 1 oy</label><div class="unit"><input class="inp num" id="pr-biz" inputmode="numeric" value="${fmt(Pr.biz)}" ${F.biz==='off'?'disabled placeholder="Biznes o\'chiq"':''}></div></div>
+   <div class="field"><label for="pr-bizyear">Biznes · 1 yil</label><div class="unit"><input class="inp num" id="pr-bizyear" inputmode="numeric" value="${fmt(Pr.bizyear||0)}" ${F.biz==='off'?'disabled placeholder="Biznes o\'chiq"':''}></div></div></div>
+   <div id="save-note-b">${saveNote(Pr.biz,Pr.bizyear||0)}</div>
    <button class="btn btn-primary w100" data-prices="1">Narxlarni saqlash</button>
    ${Pr.online?'':`<p class="hint" style="margin-top:10px">⚠️ Onlayn to'lov (TezCheck) ulanmagan — narxlar ko'rinadi, lekin botda to'lov tugmalari chiqmaydi.</p>`}</div>
    <p class="hint" style="margin:10px 2px 0">«O'chiq» bo'lim ilovada ko'rinmaydi, lekin mijozlarning yozuvlari o'chmaydi — qayta yoqsangiz, hammasi joyida.</p>`;
@@ -569,8 +577,8 @@ function saveNote(m,y){const full=m*12,save=m>0&&y>0?full-y:0;return save>0?`<di
 
 /* ---------- To'lovlar ---------- */
 const PST={paid:"To'langan",active:'Kutilmoqda',created:'Kutilmoqda',expired:'Muddati o\'tgan',cancelled:'Bekor qilingan'};
-const PTL={month:'1 oy',year:'1 yil',biz:'Biznes'};
-function payRow(p){return `<div class="row"><span class="fic" style="background:${p.tarif==='biz'?'var(--plum-bg)':'var(--pos-bg)'};color:${p.tarif==='biz'?'var(--plum)':'var(--brand)'}">${ic(p.tarif==='biz'?'shop':'gem')}</span><div class="mid"><div class="t1">${esc(p.name||fphone(p.phone))} · ${PTL[p.tarif]||esc(p.tarif)}</div><div class="t2">${fdt(p.paidAt||p.createdAt)}${p.until?' · '+fdate(p.until)+' gacha':''}</div></div><span class="rcol"><div class="pay-amt num">${fmt(p.amount)}</div><span class="tag ${p.status==='paid'?'paid':'other'}">${PST[p.status]||esc(p.status)}</span></span></div>`}
+const PTL={month:'1 oy',year:'1 yil',biz:'Biznes · 1 oy',bizyear:'Biznes · 1 yil'};
+function payRow(p){return `<div class="row"><span class="fic" style="background:${/^biz/.test(p.tarif)?'var(--plum-bg)':'var(--pos-bg)'};color:${/^biz/.test(p.tarif)?'var(--plum)':'var(--brand)'}">${ic(/^biz/.test(p.tarif)?'shop':'gem')}</span><div class="mid"><div class="t1">${esc(p.name||fphone(p.phone))} · ${PTL[p.tarif]||esc(p.tarif)}</div><div class="t2">${fdt(p.paidAt||p.createdAt)}${p.until?' · '+fdate(p.until)+' gacha':''}</div></div><span class="rcol"><div class="pay-amt num">${fmt(p.amount)}</div><span class="tag ${p.status==='paid'?'paid':'other'}">${PST[p.status]||esc(p.status)}</span></span></div>`}
 function vPays(){
   const L=S.pays;if(!L)return '<div class="skel" style="height:300px"></div>';
   const paid=L.filter(p=>p.status==='paid'),sum=paid.reduce((z,p)=>z+(+p.amount||0),0),avg=paid.length?sum/paid.length:0;
@@ -623,7 +631,7 @@ document.addEventListener('click',async e=>{
     s.feat[d.feat]=d.m;render();
     try{const j=await api('admFeat',{f:d.feat,mode:d.m});s.feat=j.feat;haptic('ok');toast('Saqlandi');if(d.feat==='biz'){const st=await api('admStats');S.stats=st;render()}}catch(er){s.feat[d.feat]=old;render();haptic('err');toast(er.message)}
     return}
-  if(d.prices){const g=k=>String(($('#pr-'+k)||{}).value||'').replace(/\D/g,'');const body={month:g('month'),year:g('year')};if(!($('#pr-biz')||{}).disabled)body.biz=g('biz');
+  if(d.prices){const g=k=>String(($('#pr-'+k)||{}).value||'').replace(/\D/g,'');const body={month:g('month'),year:g('year')};if(!($('#pr-biz')||{}).disabled){body.biz=g('biz');body.bizyear=g('bizyear')}
     b.disabled=true;try{const j=await api('admPrices',body);S.stats.prices=j.prices;haptic('ok');toast('Narxlar saqlandi');render()}catch(er){haptic('err');toast(er.message);b.disabled=false}return}
   if(d.send){const text=(($('#bm')||{}).value||'').trim();if(!text){toast('Matnni yozing');return}
     const n=audCount(S.to);if(!n){toast("Bu guruhda botga ulangan mijoz yo'q");return}
@@ -650,7 +658,7 @@ document.addEventListener('click',async e=>{
 document.addEventListener('input',e=>{const id=e.target.id;
   if(id==='q'){S.q=e.target.value;render._focus='q';render();return}
   if(id==='bm'){S.draft=e.target.value;const pv=$('#pv');if(pv)pv.innerHTML='<b>Oldi-Berdi</b>📢 '+esc(S.draft||'Xabar matni shu yerda ko\'rinadi…');const cc=$('#cc');if(cc)cc.textContent=S.draft.length+'/3500';return}
-  if(/^pr-/.test(id)){const v=e.target.value.replace(/\D/g,'');e.target.value=v?fmt(v):'';const g=k=>+String(($('#pr-'+k)||{}).value||'').replace(/\D/g,'');const sn=$('#save-note');if(sn)sn.innerHTML=saveNote(g('month'),g('year'))}});
+  if(/^pr-/.test(id)){const v=e.target.value.replace(/\D/g,'');e.target.value=v?fmt(v):'';const g=k=>+String(($('#pr-'+k)||{}).value||'').replace(/\D/g,'');const sn=$('#save-note');if(sn)sn.innerHTML=saveNote(g('month'),g('year'));const sb=$('#save-note-b');if(sb)sb.innerHTML=saveNote(g('biz'),g('bizyear'))}});
 document.addEventListener('change',e=>{if(e.target.id==='sort'){S.sort=e.target.value;render()}});
 boot();
 </script>
