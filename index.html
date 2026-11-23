@@ -221,6 +221,7 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 .grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 8px}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .sheet-head h3{margin:0;font-size:19px;letter-spacing:-.01em}
+.tg-btn{background:linear-gradient(150deg,#2aa6e0,#1c7fc0)!important}
 .pin-skip{width:auto;min-height:48px;display:inline-flex;align-items:center;justify-content:center;padding:0 28px;border-radius:14px;font-size:15px;text-decoration:none!important;opacity:1!important}
 @keyframes su{from{transform:translateY(40px);opacity:0}}
 @keyframes fi{from{opacity:0}}
@@ -572,8 +573,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=38;
-const WHATS_NEW=["Telegram kabi: barmoq bilan chapga-o'ngga surib Asosiy, Odamlar, Tarix va Profil o'rtasida o'ting"];
+const APP_VERSION=39;
+const WHATS_NEW=["Kompyuterda eslatma va tasdiqlash havolasi endi Telegram orqali yuboriladi (telefonda — SMS)","Chapga-o'ngga surib bo'limlar orasida o'tish"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -620,7 +621,7 @@ const RU={
 "Ism yoki raqam bo'yicha qidirish":"Поиск по имени или номеру","Ism yoki izoh bo'yicha qidirish":"Поиск по имени или примечанию",
 "Hech kim topilmadi":"Никого не найдено","Hali hech kim qo'shilmagan":"Пока никого нет","Yuqoridagi tugma bilan odam qo'shing yoki qarz yozayotganda yarating.":"Добавьте человека кнопкой вверху или создайте при записи долга.",
 "Telefon yozilmagan":"Телефон не указан","Kontaktlardan qo'shish":"Добавить из контактов","Yangi odam":"Новый человек",
-"Eslatma yuborish":"Отправить напоминание","Eslatma (SMS)":"Напоминание (SMS)","To'lov grafigi":"График платежей","Tarix":"История","O'zgarishlar":"Изменения","Odamni o'chirish":"Удалить человека",
+"Eslatma yuborish":"Отправить напоминание","Eslatma (SMS)":"Напоминание (SMS)","Eslatma (Telegram)":"Напоминание (Telegram)","Xabar matni":"Текст сообщения","Telegram orqali yuborish":"Отправить через Telegram","To'lov grafigi":"График платежей","Tarix":"История","O'zgarishlar":"Изменения","Odamni o'chirish":"Удалить человека",
 "Hali yozuv yo'q":"Записей пока нет","Yuqoridagi tugmalardan birini bosing.":"Нажмите одну из кнопок выше.","Jami berilgan:":"Всего дано:","· Jami olingan:":"· Всего взято:",
 "Ishonchli":"Надёжный","O'rtacha":"Средне","Kechiktiradi":"Задерживает","o'z vaqtida qaytarish":"возврат вовремя",
 "Hammasi":"Все","Yozuv topilmadi":"Записей не найдено","Qarz yozganingizda shu yerda ko'rinadi.":"Здесь появятся ваши записи.",
@@ -817,7 +818,7 @@ function dueInstList(){const td=today(),out=[];
 function instAmt(t,a){return isUSD(t)?'$'+fmt(a):money(a)}
 function instRowHtml(x){const d=x.inst.d===today()?'bugun':fdate(x.inst.d);
  return `<div class="inst-row${x.missed?' missed':''}">${avatar(x.p,42)}<div class="mid"><b>${esc(x.p.name)}</b><small>${x.idx+1}/${x.L.inst.length}-to'lov · ${d} · <b class="num">${instAmt(x.t,x.inst.a)}</b></small>${x.late>0?`<small class="late">Kechikkan: ${x.late} ta to'lov · ${instAmt(x.t,x.lateSum)}</small>`:''}
- ${x.missed?`<div class="inst-st">❌ To'lamadi · ertaga yana eslatiladi <button class="link" data-act="remind" data-id="${x.p.id}">SMS yuborish</button></div>`:`<div class="inst-btns"><button class="btn btn-primary btn-sm" data-act="instPaid" data-k="${x.key}">✓ To'ladi</button><button class="btn btn-ghost btn-sm" data-act="instMiss" data-k="${x.key}">✕ To'lamadi</button></div>`}</div></div>`}
+ ${x.missed?`<div class="inst-st">❌ To'lamadi · ertaga yana eslatiladi <button class="link" data-act="remind" data-id="${x.p.id}">${msgCh()==='tg'?'Eslatma yuborish':'SMS yuborish'}</button></div>`:`<div class="inst-btns"><button class="btn btn-primary btn-sm" data-act="instPaid" data-k="${x.key}">✓ To'ladi</button><button class="btn btn-ghost btn-sm" data-act="instMiss" data-k="${x.key}">✕ To'lamadi</button></div>`}</div></div>`}
 function instCard(){const l=dueInstList();if(!l.length)return '';const open=l.filter(x=>!x.missed).length;
  return `<div class="sec-head"><h2>To'lov kunlari</h2>${open?`<span class="badge warn">${open}</span>`:''}</div><div class="card inst-card">${l.map(instRowHtml).join('')}</div>`}
 function instFind(key){return dueInstList().find(x=>x.key===key)}
@@ -1733,10 +1734,19 @@ function cfPill(id){const c=S.confirms[id];if(id.startsWith('cf_'))return `<span
 function txSentence(type,from,amt,you){return type==='lend'?`${from} ${you?'sizga':''} ${amt} qarz berdi`:type==='borrow'?`${from} ${you?'sizdan':''} ${amt} qarz oldi`:type==='got'?`${from}ga ${amt} qaytarildi`:`${from} ${amt} qaytardi`}
 /* --- SMS: opens the phone's SMS app with the number and text ready; the person only taps Send --- */
 function smsHref(ph,text){const ios=/iPad|iPhone|iPod/.test(navigator.userAgent);return 'sms:+'+ph+(ios?'&':'?')+'body='+encodeURIComponent(text)}
+/* telefonda — SMS, kompyuterda (SMS yuborib bo'lmaydi) — Telegram */
+function isPhoneDev(){return /Android|iPhone|iPod/i.test(navigator.userAgent)}
+function msgCh(){return isPhoneDev()?'sms':'tg'}
 function openSms(ph,text){location.href=smsHref(ph,text)}
+function openTg(text){try{navigator.clipboard&&navigator.clipboard.writeText(text)}catch(e){}window.open('https://t.me/share/url?url='+encodeURIComponent(text),'_blank')}
+function openMsg(ph,text){if(msgCh()==='tg')openTg(text);else openSms(ph,text)}
 function personUpdate(p,patch,logText){const now=Date.now();const {id,...rest}=p;const item={id,...rest,...patch,log:[...(p.log||[]).slice(-29),...(logText?[{at:now,t:logText}]:[])],updatedAt:now};S.people[id]=item;compute();saveCache();bg("O'zgarish saqlanmadi",()=>api('savePerson',{item}).then(j=>{S.people[id]=j.item;saveCache()}));return item}
 function smsSheet(title,intro,text,pid,kind){
- S.smsCtx={pid,kind};const p=S.people[pid]||{};const ph=normPhone(p.phone||'');
+ S.smsCtx={pid,kind};const p=S.people[pid]||{};const ph=normPhone(p.phone||'');const tg=msgCh()==='tg';
+ if(tg){openSheet(title,`<p class="hint" style="margin:0 0 10px">${intro}</p>
+ <div class="field"><label for="sh-text">Xabar matni</label><textarea class="inp" id="sh-text" rows="7">${esc(text)}</textarea></div>
+ <button class="btn btn-primary tg-btn" style="width:100%" data-act="smsSend">${I.send} Telegram orqali yuborish</button>
+ <p class="hint" style="text-align:center;margin:10px 0 0">Telegram ochiladi: <b>${esc(p.name||'')}</b>ni tanlab «Yuborish» ni bosasiz. Matn nusxalandi ham — kerak bo'lsa joylashtiring.</p>`,'sms');return}
  openSheet(title,`<p class="hint" style="margin:0 0 10px">${intro}</p>
  <div class="field"><label for="sh-text">SMS matni</label><textarea class="inp" id="sh-text" rows="7">${esc(text)}</textarea></div>
  ${ph?'':`<div class="field"><label for="sms-phone">${esc(p.name||'')}ning telefon raqami</label><input class="inp num" id="sms-phone" type="tel" inputmode="tel" placeholder="+998 __ ___ __ __"><span class="hint">Raqam yozilmagan ekan. Kiriting: u saqlanadi va SMS shu raqamga ketadi.</span></div>`}
@@ -1744,7 +1754,7 @@ function smsSheet(title,intro,text,pid,kind){
  <button class="btn btn-primary" style="width:100%" data-act="smsSend">${I.chat} ${ph?`SMS yuborish · <span class="num">${fphone(ph)}</span>`:'Saqlash va SMS yuborish'}</button>
  <p class="hint" style="text-align:center;margin:10px 0 0">SMS ilovangiz ochiladi: raqam va matn tayyor bo'ladi, faqat «Yuborish» ni bosasiz.</p>`,'sms');
  if(!ph)setTimeout(()=>{const i=$('#sms-phone');i&&i.focus()},300)}
-function smsLog(kind){return kind==='confirm'?'Tasdiqlash havolasi yuborildi (SMS)':'Eslatma yuborildi (SMS)'}
+function smsLog(kind){const c=msgCh()==='tg'?'Telegram':'SMS';return kind==='confirm'?`Tasdiqlash havolasi yuborildi (${c})`:`Eslatma yuborildi (${c})`}
 
 /* --- reminder suggestions: overdue, due today/tomorrow, and debts with no deadline every N days --- */
 function remDays(){return +(LS.get('oldiberdi_remdays')||7)}
@@ -1761,7 +1771,7 @@ function remindList(){const td=today(),tm=addDays(td,1),out=[];const now=Date.no
   if(!near){const age=lastLoan?Math.floor((new Date(td)-new Date(lastLoan))/864e5):0;if(age>=remDays()&&since>=remDays())out.push({p,why:'nodue',rank:2,label:`Muddat kiritilmagan · ${age} kundan beri`})}
  }
  return out.sort((a,b)=>a.rank-b.rank||(S.bal[b.p.id]||0)-(S.bal[a.p.id]||0))}
-function remRowHtml(x){const ph=normPhone(x.p.phone||'');return `<div class="rem-row" id="rem-${x.p.id}">${avatar(x.p,42)}<div class="mid"><b>${esc(x.p.name)}</b><small class="why ${x.why}">${x.label}</small><small class="num">${money(S.bal[x.p.id]||0)}${ph?'':' · raqam yo\'q'}</small></div><div class="rem-btns"><button class="btn btn-primary btn-sm" data-act="remSms" data-id="${x.p.id}">${ph?'SMS yuborish':'Raqam kiritish'}</button><button class="btn btn-ghost btn-sm" data-act="remSnooze" data-id="${x.p.id}">Keyinroq</button></div></div>`}
+function remRowHtml(x){const ph=normPhone(x.p.phone||'');return `<div class="rem-row" id="rem-${x.p.id}">${avatar(x.p,42)}<div class="mid"><b>${esc(x.p.name)}</b><small class="why ${x.why}">${x.label}</small><small class="num">${money(S.bal[x.p.id]||0)}${ph||msgCh()==='tg'?'':' · raqam yo\'q'}</small></div><div class="rem-btns"><button class="btn btn-primary btn-sm" data-act="remSms" data-id="${x.p.id}">${msgCh()==='tg'?'Telegram':ph?'SMS yuborish':'Raqam kiritish'}</button><button class="btn btn-ghost btn-sm" data-act="remSnooze" data-id="${x.p.id}">Keyinroq</button></div></div>`}
 function maybeRemindPrompt(){maybeInstPrompt();maybeTrialAsk();if(!S.acc||locked('remind')||S.locked||S.setup||sheets.length||S.view!=='home'||!S.loaded.t)return;if(LS.get('oldiberdi_remauto')==='off')return;if(LS.get('oldiberdi_remprompt')===today())return;if(!remindList().length)return;LS.set('oldiberdi_remprompt',today());setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup)A.remCenter()},900)}
 function remindText(p){if(isRu())return remindTextRu(p);const b=S.bal[p.id]||0;const od=overdueOf(p.id);let next=null,due=null;
  for(const x of Object.values(S.tx)){if(x.pid!==p.id||x.type!=='lend')continue;const L=S.alloc[x.id];if(!L||L.left<=0.5)continue;const i=nextInst(L);if(i&&(!next||i.d<next.d))next={d:i.d,a:L.t.cur==='USD'?'$'+fmt(i.a):fmt(i.a)+' '+cur()};if(!L.inst.length&&x.due&&(!due||x.due<due))due=x.due}
@@ -2024,23 +2034,23 @@ const A={
    else fallback(err==='not-allowed'||err==='service-not-allowed'?"Ovozli yozish bu ilovada yopiq. Klaviaturadagi 🎤 tugmasini bosib gapiring":"Ovozni tanib bo'lmadi. Klaviaturadagi 🎤 tugmasini bosib gapiring")};
   try{r.start()}catch(e){return fallback()}
   S.recT=setTimeout(()=>{try{r.stop()}catch(_){}},10000)},
- remind:d=>{if(!need('remind'))return;const p=S.people[d.id];if(!p)return;smsSheet('Eslatma (SMS)',`${esc(p.name)}ga qarz haqida muloyim eslatma. Matnni xohlaganingizcha o'zgartiring.`,remindText(p),p.id,'remind')},
+ remind:d=>{if(!need('remind'))return;const p=S.people[d.id];if(!p)return;smsSheet(msgCh()==='tg'?'Eslatma (Telegram)':'Eslatma (SMS)',`${esc(p.name)}ga qarz haqida muloyim eslatma. Matnni xohlaganingizcha o'zgartiring.`,remindText(p),p.id,'remind')},
  shareConfirm:async(d,el)=>{if(!need('confirm'))return;const t=S.tx[d.id];if(!t)return;const p=S.people[t.pid]||{name:''};el.disabled=true;const old=el.innerHTML;el.textContent='Havola tayyorlanmoqda…';
   try{await QCHAIN;const j=await api('shareTx',{id:d.id});S.confirms[d.id]={status:j.status,token:j.token};saveCache();
    const amt=amtTxt(t);const me=S.acc.name;const desc=t.type==='lend'?`${me} sizga ${amt} qarz berdi`:t.type==='borrow'?`${me} sizdan ${amt} qarz oldi`:t.type==='got'?`siz ${me}ga ${amt} qaytardingiz`:`${me} sizga ${amt} qaytardi`;
    const amtR=tr(amt),descR=t.type==='lend'?`${me} дал(а) вам в долг ${amtR}`:t.type==='borrow'?`${me} взял(а) у вас в долг ${amtR}`:t.type==='got'?`вы вернули ${me} ${amtR}`:`${me} вернул(а) вам ${amtR}`;
    const text=isRu()?`Здравствуйте, ${p.name}!\nOldi-Berdi: ${descR} (${tr(fdate(t.date))}).\nПодтвердите: ${confirmLink(j.token)}`:`Assalomu alaykum, ${p.name}!\nOldi-Berdi: ${desc} (${fdate(t.date)}).\nTasdiqlang: ${confirmLink(j.token)}`;
-   closeSheet();smsSheet('Tasdiqlashga yuborish',`Havola SMS bilan ${esc(p.name)}ga boradi. U ochib, «Ha, to'g'ri» ni bosadi va yozuv ikki tomonlama tasdiqlanadi.`,text,t.pid,'confirm')}
+   closeSheet();smsSheet('Tasdiqlashga yuborish',`Havola ${msgCh()==='tg'?'Telegram':'SMS'} orqali ${esc(p.name)}ga boradi. U ochib, «Ha, to'g'ri» ni bosadi va yozuv ikki tomonlama tasdiqlanadi.`,text,t.pid,'confirm')}
   catch(e){toast(writeErr(e));el.disabled=false;el.innerHTML=old}},
  smsSend:()=>{const c=S.smsCtx||{};let p=S.people[c.pid];if(!p)return;const text=($('#sh-text')||{}).value||'';let ph=normPhone(p.phone||'');const patch={};
-  if(!ph){const v=normPhone(($('#sms-phone')||{}).value);if(v.length<9||v.length>15){$('#sms-err').textContent="Telefon raqamni to'g'ri kiriting";return}ph=v;patch.phone=v}
+  if(!ph&&msgCh()==='sms'){const v=normPhone(($('#sms-phone')||{}).value);if(v.length<9||v.length>15){$('#sms-err').textContent="Telefon raqamni to'g'ri kiriting";return}ph=v;patch.phone=v}
   personUpdate(p,patch,smsLog(c.kind)+(patch.phone?' · telefon qo\'shildi':''));
-  openSms(ph,text);closeSheet();const row=$('#rem-'+p.id);if(row)row.querySelector('.rem-btns').innerHTML='<span class="done-pill">✓ Yuborildi</span>';render()},
+  openMsg(ph,text);closeSheet();const row=$('#rem-'+p.id);if(row)row.querySelector('.rem-btns').innerHTML='<span class="done-pill">✓ Yuborildi</span>';render()},
  remCenter:()=>{if(!need('remind'))return;const rl=remindList();if(!rl.length){toast("Hozircha eslatish kerak bo'lgan odam yo'q");return}
-  openSheet('Eslatma yuborish vaqti',`<p class="hint" style="margin:0 0 4px">Qarzini qaytarish vaqti kelganlar. SMS yuborilsinmi?</p><div>${rl.map(remRowHtml).join('')}</div><button class="link" style="margin-top:10px" data-act="remSettings">Eslatma sozlamalari</button>`,'rem')},
+  openSheet('Eslatma yuborish vaqti',`<p class="hint" style="margin:0 0 4px">Qarzini qaytarish vaqti kelganlar. ${msgCh()==='tg'?'Telegram orqali eslatma':'SMS'} yuborilsinmi?</p><div>${rl.map(remRowHtml).join('')}</div><button class="link" style="margin-top:10px" data-act="remSettings">Eslatma sozlamalari</button>`,'rem')},
  remSms:(d,el)=>{if(!need('remind'))return;const p=S.people[d.id];if(!p)return;const ph=normPhone(p.phone||'');
-  if(!ph){smsSheet('Eslatma (SMS)',`${esc(p.name)}ning raqami yo'q. Raqamni kiriting — saqlanadi va eslatma darhol yuboriladi.`,remindText(p),p.id,'remind');return}
-  personUpdate(p,{},smsLog('remind'));openSms(ph,remindText(p));el.parentElement.innerHTML='<span class="done-pill">✓ Yuborildi</span>';render()},
+  if(!ph&&msgCh()==='sms'){smsSheet('Eslatma (SMS)',`${esc(p.name)}ning raqami yo'q. Raqamni kiriting — saqlanadi va eslatma darhol yuboriladi.`,remindText(p),p.id,'remind');return}
+  personUpdate(p,{},smsLog('remind'));openMsg(ph,remindText(p));el.parentElement.innerHTML='<span class="done-pill">✓ Yuborildi</span>';render()},
  remSnooze:(d,el)=>{const t=new Date();t.setDate(t.getDate()+1);t.setHours(6,0,0,0);LS.set('oldiberdi_snooze_'+d.id,String(t.getTime()));const row=$('#rem-'+d.id);if(row)row.remove();render();if(!document.querySelector('.rem-row'))closeSheet()},
  remSettings:()=>{const cur=remDays();const auto=LS.get('oldiberdi_remauto')!=='off';
   openSheet('Eslatma sozlamalari',`<p class="hint" style="margin-top:0">Muddat kiritilmagan qarzlar bo'yicha necha kunda bir eslatish taklif qilinsin?</p><div class="chips" style="flex-wrap:wrap">${[3,7,14,30].map(n=>`<button class="chip ${cur===n?'on':''}" data-act="remDaysSet" data-v="${n}">${n} kun</button>`).join('')}</div>
