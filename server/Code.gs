@@ -27,7 +27,7 @@
  */
 
 const TABLES = {
-  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz'],
+  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge'],
   Sessions: ['token', 'acc', 'createdAt'],
   People:   ['id', 'acc', 'name', 'phone', 'note', 'photo', 'log', 'createdAt', 'updatedAt'],
   Tx:       ['id', 'acc', 'pid', 'type', 'amount', 'date', 'due', 'note', 'photo', 'edits', 'createdAt', 'updatedAt', 'cur', 'plan'],
@@ -57,9 +57,10 @@ function feat_() {
 }
 /* "off" bo'lgan bo'lim ham Premium kabi tekshiriladi: telefonda navbatda turgan eski yozuvlar yo'qolmasin */
 function featOk_(a, f) { return feat_()[f] === 'free' || premium_(a).on; }
+const PREM_BADGES_ = ['green', 'gold', 'gem', 'crown'];
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, kidSave: 1, kidDelete: 1, kidTx: 1, kidLogin: 1, kidAddTx: 1, kidGoals: 1, kidProfile: 1, kidLogout: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, kidSave: 1, kidDelete: 1, kidTx: 1, kidLogin: 1, kidAddTx: 1, kidGoals: 1, kidProfile: 1, kidLogout: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -200,7 +201,7 @@ function loginFail_(phone) {
 function normPhone_(p) { let d = String(p || '').replace(/\D/g, ''); if (d.length === 9) d = '998' + d; return d; }
 function str_(v, max) { return String(v === undefined || v === null ? '' : v).slice(0, max || 500); }
 function pub_(a) {
-  return { id: a.id, name: a.name, phone: a.phone, photo: a.photo, currency: a.currency || "so'm", pinSalt: a.pinSalt, pinHash: a.pinHash, createdAt: a.createdAt, premium: premium_(a), tg: !!a.tg };
+  return { id: a.id, name: a.name, phone: a.phone, photo: a.photo, currency: a.currency || "so'm", pinSalt: a.pinSalt, pinHash: a.pinHash, createdAt: a.createdAt, premium: premium_(a), tg: !!a.tg, badge: a.badge || '' };
 }
 /* Biznes tarif muddati: '' — yo'q, 'ha' — muddatsiz, aks holda sana */
 function bizUntil_(a) {
@@ -487,6 +488,15 @@ const API = {
     return { acc: pub_(a) };
   },
   startTrial: function (r) { const a = auth_(r); startTrial_(a); return { acc: pub_(a) }; },
+  /* tasdiqlash belgisi: akkauntda saqlanadi — telefon, sayt va Telegram Mini App'da bir xil ko'rinadi */
+  setBadge: function (r) {
+    const a = auth_(r), b = str_(r.badge, 10);
+    if (!premium_(a).on) throw new Error('Belgini tanlash Premium uchun');
+    if (PREM_BADGES_.indexOf(b) < 0) throw new Error("Noto'g'ri belgi");
+    a.badge = b;
+    put_('Accounts', a, a._row);
+    return { acc: pub_(a) };
+  },
   setCurrency: function (r) {
     const a = auth_(r);
     a.currency = str_(r.currency, 8) || "so'm";
