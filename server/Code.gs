@@ -30,7 +30,7 @@ const TABLES = {
   Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge', 'mode', 'bizTrialEnd'],
   Sessions: ['token', 'acc', 'createdAt'],
   People:   ['id', 'acc', 'name', 'phone', 'note', 'photo', 'log', 'createdAt', 'updatedAt'],
-  Tx:       ['id', 'acc', 'pid', 'type', 'amount', 'date', 'due', 'note', 'photo', 'edits', 'createdAt', 'updatedAt', 'cur', 'plan'],
+  Tx:       ['id', 'acc', 'pid', 'type', 'amount', 'date', 'due', 'note', 'photo', 'edits', 'createdAt', 'updatedAt', 'cur', 'plan', 'items'],
   Confirms: ['token', 'acc', 'txId', 'status', 'answeredAt', 'createdAt'],
   Meta:     ['key', 'value'],
   Reminders: ['key', 'acc', 'pid', 'txId', 'idx', 'due', 'amount', 'status', 'markDay', 'chat', 'msg', 'text', 'updatedAt'],
@@ -59,7 +59,7 @@ function featOk_(a, f) { return feat_()[f] === 'free' || premium_(a).on; }
 const PREM_BADGES_ = ['green', 'gold', 'gem', 'crown'];
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, bulkImport: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -296,7 +296,7 @@ function data_(accId) {
     docs: all_('Docs').filter(function (x) { return x.acc === accId; }).map(clean_),
     confirms: confirms,
     rate: rate_(),
-    api: 12,
+    api: 13,
     feat: feat_(),
     marks: marks_(accId),
     prices: prices_(),
@@ -315,6 +315,13 @@ function rate_() {
     if (o.usd > 0) { cache.put('usd', JSON.stringify(o), 21600); return o; }
   } catch (e) {}
   return null;
+}
+/* Biznes: nasiyadagi tovarlar [{n, q, p}] — faqat Biznes faol bo'lsa yoziladi, aks holda eskisi saqlanadi */
+function items_(v, a, old) {
+  if (!premium_(a).biz) return old && Array.isArray(old.items) ? old.items : [];
+  return (Array.isArray(v) ? v : []).slice(0, 50).map(function (g) {
+    return { n: str_(g && g.n, 60).trim(), q: Math.round((Number(g && g.q) || 0) * 1000) / 1000, p: Math.round(Number(g && g.p) || 0) };
+  }).filter(function (g) { return g.n && g.q > 0 && g.p >= 0; });
 }
 function plan_(v) {
   if (!Array.isArray(v)) return [];
@@ -527,10 +534,33 @@ const API = {
       date: str_(it.date, 10), due: str_(it.due, 10), note: str_(it.note, 1000),
       photo: photo_(a.id, it.photo), edits: (Array.isArray(it.edits) ? it.edits : []).slice(-20),
       createdAt: Number(it.createdAt) || (old && old.createdAt) || now, updatedAt: now,
-      cur: it.cur === 'USD' ? 'USD' : '', plan: plan_(it.plan)
+      cur: it.cur === 'USD' ? 'USD' : '', plan: plan_(it.plan), items: items_(it.items, a, old)
     };
     put_('Tx', t, old ? old._row : 0);
     return { item: clean_(t) };
+  },
+  /* Biznes: qog'oz daftarni ko'chirish — bir so'rovda ko'p mijoz va nasiya */
+  bulkImport: function (r) {
+    const a = auth_(r);
+    if (!premium_(a).biz) throw new Error('Bu Biznes tarif funksiyasi');
+    const rows = (Array.isArray(r.rows) ? r.rows : []).slice(0, 300);
+    if (!rows.length) throw new Error("Qator yo'q");
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || '')) ? String(r.date) : today_();
+    const ppl = all_('People').filter(function (p) { return p.acc === a.id; });
+    const outP = [], outT = [], now = Date.now();
+    rows.forEach(function (x, k) {
+      const name = str_(x.name, 80).trim(), phone = normPhone_(x.phone), amount = Math.round(Number(x.amount) || 0);
+      if (!name || !(amount > 0)) return;
+      let p = ppl.filter(function (q) { return (phone && q.phone === phone) || String(q.name).toLowerCase() === name.toLowerCase(); })[0];
+      if (!p) {
+        p = { id: uid_(), acc: a.id, name: name, phone: phone.length >= 9 ? phone : '', note: '', photo: '', log: [{ at: now, t: "Daftardan ko'chirildi" }], createdAt: now + k, updatedAt: now + k };
+        put_('People', p); ppl.push(p); outP.push(clean_(p));
+      }
+      const due = /^\d{4}-\d{2}-\d{2}$/.test(String(x.due || '')) ? String(x.due) : '';
+      const t = { id: uid_(), acc: a.id, pid: p.id, type: 'lend', amount: amount, date: date, due: due, note: "Daftardan ko'chirildi", photo: '', edits: [], createdAt: now + k, updatedAt: now + k, cur: '', plan: [], items: [] };
+      put_('Tx', t); outT.push(clean_(t));
+    });
+    return { people: outP, tx: outT };
   },
   deleteTx: function (r) {
     const a = auth_(r), id = String(r.id || '');
@@ -988,6 +1018,32 @@ function kunlik() {
   });
 }
 
+/* Biznes: har kuni 20:00 da do'kon egasiga kunlik natija (botSetup trigger qo'yadi) */
+function kechki() {
+  if (!prop_('TG_TOKEN')) return;
+  const td = today_();
+  const bizDocs = {}; all_('Docs').forEach(function (d) { if (d.kind === 'biz') bizDocs[d.acc] = d.data || {}; });
+  const txBy = {}; all_('Tx').forEach(function (t) { if (t.date === td) (txBy[t.acc] = txBy[t.acc] || []).push(t); });
+  const rt = rate_(), usd = rt && rt.usd || 0;
+  all_('Accounts').forEach(function (a) {
+    if (!a.tg || mode_(a) !== 'biz' || !premium_(a).biz) return;
+    const D = bizDocs[a.id] || {};
+    if (D.evening === false) return;
+    let given = 0, back = 0;
+    (txBy[a.id] || []).forEach(function (t) { let v = Number(t.amount) || 0; if (t.cur === 'USD') v = usd ? v * usd : 0; if (t.type === 'lend') given += v; else if (t.type === 'got') back += v; });
+    const b = balances_(a.id); let odN = 0, odSum = 0, total = 0, n = 0;
+    Object.keys(b.bal).forEach(function (pid) { const v = b.bal[pid]; if (v <= 0.5) return; total += v; n++; if (b.due[pid] && b.due[pid] < td) { odN++; odSum += v; } });
+    let t = '🌙 <b>' + h_(D.shop || 'Kunlik hisobot') + '</b> · ' + fdate_(td) + '\n\n';
+    t += '➕ Bugun nasiya: <b>' + sum_(given) + '</b>\n';
+    t += '💵 Bugun qaytgan: <b>' + sum_(back) + '</b>\n';
+    t += '⏰ Muddati o\'tgan: <b>' + odN + ' kishi</b>' + (odN ? ' (jami ' + sum_(odSum) + ')' : '') + '\n';
+    t += '\n📒 Jami nasiya: <b>' + sum_(total) + '</b> (' + n + ' mijoz)';
+    if (odN) t += '\n\nErtaga ilovada «Ommaviy eslatma» bilan hammasiga bir yo\'la eslatsangiz bo\'ladi.';
+    try { send_(a.tg, t, { reply_markup: { inline_keyboard: [[btnApp_()]] } }); } catch (e) { console.error(e); }
+    Utilities.sleep(60);
+  });
+}
+
 /* Run ONCE from the editor after setting TG_TOKEN: connects the bot to this server */
 function botSetup() {
   const me = tg_('getMe', {});
@@ -1003,6 +1059,8 @@ function botSetup() {
   if (adm) tg_('setMyCommands', { scope: { type: 'chat', chat_id: Number(adm) }, commands: [{ command: 'admin', description: '🛠 Admin panel' }, { command: 'start', description: 'Boshlash' }, { command: 'stat', description: 'Statistika' }, { command: 'tarif', description: 'Premium narxlari' }, { command: 'holat', description: 'Mening hisobim' }] });
   ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'kunlik') ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('kunlik').timeBased().everyDays(1).atHour(9).create();
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'kechki') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('kechki').timeBased().everyDays(1).atHour(20).create();
   const msg = 'Bot: @' + me.result.username + ' | webhook: ' + url + ' → ' + (w && w.ok ? 'OK' : JSON.stringify(w));
   Logger.log(msg);
   return msg;
