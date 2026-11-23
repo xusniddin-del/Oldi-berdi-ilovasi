@@ -983,10 +983,11 @@ function botStatus_(chat, a) {
   send_(chat, t, { reply_markup: { inline_keyboard: [[btnApp_()]] } });
 }
 
+const SITE_ = 'https://oldiberdi.uz/';
 const PREM_LBL_ = { shop: '🛒 Bozorlik ro\'yxati', toy: '💍 To\'yona daftari', loan: '🏦 Kredit va nasiyalar kalendari', gap: '👥 Gap boshqaruvi', yigin: '💰 Pul yig\'ish', kids: '👧 Farzandlar xazinasi', report: '📊 Oylik hisobot va grafiklar', excel: '📥 Excel fayl', remind: '💬 SMS eslatmalar', trust: '⭐ Ishonch reytingi', usd: '💵 Dollar va MB kursi', plan: '🗓 Bo\'lib to\'lash', confirm: '🤝 Ikki tomonlama tasdiq', ru: '🇷🇺 Rus tili' };
 function premList_() { const f = feat_(); return Object.keys(PREM_LBL_).filter(function (k) { return f[k] === 'prem'; }).map(function (k) { return PREM_LBL_[k]; }); }
 function botAbout_(chat, a) {
-  send_(chat, '📒 <b>Oldi-Berdi</b> — qarz daftari ilovasi\n\nKimga qancha qarz berdingiz, kimdan qancha oldingiz — hammasi bir joyda. Ma\'lumotlar internetda saqlanadi: istalgan telefondan raqam va parol bilan kirasiz.\n\n<b>Bepul:</b>\n✅ Qarz berdim / oldim / qaytardi\n✅ Rasm va izoh\n✅ Muddat nazorati\n✅ Kontaktlardan tanlash\n✅ PIN va barmoq izi\n\n<b>Premium:</b> ' + premList_().map(function (x) { return x.replace(/^\S+\s/, ''); }).join(', ') + '.\n\n<b>O\'rnatish:</b>\n🤖 Android — «Android uchun yuklash» tugmasi\n🍏 iPhone — havolani Safari\'da oching → «Ulashish» → «Bosh ekranga qo\'shish»', { reply_markup: { inline_keyboard: [[btnApp_()], [{ text: '🤖 Android uchun yuklash', url: appUrl_() + 'Oldi-Berdi.apk' }], [{ text: '🍏 iPhone / brauzer', url: appUrl_() }]] } });
+  send_(chat, '📒 <b>Oldi-Berdi</b> — qarz daftari ilovasi\n\nKimga qancha qarz berdingiz, kimdan qancha oldingiz — hammasi bir joyda. Ma\'lumotlar internetda saqlanadi: telefon, kompyuter yoki saytdan — raqam va parol bilan kirasiz, hammasi bir xil ko\'rinadi.\n\n' + '🌐 <b>Sayt:</b> <a href="' + SITE_ + '">oldiberdi.uz</a>\n\n' + '<b>Bepul:</b>\n✅ Qarz berdim / oldim / qaytardi\n✅ Rasm va izoh\n✅ Muddat nazorati\n✅ Kontaktlardan tanlash\n✅ PIN va barmoq izi\n\n' + '<b>Premium:</b> ' + premList_().map(function (x) { return x.replace(/^\S+\s/, ''); }).join(', ') + '.\n\n' + '<b>Qayerda ishlaydi:</b>\n🤖 Android — «Android uchun yuklash» tugmasi\n🍏 iPhone — Safari\'da oldiberdi.uz → «Kirish», keyin «Ulashish» → «Bosh ekranga qo\'shish»\n💻 Kompyuter — Windows (7, 8, 10, 11) va Mac uchun dastur saytda: «Kompyuterga yuklash»\n📱 Telegram — pastdagi «Ilovani ochish» tugmasi', { disable_web_page_preview: true, reply_markup: { inline_keyboard: [[btnApp_()], [{ text: '🌐 Sayt — oldiberdi.uz', url: SITE_ }], [{ text: '🤖 Android uchun yuklash', url: appUrl_() + 'Oldi-Berdi.apk' }, { text: '💻 Kompyuterga yuklash', url: SITE_ + '#qurilmalar' }]] } });
 }
 
 function botHelp_(chat, a) {
@@ -1088,6 +1089,8 @@ function botSetup() {
   const url = prop_('WEB_URL') || ScriptApp.getService().getUrl();
   const w = tg_('setWebhook', { url: url, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
   tg_('setMyCommands', { commands: [{ command: 'start', description: 'Boshlash' }, { command: 'tarif', description: 'Premium narxlari' }, { command: 'holat', description: 'Mening hisobim' }, { command: 'ilova', description: 'Ilova haqida' }, { command: 'yordam', description: 'Yordam' }] });
+  tg_('setMyShortDescription', { short_description: 'Qarz daftari: kim qancha qarzdor — telefon, kompyuter va saytda. oldiberdi.uz' });
+  tg_('setMyDescription', { description: '📒 Oldi-Berdi — qarz daftari ilovasi.\n\nKimga qancha berdingiz, kimdan qancha oldingiz — hammasi bir joyda, internetda saqlanadi.\n\n📱 Telefon (Android, iPhone)\n💻 Kompyuter (Windows, Mac)\n🌐 Sayt: oldiberdi.uz\n\nBot orqali Premium olasiz, hisobingizni ko\'rasiz va eslatmalar olasiz.' });
   tg_('setChatMenuButton', { menu_button: { type: 'web_app', text: 'Ilova', web_app: { url: appUrl_() } } });
   const adm = adminTg_();
   if (adm) tg_('setMyCommands', { scope: { type: 'chat', chat_id: Number(adm) }, commands: [{ command: 'admin', description: '🛠 Admin panel' }, { command: 'start', description: 'Boshlash' }, { command: 'stat', description: 'Statistika' }, { command: 'tarif', description: 'Premium narxlari' }, { command: 'holat', description: 'Mening hisobim' }] });
