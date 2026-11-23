@@ -226,6 +226,7 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
 @keyframes fi{from{opacity:0}}
 /* ============ katta ekran (kompyuter) ============ */
 .side-logo,.fab-l,.side-foot{display:none}
+.main{touch-action:pan-y pinch-zoom}
 .auth-top{position:relative}
 .site-back{position:absolute;top:14px;left:12px;display:inline-flex;align-items:center;gap:6px;color:#fff;opacity:.85;font-weight:700;font-size:13px;text-decoration:none;padding:6px 8px;border-radius:10px}
 .auth-top:has(.site-back){padding-top:56px}
@@ -571,8 +572,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=37;
-const WHATS_NEW=["Kompyuterda chap menyuda «Chiqish» va «Bosh sahifa» tugmalari","Kirish sahifasidan asosiy saytga qaytish mumkin"];
+const APP_VERSION=38;
+const WHATS_NEW=["Telegram kabi: barmoq bilan chapga-o'ngga surib Asosiy, Odamlar, Tarix va Profil o'rtasida o'ting"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1105,6 +1106,31 @@ function render(){
  // restore focus on search inputs
  if(render._focus){const el=document.getElementById(render._focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}render._focus=null}
 }
+/* ---------- chapga/o'ngga surib bo'limlar orasida o'tish (Telegram kabi) ---------- */
+const SW_TABS=['home','people','history','profile'];
+const SW={on:false,x0:0,y0:0,t0:0,dx:0,lock:null,el:null};
+function swOk(e){
+ if(!S.acc||S.locked||S.setup||sheets.length||e.touches.length!==1||!SW_TABS.includes(S.view))return false;
+ if(matchMedia('(min-width:1000px)').matches)return false;
+ const x=e.touches[0].clientX;if(x<18||x>innerWidth-18)return false;          // ekran chetidagi tizim imo-ishorasiga xalal bermasin
+ for(let el=e.target;el&&el!==document.body;el=el.parentElement){
+  if(el.matches&&el.matches('input,textarea,select,[data-noswipe]'))return false;
+  if(el.scrollWidth>el.clientWidth+4){const ox=getComputedStyle(el).overflowX;if(ox==='auto'||ox==='scroll')return false}}
+ return true}
+function swReset(el,anim){if(!el)return;el.style.transition=anim?'transform .22s cubic-bezier(.2,.8,.2,1),opacity .22s':'none';el.style.transform='';el.style.opacity=''}
+document.addEventListener('touchstart',e=>{SW.on=swOk(e);if(!SW.on)return;SW.x0=e.touches[0].clientX;SW.y0=e.touches[0].clientY;SW.t0=Date.now();SW.dx=0;SW.lock=null;SW.el=document.querySelector('.main')},{passive:true});
+document.addEventListener('touchmove',e=>{if(!SW.on||!SW.el)return;const dx=e.touches[0].clientX-SW.x0,dy=e.touches[0].clientY-SW.y0;
+ if(SW.lock===null){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;SW.lock=Math.abs(dx)>Math.abs(dy)*1.3?'x':'y';if(SW.lock==='x'){PTR.y0=null;ptrHide()}}
+ if(SW.lock!=='x')return;const i=SW_TABS.indexOf(S.view);let d=dx;if((i===0&&dx>0)||(i===SW_TABS.length-1&&dx<0))d=dx*.25;
+ SW.dx=dx;SW.el.style.transition='none';SW.el.style.transform=`translateX(${d*.45}px)`;SW.el.style.opacity=String(1-Math.min(Math.abs(d)/innerWidth*.7,.35))},{passive:true});
+document.addEventListener('touchend',()=>{if(!SW.on)return;SW.on=false;const el=SW.el;if(SW.lock!=='x'){return}
+ const i=SW_TABS.indexOf(S.view),dir=SW.dx<0?1:-1,j=i+dir,fast=Math.abs(SW.dx)/Math.max(1,Date.now()-SW.t0)>.45;
+ if(j<0||j>=SW_TABS.length||!(Math.abs(SW.dx)>innerWidth*.22||(fast&&Math.abs(SW.dx)>45))){swReset(el,true);return}
+ el.style.transition='transform .15s ease-in,opacity .15s';el.style.transform=`translateX(${-dir*70}px)`;el.style.opacity='0';
+ try{navigator.vibrate&&navigator.vibrate(8)}catch(e){}
+ setTimeout(()=>{closeAllSheets();S.view=SW_TABS[j];render();window.scrollTo(0,0);const m=document.querySelector('.main');if(!m)return;
+  m.style.transition='none';m.style.transform=`translateX(${dir*70}px)`;m.style.opacity='0';void m.offsetWidth;swReset(m,true)},140)},{passive:true});
+document.addEventListener('touchcancel',()=>{if(SW.on){SW.on=false;swReset(SW.el,true)}},{passive:true});
 function nav(){const b=(v,ic,l)=>`<button data-act="go" data-v="${v}" class="${S.view===v||(v==='people'&&S.view==='person')||(v==='history'&&S.view==='report')||(v==='home'&&['lists','list','toyona','toy','loans','groups','group','kids','kid'].includes(S.view))?'on':''}"><span class="ni">${I[ic]}</span>${l}</button>`;
  return `<nav class="nav"><div class="nav-in"><div class="side-logo">${LOGO}<b>Oldi<span>-</span>Berdi</b></div>${b('home','home','Asosiy')}${b('people','users','Odamlar')}<div class="fab-w"><button class="fab" data-act="newTx" aria-label="Yangi yozuv">${I.plus}<span class="fab-l">Yangi yozuv</span></button></div>${b('history','clock','Tarix')}${b('profile','user','Profil')}<div class="side-foot"><a class="side-link" href="${esc(SITE_URL)}" target="_blank" rel="noopener"><span class="ni">${I.globe}</span>Bosh sahifa (sayt)</a><button class="side-link out" data-act="logout"><span class="ni">${I.logout}</span>Chiqish</button></div></div></nav>`}
 function loadingNote(){if(S.stale)return `<div class="banner">Ma'lumotlarga hali ulanib bo'lmadi — internetni tekshiring. Ko'rsatilganlar eskirgan bo'lishi mumkin.</div>`;if(!S.loaded.p||!S.loaded.t)return `<div class="empty"><div class="spin" style="border-color:var(--line);border-top-color:var(--brand)"></div><p>Yuklanmoqda…</p></div>`;return ''}
