@@ -520,7 +520,7 @@ function userHtml(u,pays,loading){
   if(T==='info')body=`<div class="kv">
    <div><small>Ro'yxatdan o'tgan</small><b>${fdt(u.createdAt)}</b></div><div><small>Oxirgi faollik</small><b>${ago(u.last)}</b></div>
    <div><small>Odamlar</small><b class="num">${u.people}</b></div><div><small>Qarz yozuvlari</small><b class="num">${u.tx}</b></div>
-   ${loading?'':`<div><small>Bozorlik ro'yxatlari</small><b class="num">${u.lists}</b></div><div><small>Farzandlar</small><b class="num">${u.kids}</b></div><div><small>Qurilmalar</small><b class="num">${u.sessions}</b></div><div><small>Valyuta · PIN</small><b>${esc(u.currency||"so'm")} · ${u.pin?'bor':"yo'q"}</b></div>`}
+   ${loading?'':`<div><small>Bozorlik ro'yxatlari</small><b class="num">${u.lists}</b></div><div><small>Qurilmalar</small><b class="num">${u.sessions}</b></div><div><small>Valyuta · PIN</small><b>${esc(u.currency||"so'm")} · ${u.pin?'bor':"yo'q"}</b></div>`}
   </div>${docs?`<p class="hint" style="margin:10px 2px 0">Boshqa bo'limlar: ${esc(docs)}</p>`:''}`;
   if(T==='sec')body=`<div class="card list">
    <button class="att" data-upass="1" ${dis}><span class="ai" style="background:var(--warn-bg);color:var(--warn)">${ic('key')}</span><div class="mid"><div class="t1">Parolni tiklash</div><div class="t2" style="white-space:normal">Yangi 6 xonali parol, PIN o'chadi${u.tg?', parol botda mijozga boradi':''}</div></div>${ic('chev','i chev')}</button>
@@ -545,7 +545,7 @@ function pickUser(){
 
 /* ---------- Sozlamalar ---------- */
 const FEATS=[
- ['main',"Bo'limlar","Ilovadagi xizmatlar: yashirish, bepul yoki Premium qilish",[['shop','cart',"Bozorlik ro'yxati","Qog'ozsiz bozorlik",'var(--teal)','var(--teal-bg)'],['yigin','coin',"Pul yig'ish","Sovg'a, yordam uchun",'var(--warn)','var(--warn-bg)'],['kids','child','Farzandlar xazinasi','Bola kabineti va PIN','var(--neg)','var(--neg-bg)'],['toy','ring',"To'yona daftari",'Kim qancha olib keldi','var(--plum)','var(--plum-bg)'],['loan','bank','Kreditlar',"To'lov kalendari",'var(--sky)','var(--sky-bg)'],['gap','group','Gaplar',"Navbat va to'lovlar",'var(--brand)','var(--pos-bg)'],['biz','shop','Biznes tarif',"Do'konlar uchun",'var(--plum)','var(--plum-bg)']]],
+ ['main',"Bo'limlar","Ilovadagi xizmatlar: yashirish, bepul yoki Premium qilish",[['shop','cart',"Bozorlik ro'yxati","Qog'ozsiz bozorlik",'var(--teal)','var(--teal-bg)'],['yigin','coin',"Pul yig'ish","Sovg'a, yordam uchun",'var(--warn)','var(--warn-bg)'],['toy','ring',"To'yona daftari",'Kim qancha olib keldi','var(--plum)','var(--plum-bg)'],['loan','bank','Kreditlar',"To'lov kalendari",'var(--sky)','var(--sky-bg)'],['gap','group','Gaplar',"Navbat va to'lovlar",'var(--brand)','var(--pos-bg)'],['biz','shop','Biznes tarif',"Do'konlar uchun",'var(--plum)','var(--plum-bg)']]],
  ['extra','Premium imkoniyatlar',"Bepul qilsangiz — hamma foydalanadi",[['report','chart','Oylik hisobot','','var(--plum)','var(--plum-bg)'],['excel','sheet','Excel fayl','','var(--brand)','var(--pos-bg)'],['remind','bell','SMS / Telegram eslatma','','var(--warn)','var(--warn-bg)'],['trust','star','Ishonch reytingi','','var(--warn)','var(--warn-bg)'],['usd','usd','Dollar va kurs','','var(--brand)','var(--pos-bg)'],['plan','cal',"Bo'lib to'lash",'','var(--sky)','var(--sky-bg)'],['confirm','check2','Ikki tomonlama tasdiq','','var(--teal)','var(--teal-bg)'],['ru','globe','Rus tili','','var(--sky)','var(--sky-bg)']]]];
 const MODES={biz:[['off',"O'chiq"],['prem','Sotuvda']]};
 const MODES3=[['off',"O'chiq"],['free','Bepul'],['prem','Premium']],MODES2=[['free','Bepul'],['prem','Premium']];
