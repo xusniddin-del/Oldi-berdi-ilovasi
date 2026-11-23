@@ -27,7 +27,7 @@
  */
 
 const TABLES = {
-  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge'],
+  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge', 'mode', 'bizTrialEnd'],
   Sessions: ['token', 'acc', 'createdAt'],
   People:   ['id', 'acc', 'name', 'phone', 'note', 'photo', 'log', 'createdAt', 'updatedAt'],
   Tx:       ['id', 'acc', 'pid', 'type', 'amount', 'date', 'due', 'note', 'photo', 'edits', 'createdAt', 'updatedAt', 'cur', 'plan'],
@@ -36,16 +36,15 @@ const TABLES = {
   Reminders: ['key', 'acc', 'pid', 'txId', 'idx', 'due', 'amount', 'status', 'markDay', 'chat', 'msg', 'text', 'updatedAt'],
   Payments: ['bill', 'acc', 'phone', 'tarif', 'days', 'amount', 'status', 'createdAt', 'paidAt', 'until'],
   Lists:    ['id', 'acc', 'name', 'items', 'createdAt', 'updatedAt'],
-  Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt'],
-  Kids:     ['id', 'acc', 'name', 'photo', 'pinSalt', 'pinHash', 'data', 'createdAt', 'updatedAt']
+  Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt']
 };
 const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true };
 /* Docs turlari va ular uchun kerakli tarif: '' — bepul, 'prem' — Premium, 'biz' — Biznes */
 const DOC_KINDS = { toy: 'prem', toyg: 'prem', loan: 'prem', gap: 'prem', yigin: '', biz: 'biz' };
 /* ---------- imkoniyatlar: admin paneldan boshqariladi ----------
  * off — ilovada ko'rinmaydi (ma'lumotlar o'chmaydi), free — hammaga bepul, prem — faqat Premium */
-const FEAT_DEF = { shop: 'prem', toy: 'off', loan: 'off', gap: 'off', yigin: 'free', kids: 'prem', report: 'prem', excel: 'prem', remind: 'prem', trust: 'prem', usd: 'prem', plan: 'prem', confirm: 'prem', ru: 'prem', biz: 'prem' };
-const FEAT_MODES = { shop: ['off', 'free', 'prem'], toy: ['off', 'free', 'prem'], loan: ['off', 'free', 'prem'], gap: ['off', 'free', 'prem'], yigin: ['off', 'free', 'prem'], kids: ['off', 'free', 'prem'], biz: ['off', 'prem'] };
+const FEAT_DEF = { shop: 'prem', toy: 'off', loan: 'off', gap: 'off', yigin: 'free', report: 'prem', excel: 'prem', remind: 'prem', trust: 'prem', usd: 'prem', plan: 'prem', confirm: 'prem', ru: 'prem', biz: 'prem' };
+const FEAT_MODES = { shop: ['off', 'free', 'prem'], toy: ['off', 'free', 'prem'], loan: ['off', 'free', 'prem'], gap: ['off', 'free', 'prem'], yigin: ['off', 'free', 'prem'], biz: ['off', 'prem'] };
 const DOC_FEAT_ = { toy: 'toy', toyg: 'toy', loan: 'loan', gap: 'gap', yigin: 'yigin', biz: 'biz' };
 let FEAT_MEMO_ = null;
 function feat_() {
@@ -60,7 +59,7 @@ function featOk_(a, f) { return feat_()[f] === 'free' || premium_(a).on; }
 const PREM_BADGES_ = ['green', 'gold', 'gem', 'crown'];
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, kidSave: 1, kidDelete: 1, kidTx: 1, kidLogin: 1, kidAddTx: 1, kidGoals: 1, kidProfile: 1, kidLogout: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -201,22 +200,31 @@ function loginFail_(phone) {
 function normPhone_(p) { let d = String(p || '').replace(/\D/g, ''); if (d.length === 9) d = '998' + d; return d; }
 function str_(v, max) { return String(v === undefined || v === null ? '' : v).slice(0, max || 500); }
 function pub_(a) {
-  return { id: a.id, name: a.name, phone: a.phone, photo: a.photo, currency: a.currency || "so'm", pinSalt: a.pinSalt, pinHash: a.pinHash, createdAt: a.createdAt, premium: premium_(a), tg: !!a.tg, badge: a.badge || '' };
+  return { id: a.id, name: a.name, phone: a.phone, photo: a.photo, currency: a.currency || "so'm", pinSalt: a.pinSalt, pinHash: a.pinHash, createdAt: a.createdAt, premium: premium_(a), tg: !!a.tg, badge: a.badge || '', mode: mode_(a), bizTrialUsed: !!a.bizTrialEnd };
 }
 /* Biznes tarif muddati: '' — yo'q, 'ha' — muddatsiz, aks holda sana */
 function bizUntil_(a) {
   if (a.phone && a.phone === adminPhone_()) return 'ha';
   const v = String(a.biz || '').trim().toLowerCase();
-  if (!v || v === '0' || v === "yo'q" || v === 'no') return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v >= today_() ? v : '';
-  return 'ha';
+  let paid = '';
+  if (v && v !== '0' && v !== "yo'q" && v !== 'no') {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return 'ha';
+    if (v >= today_()) paid = v;
+  }
+  const t = bizTrial_(a);
+  return t && (!paid || t > paid) ? t : paid;
 }
+/* Biznes yo'lini tanlaganda bir marta beriladigan 30 kunlik sinov */
+const BIZ_TRIAL_DAYS = 30;
+function bizTrial_(a) { const t = String(a.bizTrialEnd || ''); return mode_(a) === 'biz' && /^\d{4}-\d{2}-\d{2}$/.test(t) && t >= today_() ? t : ''; }
+function mode_(a) { const m = String(a.mode || ''); return m === 'std' || m === 'biz' ? m : ''; }
 /* Biznes faol bo'lsa, Premium ham faol hisoblanadi */
 function premium_(a) {
   const p = premiumBase_(a), b = bizUntil_(a);
   if (!b) return p;
   const unlimited = p.on && p.until === '' && !p.trial;
   p.on = true; p.biz = true; p.bizUntil = b === 'ha' ? '' : b;
+  if (b !== 'ha' && b === bizTrial_(a) && !(String(a.biz || '') >= b)) p.bizTrial = true;
   delete p.trial; delete p.canTrial;
   if (b === 'ha' || unlimited) p.until = ''; else if (!p.until || p.until < b) p.until = b;
   return p;
@@ -286,10 +294,9 @@ function data_(accId) {
     tx: all_('Tx').filter(function (t) { return t.acc === accId; }).map(clean_),
     lists: all_('Lists').filter(function (l) { return l.acc === accId; }).map(clean_),
     docs: all_('Docs').filter(function (x) { return x.acc === accId; }).map(clean_),
-    kids: all_('Kids').filter(function (k) { return k.acc === accId; }).map(kidPub_),
     confirms: confirms,
     rate: rate_(),
-    api: 11,
+    api: 12,
     feat: feat_(),
     marks: marks_(accId),
     prices: prices_(),
@@ -396,40 +403,6 @@ function payVerify_(billId) {
 }
 
 /* ---------- farzandlar (bola akkauntlari) ---------- */
-const KID_MAX = 6, KID_TX_MAX = 300, KID_GOALS_MAX = 10;
-function kidData_(k) { const d = k.data && typeof k.data === 'object' && !Array.isArray(k.data) ? k.data : {}; return { tx: Array.isArray(d.tx) ? d.tx : [], goals: Array.isArray(d.goals) ? d.goals : [] }; }
-function kidBal_(d) { return d.tx.reduce(function (z, t) { return z + (t.t === 'out' ? -1 : 1) * (Number(t.a) || 0); }, 0); }
-function kidPub_(k) { const d = kidData_(k); return { id: k.id, name: k.name, photo: k.photo, data: d, balance: kidBal_(d), createdAt: k.createdAt, updatedAt: k.updatedAt }; }
-function kidAuth_(r) {
-  const t = String(r.token || '');
-  const s = t && all_('Sessions').filter(function (x) { return x.token === t; })[0];
-  if (!s || String(s.acc).indexOf('kid:') !== 0) throw new Error('AUTH');
-  const k = all_('Kids').filter(function (x) { return 'kid:' + x.id === s.acc; })[0];
-  if (!k) throw new Error('AUTH');
-  return k;
-}
-function kidOfParent_(a, id) {
-  const k = all_('Kids').filter(function (x) { return x.id === String(id || '') && x.acc === a.id; })[0];
-  if (!k) throw new Error('Farzand topilmadi');
-  return k;
-}
-function kidPinOk_(pin) { return /^\d{4}$/.test(String(pin || '')); }
-function kidPushTx_(k, t, a, note, by) {
-  const amt = Math.round((Number(a) || 0) * 100) / 100;
-  if (!(amt > 0) || amt > 100000000) throw new Error('Summani to\'g\'ri kiriting');
-  const d = kidData_(k);
-  if (t === 'out' && amt > kidBal_(d) + 0.001) throw new Error("Xazinada buncha pul yo'q");
-  d.tx.push({ id: uid_(), t: t === 'out' ? 'out' : 'in', a: amt, n: str_(note, 60).trim(), by: by, at: Date.now() });
-  if (d.tx.length > KID_TX_MAX) {   // eski yozuvlarni bitta qoldiq yozuviga yig'amiz
-    const old = d.tx.splice(0, d.tx.length - KID_TX_MAX + 1);
-    const b = kidBal_({ tx: old });
-    if (b !== 0) d.tx.unshift({ id: uid_(), t: b > 0 ? 'in' : 'out', a: Math.abs(b), n: 'Oldingi qoldiq', by: 'sys', at: old[old.length - 1].at });
-  }
-  k.data = d; k.updatedAt = Date.now();
-  put_('Kids', k, k._row);
-}
-
-/* ---------- API ---------- */
 const API = {
   register: function (r) {
     const name = str_(r.name, 80).trim(), phone = normPhone_(r.phone), pass = String(r.pass || '');
@@ -442,7 +415,7 @@ const API = {
     put_('Accounts', a);
     try { notifyAdmin_('🆕 Yangi foydalanuvchi: <b>' + h_(name) + '</b> (+' + phone + ')'); } catch (e) {}
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
   },
   login: function (r) {
     const phone = normPhone_(r.phone);
@@ -452,7 +425,7 @@ const API = {
     if (!checkPw_(a, String(r.pass || ''))) { loginFail_(phone); throw new Error("Parol noto'g'ri"); }
     CacheService.getScriptCache().remove('lf_' + phone);
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
   },
   logout: function (r) {
     const rows = all_('Sessions').filter(function (x) { return x.token === String(r.token || ''); }).map(function (x) { return x._row; });
@@ -461,7 +434,7 @@ const API = {
   },
   sync: function (r) {
     const a = auth_(r), d = data_(a.id);
-    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, kids: d.kids, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
+    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
   },
   saveProfile: function (r) {
     const a = auth_(r);
@@ -489,6 +462,18 @@ const API = {
   },
   startTrial: function (r) { const a = auth_(r); startTrial_(a); return { acc: pub_(a) }; },
   /* tasdiqlash belgisi: akkauntda saqlanadi — telefon, sayt va Telegram Mini App'da bir xil ko'rinadi */
+  /* yo'nalish: std — shaxsiy, biz — do'kon. Biznes birinchi marta tanlanganda 30 kun sinov o'zi yoqiladi */
+  setMode: function (r) {
+    const a = auth_(r), m = String(r.mode || '');
+    if (m !== 'std' && m !== 'biz') throw new Error("Yo'nalish noto'g'ri");
+    const was = mode_(a);
+    a.mode = m;
+    let trial = false;
+    if (m === 'biz' && !a.bizTrialEnd && !bizUntil_(a)) { a.bizTrialEnd = addDays_(today_(), BIZ_TRIAL_DAYS - 1); trial = true; }
+    put_('Accounts', a, a._row);
+    if (was !== m) try { notifyAdmin_((m === 'biz' ? '🏪 Biznes' : '👤 Standart') + " yo'nalishi: <b>" + h_(a.name) + '</b> (+' + a.phone + ')' + (trial ? ' · 30 kun sinov' : '')); } catch (e) {}
+    return { acc: pub_(a) };
+  },
   setBadge: function (r) {
     const a = auth_(r), b = str_(r.badge, 10);
     if (!premium_(a).on) throw new Error('Belgini tanlash Premium uchun');
@@ -599,84 +584,6 @@ const API = {
   deleteDoc: function (r) {
     const a = auth_(r), id = String(r.id || '');
     delRows_('Docs', all_('Docs').filter(function (x) { return x.id === id && x.acc === a.id; }).map(function (x) { return x._row; }));
-    return {};
-  },
-  /* ota-ona: farzand qo'shish yoki o'zgartirish (ism, 4 xonali PIN) */
-  kidSave: function (r) {
-    const a = auth_(r), id = String(r.id || ''), name = str_(r.name, 40).trim(), pin = String(r.pin || '');
-    if (name.length < 1) throw new Error('Farzandingiz ismini yozing');
-    const mine = all_('Kids').filter(function (x) { return x.acc === a.id; });
-    let k = id ? mine.filter(function (x) { return x.id === id; })[0] : null;
-    if (id && !k) throw new Error('Farzand topilmadi');
-    if (!k) {
-      if (!featOk_(a, 'kids')) throw new Error('Bu Premium funksiya');
-      if (mine.length >= KID_MAX) throw new Error("Ko'pi bilan " + KID_MAX + " ta farzand qo'shish mumkin");
-      if (!kidPinOk_(pin)) throw new Error('PIN kod 4 ta raqamdan iborat bo\'lsin');
-    }
-    if (pin) {
-      if (!kidPinOk_(pin)) throw new Error('PIN kod 4 ta raqamdan iborat bo\'lsin');
-      if (mine.some(function (x) { return (!k || x.id !== k.id) && pwHashV2_(x.pinSalt, pin) === x.pinHash; })) throw new Error('Bu PIN boshqa farzandingizda bor. Boshqasini tanlang');
-    }
-    const now = Date.now();
-    if (!k) k = { id: uid_(), acc: a.id, name: name, photo: '', pinSalt: '', pinHash: '', data: { tx: [], goals: [] }, createdAt: now, updatedAt: now };
-    k.name = name;
-    if (pin) { k.pinSalt = uid_(); k.pinHash = pwHashV2_(k.pinSalt, pin); }
-    if (r.photo !== undefined) k.photo = photo_(a.id, r.photo);
-    k.updatedAt = now;
-    put_('Kids', k, k._row || 0);
-    if (pin && k._row) delRows_('Sessions', all_('Sessions').filter(function (x) { return x.acc === 'kid:' + k.id; }).map(function (x) { return x._row; }));
-    return { kid: kidPub_(k) };
-  },
-  kidDelete: function (r) {
-    const a = auth_(r), k = kidOfParent_(a, r.id);
-    delRows_('Sessions', all_('Sessions').filter(function (x) { return x.acc === 'kid:' + k.id; }).map(function (x) { return x._row; }));
-    delRows_('Kids', [k._row]);
-    return {};
-  },
-  /* ota-ona farzandiga pul berdi yoki oldi */
-  kidTx: function (r) {
-    const a = auth_(r), k = kidOfParent_(a, r.id);
-    kidPushTx_(k, r.t, r.a, r.n, 'parent');
-    return { kid: kidPub_(k) };
-  },
-  /* bola: ota-onasining telefon raqami va o'z PIN kodi bilan kiradi */
-  kidLogin: function (r) {
-    const phone = normPhone_(r.phone), pin = String(r.pin || '');
-    if (!kidPinOk_(pin)) throw new Error('PIN kod 4 ta raqamdan iborat');
-    const a = all_('Accounts').filter(function (x) { return x.phone === phone; })[0];
-    if (!a) throw new Error("Bu raqam ro'yxatdan o'tmagan");
-    const g = 'kf_' + phone, c = CacheService.getScriptCache();
-    if (Number(c.get(g) || 0) >= LOGIN_MAX_FAILS) throw new Error("Juda ko'p xato urinish. 15 daqiqadan keyin qayta urinib ko'ring.");
-    const k = all_('Kids').filter(function (x) { return x.acc === a.id && pwHashV2_(x.pinSalt, pin) === x.pinHash; })[0];
-    if (!k) { c.put(g, String(Number(c.get(g) || 0) + 1), LOGIN_BLOCK_SEC); throw new Error("PIN kod noto'g'ri"); }
-    c.remove(g);
-    return { kid: kidPub_(k), token: newSession_('kid:' + k.id) };
-  },
-  kidSync: function (r) { return { kid: kidPub_(kidAuth_(r)) }; },
-  kidAddTx: function (r) { const k = kidAuth_(r); kidPushTx_(k, r.t, r.a, r.n, 'kid'); return { kid: kidPub_(k) }; },
-  kidGoals: function (r) {
-    const k = kidAuth_(r), d = kidData_(k);
-    d.goals = (Array.isArray(r.goals) ? r.goals : []).slice(0, KID_GOALS_MAX).map(function (x) {
-      x = x || {}; return { id: str_(x.id, 40) || uid_(), n: str_(x.n, 40).trim(), target: Math.max(0, Math.round(Number(x.target) || 0)) };
-    }).filter(function (x) { return x.n && x.target > 0; });
-    k.data = d; k.updatedAt = Date.now(); put_('Kids', k, k._row);
-    return { kid: kidPub_(k) };
-  },
-  kidProfile: function (r) {
-    const k = kidAuth_(r);
-    if (r.name !== undefined) { const n = str_(r.name, 40).trim(); if (!n) throw new Error('Ismingizni yozing'); k.name = n; }
-    if (r.photo !== undefined) k.photo = photo_(k.acc, r.photo);
-    k.updatedAt = Date.now(); put_('Kids', k, k._row);
-    return { kid: kidPub_(k) };
-  },
-  kidPhoto: function (r) {
-    const k = kidAuth_(r), id = String(r.id || '');
-    if (k.photo !== 'd:' + id) throw new Error("Ruxsat yo'q");
-    const b = DriveApp.getFileById(id).getBlob();
-    return { data: 'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(b.getBytes()) };
-  },
-  kidLogout: function (r) {
-    delRows_('Sessions', all_('Sessions').filter(function (x) { return x.token === String(r.token || '') && String(x.acc).indexOf('kid:') === 0; }).map(function (x) { return x._row; }));
     return {};
   },
   /* two-sided confirmation: the other person opens a link and confirms the record */
@@ -984,7 +891,7 @@ function botStatus_(chat, a) {
 }
 
 const SITE_ = 'https://oldiberdi.uz/';
-const PREM_LBL_ = { shop: '🛒 Bozorlik ro\'yxati', toy: '💍 To\'yona daftari', loan: '🏦 Kredit va nasiyalar kalendari', gap: '👥 Gap boshqaruvi', yigin: '💰 Pul yig\'ish', kids: '👧 Farzandlar xazinasi', report: '📊 Oylik hisobot va grafiklar', excel: '📥 Excel fayl', remind: '💬 SMS eslatmalar', trust: '⭐ Ishonch reytingi', usd: '💵 Dollar va MB kursi', plan: '🗓 Bo\'lib to\'lash', confirm: '🤝 Ikki tomonlama tasdiq', ru: '🇷🇺 Rus tili' };
+const PREM_LBL_ = { shop: '🛒 Bozorlik ro\'yxati', toy: '💍 To\'yona daftari', loan: '🏦 Kredit va nasiyalar kalendari', gap: '👥 Gap boshqaruvi', yigin: '💰 Pul yig\'ish', report: '📊 Oylik hisobot va grafiklar', excel: '📥 Excel fayl', remind: '💬 SMS eslatmalar', trust: '⭐ Ishonch reytingi', usd: '💵 Dollar va MB kursi', plan: '🗓 Bo\'lib to\'lash', confirm: '🤝 Ikki tomonlama tasdiq', ru: '🇷🇺 Rus tili' };
 function premList_() { const f = feat_(); return Object.keys(PREM_LBL_).filter(function (k) { return f[k] === 'prem'; }).map(function (k) { return PREM_LBL_[k]; }); }
 function botAbout_(chat, a) {
   send_(chat, '📒 <b>Oldi-Berdi</b> — qarz daftari ilovasi\n\nKimga qancha qarz berdingiz, kimdan qancha oldingiz — hammasi bir joyda. Ma\'lumotlar internetda saqlanadi: telefon, kompyuter yoki saytdan — raqam va parol bilan kirasiz, hammasi bir xil ko\'rinadi.\n\n' + '🌐 <b>Sayt:</b> <a href="' + SITE_ + '">oldiberdi.uz</a>\n\n' + '<b>Bepul:</b>\n✅ Qarz berdim / oldim / qaytardi\n✅ Rasm va izoh\n✅ Muddat nazorati\n✅ Kontaktlardan tanlash\n✅ PIN va barmoq izi\n\n' + '<b>Premium:</b> ' + premList_().map(function (x) { return x.replace(/^\S+\s/, ''); }).join(', ') + '.\n\n' + '<b>Qayerda ishlaydi:</b>\n🤖 Android — «Android uchun yuklash» tugmasi\n🍏 iPhone — Safari\'da oldiberdi.uz → «Kirish», keyin «Ulashish» → «Bosh ekranga qo\'shish»\n💻 Kompyuter — Windows (7, 8, 10, 11) va Mac uchun dastur saytda: «Kompyuterga yuklash»\n📱 Telegram — pastdagi «Ilovani ochish» tugmasi', { disable_web_page_preview: true, reply_markup: { inline_keyboard: [[btnApp_()], [{ text: '🌐 Sayt — oldiberdi.uz', url: SITE_ }], [{ text: '🤖 Android uchun yuklash', url: appUrl_() + 'Oldi-Berdi.apk' }, { text: '💻 Kompyuterga yuklash', url: SITE_ + '#qurilmalar' }]] } });
@@ -1327,7 +1234,7 @@ Object.assign(API, {
     const docs = {}; all_('Docs').forEach(function (d) { if (d.acc === a.id) docs[d.kind] = (docs[d.kind] || 0) + 1; });
     return { user: Object.assign(admRow_(a, c), {
       premiumRaw: String(a.premium || ''), bizRaw: String(a.biz || ''), trialEnd: String(a.trialEnd || ''), trial: !!p.trial, trialUsed: !!p.trialUsed,
-      lists: all_('Lists').filter(function (x) { return x.acc === a.id; }).length, kids: all_('Kids').filter(function (x) { return x.acc === a.id; }).length, docs: docs,
+      lists: all_('Lists').filter(function (x) { return x.acc === a.id; }).length, docs: docs,
       sessions: all_('Sessions').filter(function (x) { return x.acc === a.id; }).length, pin: !!a.pinHash, currency: a.currency || "so'm" }),
       payments: all_('Payments').filter(function (x) { return x.acc === a.id; }).map(clean_).sort(function (x, y) { return (Number(y.createdAt) || 0) - (Number(x.createdAt) || 0); }) };
   },
