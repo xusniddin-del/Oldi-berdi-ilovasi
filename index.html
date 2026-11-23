@@ -251,6 +251,20 @@ input[type=date].inp{-webkit-appearance:none;appearance:none;min-height:50px;pad
  .auth-card{width:100%;max-width:440px;padding:28px;margin-bottom:22px}
  .auth .feat{width:100%;max-width:440px;margin:0}
  #app:has(.nav){max-width:none;padding-left:252px}
+ #app:has(.kid){max-width:none}
+ .kid .kid-top{border-radius:0 0 40px 40px;padding:40px 28px 44px}
+ .kid .kid-in{max-width:1060px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:32px;align-items:center}
+ .kid .kid-in .kid-hi{flex-direction:row-reverse;justify-content:flex-end;gap:20px}
+ .kid .kid-in .kid-ava,.kid-in .kid-ava .ava{width:84px!important;height:84px!important;min-width:84px}
+ .kid .kid-hi span{font-size:18px}.kid .kid-hi b{font-size:40px;display:flex;align-items:center}.kid .kid-hi b .vbadge{width:30px;height:30px;margin-left:8px}
+ .kid .kid-in .kid-chest{margin-top:0;padding:20px 26px}
+ .kid .kid-chest b{font-size:40px}
+ .kid .kid-body{max-width:1060px;margin:0 auto;padding:0 28px}
+ .kid .kid-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:32px;align-items:start}
+ .kid .kid-r .sec-head{margin-top:24px}
+ .kid .kid-btns{margin-top:24px}
+ .kid .kid-btn{flex-direction:row;justify-content:center;gap:14px;padding:18px;cursor:pointer}
+ .kid .kid-btn:hover{border-color:var(--brand,#13894a)}
  #app:has(.auth){max-width:none}
  .main{max-width:1060px;margin:0 auto;padding:0 28px}
  .main .pad{padding-left:0;padding-right:0}
@@ -625,8 +639,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=42;
-const WHATS_NEW=["Tanlagan tasdiqlash belgingiz endi telefon, sayt va Telegram ilovasida bir xil — bir joyda almashtirsangiz, hammasida o'zgaradi","Tasdiqlash belgisi: ismingiz yonida endi belgi turadi","Premium foydalanuvchilar 4 xil belgidan birini tanlaydi: Yashil, Oltin, Olmos, Toj (Profil → Tasdiqlash belgisi)","Farzandlarga — «Yulduzcha» belgisi"];
+const APP_VERSION=43;
+const WHATS_NEW=["Farzand sahifasi kompyuter ekraniga moslashtirildi","Tanlagan tasdiqlash belgingiz endi telefon, sayt va Telegram ilovasida bir xil — bir joyda almashtirsangiz, hammasida o'zgaradi","Tasdiqlash belgisi: ismingiz yonida endi belgi turadi","Premium foydalanuvchilar 4 xil belgidan birini tanlaydi: Yashil, Oltin, Olmos, Toj (Profil → Tasdiqlash belgisi)","Farzandlarga — «Yulduzcha» belgisi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1618,13 +1632,13 @@ async function doKidLogin(f){const err=$('#k-err'),btn=$('#k-btn'),phone=normPho
  try{const j=await api('kidLogin',{phone,pin});K.token=j.token;K.kid=j.kid;kidStore();startKid({token:j.token,kid:j.kid});toast(`Salom, ${j.kid.name}!`)}
  catch(e){err.textContent=e.message;btn.disabled=false;btn.textContent='Xazinamga kirish'}}
 function renderKid(){const k=K.kid;if(!k)return;const gs=goalsOf(k);
- $('#app').innerHTML=`<div class="kid"><section class="kid-top pad"><div class="kid-hi"><div><span>Salom,</span><b data-notr>${esc(k.name)}!${badgeSvg('kid',24)}</b></div><button class="kid-ava" data-act="kMe" aria-label="Mening sahifam">${kidAvatar(k,58)}</button></div>
- <div class="kid-chest">${CHEST}<div><span>Xazinamda</span><b class="num">${fmt(k.balance)} <small>so'm</small></b></div></div></section>
- <div class="pad">
+ $('#app').innerHTML=`<div class="kid"><section class="kid-top pad"><div class="kid-in"><div class="kid-hi"><div><span>Salom,</span><b data-notr>${esc(k.name)}!${badgeSvg('kid',24)}</b></div><button class="kid-ava" data-act="kMe" aria-label="Mening sahifam">${kidAvatar(k,58)}</button></div>
+ <div class="kid-chest">${CHEST}<div><span>Xazinamda</span><b class="num">${fmt(k.balance)} <small>so'm</small></b></div></div></div></section>
+ <div class="pad kid-body"><div class="kid-cols"><div class="kid-l">
  <div class="kid-btns"><button class="kid-btn add" data-act="kAdd" data-v="in"><span>${I.plus}</span>Qo'shdim</button><button class="kid-btn out" data-act="kAdd" data-v="out"><span>${I.minus}</span>Sarfladim</button></div>
  <div class="sec-head"><h2>Orzularim</h2>${gs.length?`<button class="link" data-act="kGoal">+ Yangi orzu</button>`:''}</div>
  ${gs.length?gs.map(g=>goalHtml(g,'kGoal')).join(''):`<div class="card empty"><div class="ei">⭐</div><b>Orzuing bormi?</b>Velosiped, planshet yoki sovg'a — orzuingni qo'sh, xazinang to'lgan sari unga yaqinlashasan.<div><button class="btn btn-primary btn-sm" style="margin-top:12px" data-act="kGoal">+ Orzu qo'shish</button></div></div>`}
- <div class="sec-head"><h2>Tarix</h2></div>${kidTxHtml(k.data.tx.slice().reverse().slice(0,40),true)}
+ </div><div class="kid-r"><div class="sec-head"><h2>Tarix</h2></div>${kidTxHtml(k.data.tx.slice().reverse().slice(0,40),true)}</div></div>
  <div class="spacer"></div></div></div>`}
 function kAddSheet(t){const out=t==='out';
  openSheet(out?'Nimaga sarflading?':"Xazinaga qo'shish",`<form data-form="kTx" data-t="${out?'out':'in'}" autocomplete="off"><div class="field"><label for="kt-a">Qancha?</label><input class="inp num" id="kt-a" name="a" data-amount inputmode="decimal" placeholder="0" style="font-size:22px;font-weight:800"></div>
