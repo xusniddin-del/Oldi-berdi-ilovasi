@@ -27,7 +27,7 @@
  */
 
 const TABLES = {
-  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge', 'mode', 'bizTrialEnd'],
+  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge', 'mode', 'bizTrialEnd', 'lastSeen', 'streak', 'points', 'level', 'notifyOff', 'lastNotify', 'lang', 'push'],
   Sessions: ['token', 'acc', 'createdAt'],
   People:   ['id', 'acc', 'name', 'phone', 'note', 'photo', 'log', 'createdAt', 'updatedAt'],
   Tx:       ['id', 'acc', 'pid', 'type', 'amount', 'date', 'due', 'note', 'photo', 'edits', 'createdAt', 'updatedAt', 'cur', 'plan', 'items'],
@@ -38,7 +38,7 @@ const TABLES = {
   Lists:    ['id', 'acc', 'name', 'items', 'createdAt', 'updatedAt'],
   Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt']
 };
-const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true };
+const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true, lastNotify: true };
 /* Docs turlari va ular uchun kerakli tarif: '' — bepul, 'prem' — Premium, 'biz' — Biznes */
 const DOC_KINDS = { toy: 'prem', toyg: 'prem', loan: 'prem', gap: 'prem', yigin: '', biz: 'biz' };
 /* ---------- imkoniyatlar: admin paneldan boshqariladi ----------
@@ -274,6 +274,7 @@ function auth_(req) {
   if (!s) throw new Error('AUTH');
   const a = all_('Accounts').filter(function (x) { return x.id === s.acc; })[0];
   if (!a) throw new Error('AUTH');
+  try { seen_(a, req); } catch (e) { console.error(e); }
   return a;
 }
 function newSession_(accId) {
@@ -296,7 +297,7 @@ function data_(accId) {
     docs: all_('Docs').filter(function (x) { return x.acc === accId; }).map(clean_),
     confirms: confirms,
     rate: rate_(),
-    api: 13,
+    api: 14,
     feat: feat_(),
     marks: marks_(accId),
     prices: prices_(),
@@ -755,7 +756,7 @@ function adminChat_() { const a = all_('Accounts').filter(function (x) { return 
 /* admin Telegram ID: ADMIN_TG yoki ADMIN_PHONE akkauntiga ulangan Telegram */
 function adminTg_() { return String(prop_('ADMIN_TG') || adminChat_() || '').replace(/\D/g, ''); }
 function isAdminChat_(chat) { const t = adminTg_(); return !!t && String(chat) === t; }
-function notify_(accId, text, extra) { if (!prop_('TG_TOKEN')) return; const a = all_('Accounts').filter(function (x) { return x.id === accId; })[0]; if (a && a.tg) send_(a.tg, text, extra); }
+function notifyTg_(accId, text, extra) { if (!prop_('TG_TOKEN')) return; const a = all_('Accounts').filter(function (x) { return x.id === accId; })[0]; if (a && a.tg) send_(a.tg, text, extra); }
 function notifyAdmin_(text) { if (!prop_('TG_TOKEN')) return; const c = adminTg_(); if (c) send_(c, text); }
 
 function kbMain_() { return { keyboard: [[{ text: '💎 Premium' }, { text: '📊 Hisobim' }], [{ text: '📱 Ilovani ochish' }, { text: 'ℹ️ Ilova haqida' }], [{ text: '❓ Yordam' }]], resize_keyboard: true, is_persistent: true }; }
@@ -1011,6 +1012,7 @@ function botBroadcast_(chat, msgId, caption) {
 }
 
 /* Every morning (trigger): Premium expiry warnings and overdue-debt digest */
+function tgs_(a, text, extra) { if (a.tg) return send_(a.tg, text, extra); }
 function kunlik() {
   if (!prop_('TG_TOKEN')) return;
   const td = today_(), in3 = addDays_(td, 3), tm = addDays_(td, 1);
@@ -1018,30 +1020,284 @@ function kunlik() {
   try { migrate_(); migrate2_(); } catch (e) {}
   const yd = addDays_(td, -1);
   all_('Accounts').forEach(function (a) {
-    if (!a.tg) return;
+    if (!a.tg && String(a.push) !== '1') return;
+    if (pushFlush_(a)) put_('Accounts', a, a._row);
     const p = premium_(a);
-    if (p.trialUsed && p.trialEnd === yd && !p.until) { botTrialOver_(a.tg, a); return; }
+    if (p.trialUsed && p.trialEnd === yd && !p.until) { if (a.tg) botTrialOver_(a.tg, a); return; }
     if (p.on) try { instDaily_(a); } catch (e) { console.error(e); }
+    try {
+      const left = p.trial ? p.until : p.bizTrial ? p.bizUntil : '';
+      if (left && (left === in3 || left === tm)) {
+        const from = addDays_(left, -(p.trial ? TRIAL_DAYS : BIZ_TRIAL_DAYS)), v = { kun: left === in3 ? 3 : 1 };
+        if (p.bizTrial) { let g = 0; all_('Tx').forEach(function (t) { if (t.acc === a.id && t.type === 'got' && t.date >= from) g += Number(t.amount) || 0; }); v.summa = g; }
+        else { let n = 0; all_('People').forEach(function (q) { if (q.acc === a.id) (q.log || []).forEach(function (l) { if (l && l.at && /eslatma/i.test(l.t || '') && Utilities.formatDate(new Date(l.at), Session.getScriptTimeZone(), 'yyyy-MM-dd') >= from) n++; }); }); v.soni = n; }
+        notify_(a, 'trialEnd', v, { pushOnly: true });
+      }
+    } catch (e) { console.error(e); }
     if (p.trial) {
-      if (p.until === in3) send_(a.tg, '🎁 Premium sinov <b>3 kundan keyin</b> (' + fdate_(p.until) + ') tugaydi.\nKeyin ilova bepul rejimda ishlayveradi. Premium\'ni saqlab qolish uchun «💎 Premium» tugmasini bosing.', { reply_markup: kbMain_() });
-      else if (p.until === td) send_(a.tg, '⏰ Premium sinov <b>bugun</b> tugaydi. Ertadan ilova bepul rejimda ishlaydi.\nPremium\'ni davom ettirish uchun «💎 Premium» ni bosing.', { reply_markup: kbMain_() });
+      if (p.until === in3) tgs_(a, '🎁 Premium sinov <b>3 kundan keyin</b> (' + fdate_(p.until) + ') tugaydi.\nKeyin ilova bepul rejimda ishlayveradi. Premium\'ni saqlab qolish uchun «💎 Premium» tugmasini bosing.', { reply_markup: kbMain_() });
+      else if (p.until === td) tgs_(a, '⏰ Premium sinov <b>bugun</b> tugaydi. Ertadan ilova bepul rejimda ishlaydi.\nPremium\'ni davom ettirish uchun «💎 Premium» ni bosing.', { reply_markup: kbMain_() });
     } else
-    if (p.until && (p.until === in3 || p.until === td)) send_(a.tg, '⏰ Premium ' + (p.until === td ? '<b>bugun</b> tugaydi' : '3 kundan keyin (' + fdate_(p.until) + ') tugaydi') + '.\nUzaytirish uchun «💎 Premium» tugmasini bosing.', { reply_markup: kbMain_() });
-    else if (p.until && p.until === addDays_(td, -1)) send_(a.tg, 'Premium muddati tugadi. Qayta yoqish uchun «💎 Premium» tugmasini bosing.', { reply_markup: kbMain_() });
-    if (p.biz && p.bizUntil && mode_(a) === 'biz' && (p.bizUntil === in3 || p.bizUntil === td)) send_(a.tg, (p.bizTrial ? '🎁 Biznes sinov ' : '🏪 Biznes ') + (p.bizUntil === td ? '<b>bugun</b> tugaydi' : '3 kundan keyin (' + fdate_(p.bizUntil) + ') tugaydi') + '.\nMa\'lumotlar o\'chmaydi. Davom ettirish uchun /biznes yoki ilovadagi «Biznes\'ni uzaytirish».', { reply_markup: { inline_keyboard: [[{ text: '🏪 Biznes tariflari', callback_data: 'biz' }]] } });
+    if (!p.biz && p.until && (p.until === in3 || p.until === td)) tgs_(a, '⏰ Premium ' + (p.until === td ? '<b>bugun</b> tugaydi' : '3 kundan keyin (' + fdate_(p.until) + ') tugaydi') + '.\nUzaytirish uchun «💎 Premium» tugmasini bosing.', { reply_markup: kbMain_() });
+    else if (!p.biz && p.until && p.until === addDays_(td, -1)) tgs_(a, 'Premium muddati tugadi. Qayta yoqish uchun «💎 Premium» tugmasini bosing.', { reply_markup: kbMain_() });
+    if (p.biz && p.bizUntil && mode_(a) === 'biz' && (p.bizUntil === in3 || p.bizUntil === td)) tgs_(a, (p.bizTrial ? '🎁 Biznes sinov ' : '🏪 Biznes ') + (p.bizUntil === td ? '<b>bugun</b> tugaydi' : '3 kundan keyin (' + fdate_(p.bizUntil) + ') tugaydi') + '.\nMa\'lumotlar o\'chmaydi. Davom ettirish uchun /biznes yoki ilovadagi «Biznes\'ni uzaytirish».', { reply_markup: { inline_keyboard: [[{ text: '🏪 Biznes tariflari', callback_data: 'biz' }]] } });
     const people = peopleBy[a.id] || {}, b = balances_(a.id), od = [], soon = [];
     Object.keys(b.bal).forEach(function (pid) {
       const v = b.bal[pid], d = b.due[pid]; if (v <= 0.5 || !d || !people[pid]) return;
       if (d < td) od.push({ n: people[pid].name, v: v, d: d }); else if (d === td || d === tm) soon.push({ n: people[pid].name, v: v, d: d });
     });
     if (!od.length && !soon.length) return;
+    try {
+      const tdN = soon.filter(function (x) { return x.d === td; }).length, tmN = soon.length - tdN, odS = od.reduce(function (z, x) { return z + x.v; }, 0);
+      const ru = a.lang === 'ru';
+      const parts = [];
+      if (tdN) parts.push(ru ? 'сегодня срок: ' + tdN : 'bugun muddati: ' + tdN + ' ta');
+      if (tmN) parts.push(ru ? 'завтра: ' + tmN : 'ertaga: ' + tmN + ' ta');
+      if (od.length) parts.push(ru ? 'просрочено: ' + od.length + ' (' + sum_(odS).replace("so'm", 'сум') + ')' : "muddati o'tgan: " + od.length + ' ta (' + sum_(odS) + ')');
+      notify_(a, 'due', {}, { pushOnly: true, text: (ru ? '📅 Долги — ' : '📅 Qarzlar — ') + parts.join(', '), title: ru ? 'Сроки долгов' : 'Qarz muddatlari' });
+    } catch (e) { console.error(e); }
+    if (!a.tg) return;
     let t = 'Xayrli tong, ' + h_(a.name) + '! ☀️\n';
     if (soon.length) t += '\n📅 <b>Muddati yaqin:</b>\n' + soon.map(function (x) { return '• ' + h_(x.n) + ' — ' + sum_(x.v) + (x.d === td ? ' (bugun)' : ' (ertaga)'); }).join('\n') + '\n';
     if (od.length) t += '\n⏰ <b>Muddati o\'tgan:</b>\n' + od.slice(0, 10).map(function (x) { return '• ' + h_(x.n) + ' — ' + sum_(x.v) + ' (' + fdate_(x.d) + ')'; }).join('\n') + '\n';
     t += p.on ? '\nIlovadan bir bosishda SMS eslatma yuborishingiz mumkin.' : '';
-    send_(a.tg, t, { reply_markup: { inline_keyboard: [[btnApp_()]] } });
+    tgs_(a, t, { reply_markup: { inline_keyboard: [[btnApp_()]] } });
     Utilities.sleep(60);
   });
+  nstatFlush_();
+}
+
+
+/* ======================= FAOLLIK VA XABARLAR (notify_) =======================
+ * Har bir xabar turi: bir nechta matn varianti (std/biz, uz/ru), navbat bilan tanlanadi.
+ * {ism} {soni} {summa} {dokon} {ball} {daraja} {streak} {qaytdi} {berildi} {mijoz} {dost} {dokon2} {kun}
+ * Qiymati bo'sh yoki 0 bo'lgan o'zgaruvchili variant tanlanmaydi.
+ * Kategoriyalar (foydalanuvchi Sozlamalarda o'chiradi): rem — eslatmalar, sog — sog'indik,
+ * rep — hisobotlar, loyal — sodiqlik, offer — takliflar. */
+const NOTIFY_CATS_ = ['rem', 'sog', 'rep', 'loyal', 'offer'];
+const NOTIFY_KINDS_ = {
+  sog1:   { cat: 'sog',   t: "Sog'indik (bugun kirmadi)" },
+  sog3:   { cat: 'sog',   t: '3 kun kirmadi' },
+  sog7:   { cat: 'sog',   t: '7 kun kirmadi' },
+  sog14:  { cat: 'sog',   t: '14 va 30 kun kirmadi' },
+  streak: { cat: 'loyal', t: 'Seriya (har 7 kunda)' },
+  level:  { cat: 'loyal', t: 'Yangi daraja' },
+  ball:   { cat: 'loyal', t: 'Ball yetdi (7 kun Premium)' },
+  ref:    { cat: 'loyal', t: "Tavsiya: do'st qo'shildi" },
+  monthly:{ cat: 'rep',   t: 'Oylik hisobot' },
+  trialEnd:{ cat: 'rem',  t: 'Sinov tugashi' },
+  due:    { cat: 'rem',   t: 'Qarz muddati (push)' },
+  manual: { cat: 'offer', t: "Qo'lda yuborilgan" }
+};
+const MSG_DEF_ = {
+  sog1: {
+    std: { uz: ["Sizni sog'indik, {ism}! 💚 Bugun hech kimga qarz berdingizmi? Yozib qo'ying.", "{ism}, bugun ko'rinmadingiz 🙂 Qarzlaringiz joyida, bir qarab qo'ying.", "Bugungi oldi-berdilaringizni yozib qo'ysangiz, ertaga hammasi aniq bo'ladi ✍️", "Seriyangiz {streak} kun! Bugun ham kirib, uzib qo'ymang 🔥"],
+           ru: ["Мы соскучились, {ism}! 💚 Сегодня давали кому-нибудь в долг? Запишите.", "{ism}, сегодня вас не было 🙂 Ваши долги на месте, загляните.", "Запишите сегодняшние долги — и завтра всё будет ясно ✍️", "Ваша серия — {streak} дн.! Зайдите и сегодня, не прерывайте 🔥"] },
+    biz: { uz: ["Sizni sog'indik, {ism} aka! 🏪 Bugungi nasiyalar yozildimi?", "{dokon}da bugun nasiya bo'ldimi? Yozilmagan nasiya — unutilgan pul.", "Muddati o'tgan {soni} ta qarz bor ({summa} so'm). Bir bosishda eslatma yuboring 👉", "Kun yakunlanyapti. 1 daqiqa — bugungi nasiyalarni tekshiring ✅"],
+           ru: ["Мы соскучились, {ism}! 🏪 Сегодняшние долги записаны?", "В «{dokon}» сегодня давали в долг? Незаписанный долг — забытые деньги.", "Просроченных долгов: {soni} ({summa} сум). Напомните в одно нажатие 👉", "День заканчивается. 1 минута — проверьте сегодняшние долги ✅"] }
+  },
+  sog3: {
+    std: { uz: ["{ism}, 3 kundan beri ko'rinmaysiz. Hammasi joyidami? Qarzlaringiz sizni kutyapti 💚"], ru: ["{ism}, вас не видно уже 3 дня. Всё в порядке? Ваши долги ждут вас 💚"] },
+    biz: { uz: ["3 kundan beri daftar ochilmadi. Muddati o'tganlar: {soni} ta. Pul o'zi qaytmaydi 🙂", "3 kundan beri daftar ochilmadi. Nasiyalar tartibda turishi uchun bir qarab qo'ying 🙂"], ru: ["Тетрадь не открывалась 3 дня. Просроченных: {soni}. Деньги сами не вернутся 🙂", "Тетрадь не открывалась 3 дня. Загляните, чтобы долги были в порядке 🙂"] }
+  },
+  sog7: {
+    std: { uz: ["Bir haftadan beri yo'qsiz 🥺 Kimgadir qarz berganmisiz? Hozir yozib qo'ying."], ru: ["Вас нет уже неделю 🥺 Давали кому-то в долг? Запишите сейчас."] },
+    biz: { uz: ["Bir hafta — {summa} so'm qarz kutib turibdi. Bugun eslatma yuborsangiz, ertaga qaytadi.", "Bir haftadan beri daftar ochilmadi. Bugun nasiyalarni tekshirib qo'ying 🏪"], ru: ["Уже неделю {summa} сум долга ждут. Напомните сегодня — завтра вернут.", "Тетрадь не открывалась неделю. Проверьте сегодня долги 🏪"] }
+  },
+  sog14: {
+    std: { uz: ["Biz shu yerdamiz, {ism}. Qaytsangiz — 50 bonus ball sovg'a 🎁"], ru: ["Мы здесь, {ism}. Вернётесь — 50 бонусных баллов в подарок 🎁"] },
+    biz: { uz: ["{ism} aka, qaytib keling — yordam kerak bo'lsa botga yozing, o'zimiz ko'rsatib beramiz."], ru: ["{ism}, возвращайтесь — если нужна помощь, напишите боту, всё покажем."] }
+  },
+  streak: {
+    std: { uz: ["🔥 {streak} kun ketma-ket! +20 ball. Shunday davom eting!"], ru: ["🔥 {streak} дней подряд! +20 баллов. Так держать!"] },
+    biz: { uz: ["🔥 {streak} kun ketma-ket nasiyalar tartibda. Zo'r ish!"], ru: ["🔥 {streak} дней подряд долги в порядке. Отличная работа!"] }
+  },
+  level: {
+    std: { uz: ["🎉 Tabriklaymiz! Siz endi {daraja}. Mukofotlaringizni ko'ring 👉"], ru: ["🎉 Поздравляем! Теперь вы — {daraja}. Посмотрите награды 👉"] },
+    biz: { uz: ["🎉 {dokon} endi {daraja} hamkor! Yangi chegirmangiz faol.", "🎉 Endi siz {daraja} hamkorsiz! Yangi chegirmangiz faol."], ru: ["🎉 «{dokon}» теперь партнёр уровня {daraja}! Новая скидка активна.", "🎉 Теперь вы партнёр уровня {daraja}! Новая скидка активна."] }
+  },
+  ball: {
+    std: { uz: ["🎁 {ball} ball yig'dingiz — 7 kun Premium'ni bepul oling!"], ru: ["🎁 Вы набрали {ball} баллов — получите 7 дней Premium бесплатно!"] },
+    biz: { uz: [], ru: [] }
+  },
+  ref: {
+    std: { uz: ["👏 {dost} siz orqali qo'shildi! +{ball} ball"], ru: ["👏 {dost} присоединился по вашей ссылке! +{ball} баллов"] },
+    biz: { uz: ["👏 {dokon2} siz orqali ulandi — sizga 1 oy bepul!"], ru: ["👏 «{dokon2}» подключился по вашей ссылке — вам 1 месяц бесплатно!"] }
+  },
+  monthly: {
+    std: { uz: ["📊 O'tgan oy: {qaytdi} so'm qaytdi, {berildi} so'm berildi. Batafsil 👉", "📊 O'tgan oy {berildi} so'm qarz berdingiz. Batafsil 👉"], ru: ["📊 Прошлый месяц: вернули {qaytdi} сум, выдали {berildi} сум. Подробнее 👉", "📊 В прошлом месяце вы выдали {berildi} сум. Подробнее 👉"] },
+    biz: { uz: ["📊 {dokon}: o'tgan oy {qaytdi} so'm nasiya qaytdi. Eng ishonchli mijoz — {mijoz}.", "📊 O'tgan oy {qaytdi} so'm nasiya qaytdi. Eng ishonchli mijoz — {mijoz}.", "📊 O'tgan oy {berildi} so'm nasiya berildi. Batafsil 👉"], ru: ["📊 «{dokon}»: в прошлом месяце вернули {qaytdi} сум. Самый надёжный клиент — {mijoz}.", "📊 В прошлом месяце вернули {qaytdi} сум. Самый надёжный клиент — {mijoz}.", "📊 В прошлом месяце выдано в долг {berildi} сум. Подробнее 👉"] }
+  },
+  trialEnd: {
+    std: { uz: ["Premium sinovi {kun} kunda tugaydi. Shu vaqt ichida {soni} ta eslatma yubordingiz 💎", "Premium sinovi {kun} kunda tugaydi. Premium'ni saqlab qolasizmi? 💎"], ru: ["Пробный Premium закончится через {kun} дн. За это время вы отправили {soni} напоминаний 💎", "Пробный Premium закончится через {kun} дн. Оставите Premium? 💎"] },
+    biz: { uz: ["Biznes sinovi {kun} kunda tugaydi. Bu davrda {summa} so'm qaytdi. Davom etamizmi?", "Biznes sinovi {kun} kunda tugaydi. Davom etamizmi? 🏪"], ru: ["Пробный Бизнес закончится через {kun} дн. За это время вернули {summa} сум. Продолжим?", "Пробный Бизнес закончится через {kun} дн. Продолжим? 🏪"] }
+  },
+  due: { std: { uz: ['{matn}'], ru: ['{matn}'] }, biz: { uz: ['{matn}'], ru: ['{matn}'] } },
+  manual: { std: { uz: ['{matn}'], ru: ['{matn}'] }, biz: { uz: ['{matn}'], ru: ['{matn}'] } }
+};
+/* sahifa: push bosilganda ilovaning qaysi bo'limi ochiladi */
+const NOTIFY_URL_ = { sog1: '', sog3: '', sog7: '', sog14: '', streak: 'loyal', level: 'loyal', ball: 'loyal', ref: 'loyal', monthly: 'report', trialEnd: 'prem', due: 'home', manual: '' };
+let MSGCFG_MEMO_ = null;
+function msgCfg_() {
+  if (MSGCFG_MEMO_) return MSGCFG_MEMO_;
+  let o = {}; try { o = JSON.parse(meta_('notify_cfg') || '{}') || {}; } catch (e) {}
+  const r = {};
+  Object.keys(MSG_DEF_).forEach(function (k) {
+    const d = MSG_DEF_[k], c = o[k] || {};
+    r[k] = { on: c.on !== false, std: { uz: lst_(c.std && c.std.uz, d.std.uz), ru: lst_(c.std && c.std.ru, d.std.ru) }, biz: { uz: lst_(c.biz && c.biz.uz, d.biz.uz), ru: lst_(c.biz && c.biz.ru, d.biz.ru) } };
+  });
+  return (MSGCFG_MEMO_ = r);
+}
+function lst_(v, def) { return Array.isArray(v) && v.length ? v.map(String).filter(function (x) { return x.trim(); }) : def; }
+function notifyOff_(a) { return String(a.notifyOff || '').split(',').filter(Boolean); }
+function nstate_(a) { const s = a.lastNotify; return s && typeof s === 'object' && !Array.isArray(s) ? s : {}; }
+function fillOk_(t, v) {
+  const m = String(t).match(/\{[a-z0-9]+\}/g) || [];
+  return m.every(function (x) { const k = x.slice(1, -1), y = v[k]; return y !== undefined && y !== null && y !== '' && y !== 0 && y !== '0'; });
+}
+function fill_(t, v) { return String(t).replace(/\{([a-z0-9]+)\}/g, function (_, k) { const y = v[k]; return typeof y === 'number' ? String(Math.round(y)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : String(y); }); }
+function firstName_(n) { return String(n || '').trim().split(/\s+/)[0] || ''; }
+function hourNow_() { return Number(Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'H')); }
+let NSTAT_ = null;   // shu ishga tushishdagi statistika, oxirida Meta'ga yoziladi
+function nstat_(key, field) {
+  NSTAT_ = NSTAT_ || {};
+  const k = key + ':' + (field || 's'); NSTAT_[k] = (NSTAT_[k] || 0) + 1;
+}
+function nstatFlush_() {
+  if (!NSTAT_) return;
+  let o = {}; try { o = JSON.parse(meta_('notify_stats') || '{}') || {}; } catch (e) {}
+  const td = today_(), d = o[td] = o[td] || {};
+  Object.keys(NSTAT_).forEach(function (k) { d[k] = (d[k] || 0) + NSTAT_[k]; });
+  const keep = Object.keys(o).sort().slice(-60), n = {}; keep.forEach(function (k) { n[k] = o[k]; });
+  setMeta_('notify_stats', JSON.stringify(n));
+  NSTAT_ = null;
+}
+/* Bitta umumiy funksiya: xabarni botga (a.tg bo'lsa) va push'ga (a.push bo'lsa) yuboradi.
+ * opt: { pushOnly, botOnly, text (tayyor matn), url, force (kunlik chegarasiz), noSave, kb (bot tugmalari) } */
+function notify_(a, key, vars, opt) {
+  opt = opt || {}; vars = vars || {};
+  if (typeof a === 'string') { a = all_('Accounts').filter(function (x) { return x.id === a; })[0]; if (!a) return false; }
+  if (typeof vars === 'string') return notifyTg_(a.id, vars, opt);   // eski chaqiruvlar
+  const kind = NOTIFY_KINDS_[key]; if (!kind) return false;
+  const cfg = msgCfg_()[key]; if (!cfg || cfg.on === false) return false;
+  if (notifyOff_(a).indexOf(kind.cat) >= 0) return false;
+  const st = nstate_(a), td = today_();
+  if (st.day !== td) { st.day = td; st.n = 0; }
+  if (kind.cat !== 'rem' && !opt.force && (st.n || 0) >= 2) return false;   // kuniga ko'pi bilan 2 ta
+  const m = mode_(a) === 'biz' ? 'biz' : 'std', lang = a.lang === 'ru' ? 'ru' : 'uz';
+  let text = opt.text || '';
+  st.k = st.k || {};
+  if (!text) {
+    const list = (cfg[m][lang] && cfg[m][lang].length ? cfg[m][lang] : cfg[m].uz) || [];
+    const ok = []; list.forEach(function (t, i) { if (fillOk_(t, vars)) ok.push(i); });
+    if (!ok.length) return false;
+    const last = st.k[key] ? Number(st.k[key].i) : -1;
+    let i = ok.filter(function (x) { return x > last; })[0]; if (i === undefined) i = ok[0];
+    if (ok.length > 1 && i === last) i = ok[(ok.indexOf(i) + 1) % ok.length];
+    st.k[key] = { d: td, i: i };
+    text = fill_(list[i], vars);
+  } else st.k[key] = { d: td, i: -1 };
+  let sent = false;
+  if (!opt.pushOnly && a.tg && prop_('TG_TOKEN')) {
+    try { send_(a.tg, h_(text), { reply_markup: opt.kb || { inline_keyboard: [[btnApp_()]] } }); sent = true; } catch (e) { console.error(e); }
+  }
+  if (!opt.botOnly && String(a.push) === '1') {
+    const p = { t: opt.title || (m === 'biz' && bizShop_(a.id)) || 'Oldi-Berdi', b: text, u: opt.url !== undefined ? opt.url : (NOTIFY_URL_[key] || '') };
+    const h = hourNow_();
+    if (h >= 22 || h < 8) { st.q = (st.q || []).concat([p]).slice(-3); sent = true; }   // tunda navbatga
+    else if (push_(a, p.t, p.b, p.u)) sent = true;
+  }
+  if (!sent) return false;
+  if (kind.cat !== 'rem') st.n = (st.n || 0) + 1;
+  if (/^sog/.test(key)) st.sog = td;
+  a.lastNotify = st;
+  if (!opt.noSave) put_('Accounts', a, a._row);
+  nstat_(key);
+  return true;
+}
+/* tunda navbatga qolgan push'larni ertalab yuborish */
+function pushFlush_(a) {
+  const st = nstate_(a); if (!st.q || !st.q.length) return false;
+  st.q.forEach(function (p) { push_(a, p.t, p.b, p.u); });
+  st.q = []; a.lastNotify = st; return true;
+}
+function bizShop_(accId) {
+  const d = all_('Docs').filter(function (x) { return x.acc === accId && x.kind === 'biz'; })[0];
+  return d && d.data && d.data.shop ? String(d.data.shop) : '';
+}
+/* push: PR2 da OneSignal orqali yoqiladi */
+function push_(a, title, body, url) { return false; }
+
+/* Ilova ochilganda (har qanday so'rovda, kuniga 1 marta): lastSeen, streak, til */
+function seen_(a, req) {
+  const td = today_(), lang = req && (req.lang === 'ru' || req.lang === 'uz') ? req.lang : '';
+  if (a.lastSeen === td && (!lang || lang === a.lang)) return;
+  if (lang) a.lang = lang;
+  if (a.lastSeen !== td) {
+    const prev = a.lastSeen;
+    a.streak = prev === addDays_(td, -1) ? (Number(a.streak) || 0) + 1 : 1;
+    a.lastSeen = td;
+    const st = nstate_(a);
+    if (st.sog && st.sog >= addDays_(td, -2)) { nstat_('ret'); st.sog = ''; a.lastNotify = st; }   // xabardan keyin qaytdi
+    try { onSeen_(a, prev); } catch (e) { console.error(e); }
+    if (a.streak > 1 && a.streak % 7 === 0) notify_(a, 'streak', { streak: a.streak }, { noSave: true });
+  }
+  put_('Accounts', a, a._row);
+  nstatFlush_();
+}
+/* PR3 (ballar) shu yerga ulanadi */
+function onSeen_(a, prev) {}
+
+function daysBetween_(a, b) { return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5); }
+function odSum_(accId, td) {
+  const b = balances_(accId); let n = 0, s = 0, total = 0;
+  Object.keys(b.bal).forEach(function (pid) { const v = b.bal[pid]; if (v <= 0.5) return; total += v; if (b.due[pid] && b.due[pid] < td) { n++; s += v; } });
+  return { n: n, s: s, total: total };
+}
+/* 19:00 — bugun kirmaganlarga: 1, 3, 7, 14 va 30 kun */
+function sogindik() {
+  const td = today_();
+  all_('Accounts').forEach(function (a) {
+    if (!a.lastSeen || a.lastSeen >= td || (!a.tg && String(a.push) !== '1') || nstate_(a).sog === td) return;
+    const d = daysBetween_(a.lastSeen, td);
+    const key = d === 1 ? 'sog1' : d === 3 ? 'sog3' : d === 7 ? 'sog7' : (d === 14 || d === 30) ? 'sog14' : '';
+    if (!key) return;
+    const v = { ism: firstName_(a.name) };
+    if (key === 'sog1' && Number(a.streak) >= 3) v.streak = Number(a.streak);
+    if (mode_(a) === 'biz') { const o = odSum_(a.id, td); v.soni = o.n; v.summa = key === 'sog7' ? o.total : o.s; v.dokon = bizShop_(a.id); }
+    try { notify_(a, key, v); } catch (e) { console.error(e); }
+    Utilities.sleep(40);
+  });
+  nstatFlush_();
+}
+/* har kuni 10:00 — oyning 1-kuni oylik hisobot (Biznes uchun batafsil «foyda hisoboti» botda) */
+function oylik() {
+  const td = today_(); if (td.slice(8) !== '01') return;
+  const from = addDays_(td, -1).slice(0, 8) + '01', to = addDays_(td, -1);
+  const by = {}; all_('Tx').forEach(function (t) { if (t.date >= from && t.date <= to) (by[t.acc] = by[t.acc] || []).push(t); });
+  const rt = rate_(), usd = rt && rt.usd || 0;
+  const pplBy = {}; all_('People').forEach(function (p) { (pplBy[p.acc] = pplBy[p.acc] || []).push(p); });
+  all_('Accounts').forEach(function (a) {
+    const L = by[a.id]; if (!L || !L.length || (!a.tg && String(a.push) !== '1')) return;
+    let got = 0, lend = 0; const per = {};
+    L.forEach(function (t) { let v = Number(t.amount) || 0; if (t.cur === 'USD') v = usd ? v * usd : 0; if (t.type === 'got') { got += v; per[t.pid] = (per[t.pid] || 0) + v; } else if (t.type === 'lend') lend += v; });
+    const ppl = {}; (pplBy[a.id] || []).forEach(function (p) { ppl[p.id] = p; });
+    const top = Object.keys(per).filter(function (k) { return ppl[k]; }).sort(function (x, y) { return per[y] - per[x]; }).slice(0, 3);
+    const v = { qaytdi: got, berildi: lend, mijoz: top[0] ? ppl[top[0]].name : '', dokon: bizShop_(a.id) };
+    try {
+      if (mode_(a) === 'biz' && a.tg) {
+        let rem = 0; (pplBy[a.id] || []).forEach(function (p) { (p.log || []).forEach(function (l) { const d = l && l.at ? Utilities.formatDate(new Date(l.at), Session.getScriptTimeZone(), 'yyyy-MM-dd') : ''; if (d >= from && d <= to && /eslatma/i.test(l.t || '')) rem++; }); });
+        const M = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+        let t = '📊 <b>' + h_(v.dokon || 'Oylik foyda hisoboti') + '</b> · ' + M[Number(from.slice(5, 7)) - 1] + '\n\n';
+        t += '💵 Qaytgan nasiya: <b>' + sum_(got) + '</b>\n➕ Berilgan nasiya: <b>' + sum_(lend) + '</b>\n📣 Yuborilgan eslatmalar: <b>' + rem + ' ta</b>\n';
+        if (top.length) t += '\n🏆 <b>Eng ishonchli mijozlar:</b>\n' + top.map(function (k, i) { return (i + 1) + '. ' + h_(ppl[k].name) + ' — ' + sum_(per[k]); }).join('\n');
+        send_(a.tg, t, { reply_markup: { inline_keyboard: [[btnApp_()]] } });
+        notify_(a, 'monthly', v, { pushOnly: true });
+      } else notify_(a, 'monthly', v);
+    } catch (e) { console.error(e); }
+    Utilities.sleep(50);
+  });
+  nstatFlush_();
 }
 
 /* Biznes: har kuni 20:00 da do'kon egasiga kunlik natija (botSetup trigger qo'yadi) */
@@ -1087,6 +1343,9 @@ function botSetup() {
   ScriptApp.newTrigger('kunlik').timeBased().everyDays(1).atHour(9).create();
   ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'kechki') ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('kechki').timeBased().everyDays(1).atHour(20).create();
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (['sogindik', 'oylik'].indexOf(t.getHandlerFunction()) >= 0) ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('sogindik').timeBased().everyDays(1).atHour(19).create();
+  ScriptApp.newTrigger('oylik').timeBased().everyDays(1).atHour(10).create();
   const msg = 'Bot: @' + me.result.username + ' | webhook: ' + url + ' → ' + (w && w.ok ? 'OK' : JSON.stringify(w));
   Logger.log(msg);
   return msg;
