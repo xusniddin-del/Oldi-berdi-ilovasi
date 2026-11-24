@@ -1698,12 +1698,13 @@ function admCounts_() {
   all_('People').forEach(function (x) { c.p[x.acc] = (c.p[x.acc] || 0) + 1; bump(x.acc, x.updatedAt); });
   all_('Tx').forEach(function (x) { c.t[x.acc] = (c.t[x.acc] || 0) + 1; bump(x.acc, x.updatedAt || x.createdAt); });
   all_('Sessions').forEach(function (x) { bump(x.acc, x.createdAt); });
+  c.bm = {}; all_('Payments').forEach(function (x) { if (x.status === 'paid' && PLANS[x.tarif] && PLANS[x.tarif].biz) c.bm[x.acc] = (c.bm[x.acc] || 0) + (Number(x.days) || 0); });
   return c;
 }
 function admRow_(a, c) {
   const p = premium_(a);
   return { id: a.id, name: a.name, phone: a.phone, createdAt: Number(a.createdAt) || 0, tg: !!a.tg, t: tariff_(a), until: p.until || '', bizUntil: p.bizUntil || '', canTrial: !!p.canTrial,
-    mode: mode_(a), bizTrial: !!p.bizTrial, people: c.p[a.id] || 0, tx: c.t[a.id] || 0, last: Math.max(c.last[a.id] || 0, Number(a.createdAt) || 0), admin: a.phone === adminPhone_() };
+    mode: mode_(a), bizTrial: !!p.bizTrial, lastSeen: a.lastSeen || '', streak: Number(a.streak) || 0, points: Number(a.points) || 0, push: String(a.push) === '1', lv: mode_(a) === 'biz' ? bizLevel_(Math.floor((c.bm && c.bm[a.id] || 0) / 30 + 0.01)) : stdLevel_(Number(a.earned) || 0), people: c.p[a.id] || 0, tx: c.t[a.id] || 0, last: Math.max(c.last[a.id] || 0, Number(a.createdAt) || 0), admin: a.phone === adminPhone_() };
 }
 /* Premium yoki Biznes: v = kun soni | 'ha' (muddatsiz) | '0' (o'chirish) */
 function setPlan_(a, kind, v) {
@@ -1822,6 +1823,72 @@ Object.assign(API, {
       setMeta_(PLANS[k].key, String(n));
     });
     return { prices: prices_() };
+  },
+  /* ---------- Sodiqlik bo'limi ---------- */
+  admLoyal: function (r) {
+    admAuth_(r);
+    const td = today_(), acc = all_('Accounts'), pays = all_('Payments');
+    const std = [0, 0, 0, 0], biz = [0, 0, 0, 0], inact = [];
+    acc.forEach(function (a) {
+      if (mode_(a) === 'biz') biz[bizLevel_(bizMonths_(a.id, pays))]++; else std[stdLevel_(Number(a.earned) || 0)]++;
+      const d = a.lastSeen ? daysBetween_(a.lastSeen, td) : -1;
+      if (d >= 1) inact.push({ id: a.id, name: a.name, phone: a.phone, mode: mode_(a), days: d, lastSeen: a.lastSeen, tg: !!a.tg, push: String(a.push) === '1' });
+    });
+    inact.sort(function (x, y) { return x.days - y.days; });
+    let st = {}; try { st = JSON.parse(meta_('notify_stats') || '{}') || {}; } catch (e) {}
+    const from = addDays_(td, -29), agg = {};
+    Object.keys(st).forEach(function (day) { if (day < from) return; Object.keys(st[day]).forEach(function (k) { agg[k] = (agg[k] || 0) + st[day][k]; }); });
+    let os = null;
+    const id = prop_('ONESIGNAL_APP_ID'), key = prop_('ONESIGNAL_API_KEY');
+    if (id && key) try {
+      const res = UrlFetchApp.fetch('https://api.onesignal.com/notifications?app_id=' + encodeURIComponent(id) + '&limit=50&kind=1', { headers: { Authorization: 'Key ' + key }, muteHttpExceptions: true });
+      const j = JSON.parse(res.getContentText() || '{}'); os = { sent: 0, clicked: 0, n: 0 };
+      (j.notifications || []).forEach(function (x) { os.n++; os.sent += Number(x.successful) || 0; os.clicked += Number(x.converted) || 0; });
+    } catch (e) { os = { err: String(e) }; }
+    const kinds = {}; Object.keys(NOTIFY_KINDS_).forEach(function (k) { kinds[k] = { t: NOTIFY_KINDS_[k].t, cat: NOTIFY_KINDS_[k].cat }; });
+    return { std: std, biz: biz, inact: inact.slice(0, 400), seenToday: acc.filter(function (a) { return a.lastSeen === td; }).length, total: acc.length,
+      pushUsers: acc.filter(function (a) { return String(a.push) === '1'; }).length, tgUsers: acc.filter(function (a) { return a.tg; }).length,
+      stats: agg, os: os, pushOn: !!(id && key), cfg: loyalCfg_(), def: LOYAL_DEF_, msgs: msgCfg_(), kinds: kinds };
+  },
+  admLoyalCfg: function (r) {
+    admAuth_(r);
+    const o = {}, c = r.cfg || {};
+    Object.keys(LOYAL_DEF_).forEach(function (k) { if (c[k] === undefined || c[k] === '') return; const n = Number(c[k]); if (!(n >= 0 && n <= 1000000)) throw new Error("Qiymat noto'g'ri: " + k); o[k] = n; });
+    if (o.goldDisc > 90 || o.bizSilverDisc > 90 || o.bizGoldDisc > 90) throw new Error("Chegirma 90% dan oshmasin");
+    setMeta_('loyalty_cfg', JSON.stringify(o)); LCFG_MEMO_ = null;
+    return { cfg: loyalCfg_() };
+  },
+  admMsgCfg: function (r) {
+    admAuth_(r);
+    const k = String(r.key || ''); if (!MSG_DEF_[k]) throw new Error("Xabar turi noto'g'ri");
+    let o = {}; try { o = JSON.parse(meta_('notify_cfg') || '{}') || {}; } catch (e) {}
+    const c = o[k] || {};
+    if (r.on !== undefined) c.on = !!r.on;
+    const L = function (v) { return (Array.isArray(v) ? v : []).map(function (x) { return str_(x, 400).trim(); }).filter(Boolean).slice(0, 10); };
+    ['std', 'biz'].forEach(function (m) { if (r[m]) { c[m] = c[m] || {}; ['uz', 'ru'].forEach(function (l) { if (r[m][l] !== undefined) c[m][l] = L(r[m][l]); }); } });
+    if (r.reset) delete o[k]; else o[k] = c;
+    setMeta_('notify_cfg', JSON.stringify(o)); MSGCFG_MEMO_ = null;
+    return { msgs: msgCfg_() };
+  },
+  /* qo'lda yuborish: push + bot. to: std | biz | all | lv:std:N | lv:biz:N | in:N (N va undan ko'p kun kirmagan) */
+  admNotify: function (r) {
+    admAuth_(r);
+    const text = str_(r.text, 600).trim(), to = String(r.to || 'all');
+    if (!text) throw new Error('Xabar matnini yozing');
+    const td = today_(), pays = all_('Payments');
+    let n = 0, skip = 0;
+    all_('Accounts').forEach(function (a) {
+      if (isAdminChat_(a.tg)) return;
+      const m = mode_(a) === 'biz' ? 'biz' : 'std';
+      let ok = to === 'all' || to === m;
+      if (/^lv:/.test(to)) { const q = to.split(':'); ok = q[1] === m && String(m === 'biz' ? bizLevel_(bizMonths_(a.id, pays)) : stdLevel_(Number(a.earned) || 0)) === q[2]; }
+      if (/^in:/.test(to)) { const nn = Number(to.slice(3)); ok = !!a.lastSeen && daysBetween_(a.lastSeen, td) >= nn; }
+      if (!ok || (!a.tg && String(a.push) !== '1')) return;
+      if (notify_(a, 'manual', {}, { text: text, force: true })) n++; else skip++;
+      Utilities.sleep(40);
+    });
+    nstatFlush_();
+    return { n: n, skip: skip };
   },
   admPayments: function (r) {
     admAuth_(r);
