@@ -27,10 +27,10 @@
  */
 
 const TABLES = {
-  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge', 'mode', 'bizTrialEnd', 'lastSeen', 'streak', 'points', 'level', 'notifyOff', 'lastNotify', 'lang', 'push'],
+  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge', 'mode', 'bizTrialEnd', 'lastSeen', 'streak', 'points', 'level', 'notifyOff', 'lastNotify', 'lang', 'push', 'earned', 'ref', 'loyal'],
   Sessions: ['token', 'acc', 'createdAt'],
   People:   ['id', 'acc', 'name', 'phone', 'note', 'photo', 'log', 'createdAt', 'updatedAt'],
-  Tx:       ['id', 'acc', 'pid', 'type', 'amount', 'date', 'due', 'note', 'photo', 'edits', 'createdAt', 'updatedAt', 'cur', 'plan', 'items'],
+  Tx:       ['id', 'acc', 'pid', 'type', 'amount', 'date', 'due', 'note', 'photo', 'edits', 'createdAt', 'updatedAt', 'cur', 'plan', 'items', 'pts'],
   Confirms: ['token', 'acc', 'txId', 'status', 'answeredAt', 'createdAt'],
   Meta:     ['key', 'value'],
   Reminders: ['key', 'acc', 'pid', 'txId', 'idx', 'due', 'amount', 'status', 'markDay', 'chat', 'msg', 'text', 'updatedAt'],
@@ -38,7 +38,7 @@ const TABLES = {
   Lists:    ['id', 'acc', 'name', 'items', 'createdAt', 'updatedAt'],
   Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt']
 };
-const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true, lastNotify: true };
+const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true, lastNotify: true, loyal: true };
 /* Docs turlari va ular uchun kerakli tarif: '' — bepul, 'prem' — Premium, 'biz' — Biznes */
 const DOC_KINDS = { toy: 'prem', toyg: 'prem', loan: 'prem', gap: 'prem', yigin: '', biz: 'biz' };
 /* ---------- imkoniyatlar: admin paneldan boshqariladi ----------
@@ -59,7 +59,7 @@ function featOk_(a, f) { return feat_()[f] === 'free' || premium_(a).on; }
 const PREM_BADGES_ = ['green', 'gold', 'gem', 'crown'];
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, bulkImport: 1, setNotify: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, bulkImport: 1, setNotify: 1, redeem: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -297,7 +297,7 @@ function data_(accId) {
     docs: all_('Docs').filter(function (x) { return x.acc === accId; }).map(clean_),
     confirms: confirms,
     rate: rate_(),
-    api: 15,
+    api: 16,
     feat: feat_(),
     marks: marks_(accId),
     prices: prices_(),
@@ -358,7 +358,7 @@ function tc_(path, body, idem) {
 function createBill_(a, planKey, ret) {
   const plan = PLANS[planKey];
   if (!plan) throw new Error("Tarif noto'g'ri");
-  const price = prices_()[planKey];
+  const price = priceFor_(a, planKey);
   if (!price) throw new Error('Bu tarif hozircha yopiq');
   const idem = uid_();
   const body = { amount_minor: Math.round(price * 100), title: plan.title, description: 'Akkaunt: +' + a.phone, external_reference: a.id + ':' + planKey + ':' + idem.slice(0, 8) };
@@ -403,6 +403,7 @@ function payVerify_(billId) {
   if (!b.paid) { if (row.status !== b.state && b.state) { row.status = String(b.state); put_('Payments', row, row._row); } return { paid: false, state: b.state }; }
   row.status = 'paid'; row.paidAt = Date.now(); row.until = PLANS[row.tarif] && PLANS[row.tarif].biz ? grantBiz_(row.acc, Number(row.days) || 30) : grant_(row.acc, Number(row.days) || 30);
   put_('Payments', row, row._row);
+  try { onPaid_(row.acc, row.tarif); } catch (e) { console.error(e); }
   try {
     const u = row.until === 'ha' ? 'muddatsiz' : fdate_(row.until) + ' gacha';
     notify_(row.acc, '🎉 To\'lov qabul qilindi! <b>' + (row.tarif === 'biz' ? 'Biznes' : 'Premium') + ' yoqildi</b> — ' + u + '.\nIlovani oching, hamma funksiyalar ochiq. Rahmat! 💚');
@@ -421,10 +422,11 @@ const API = {
     if (all_('Accounts').some(function (a) { return a.phone === phone; })) throw new Error("Bu raqam allaqachon ro'yxatdan o'tgan. «Kirish»ni tanlang.");
     const salt = uid_();
     const a = { id: uid_(), name: name, phone: phone, salt: salt, hash: pwHashV2_(salt, pass), photo: '', currency: "so'm", pinSalt: '', pinHash: '', createdAt: Date.now(), trialEnd: '' };
+    const ref = str_(r.ref, 40); if (ref && all_('Accounts').some(function (x) { return x.id === ref; })) a.ref = ref;
     put_('Accounts', a);
     try { notifyAdmin_('🆕 Yangi foydalanuvchi: <b>' + h_(name) + '</b> (+' + phone + ')'); } catch (e) {}
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a) };
   },
   login: function (r) {
     const phone = normPhone_(r.phone);
@@ -434,7 +436,7 @@ const API = {
     if (!checkPw_(a, String(r.pass || ''))) { loginFail_(phone); throw new Error("Parol noto'g'ri"); }
     CacheService.getScriptCache().remove('lf_' + phone);
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a) };
   },
   logout: function (r) {
     const rows = all_('Sessions').filter(function (x) { return x.token === String(r.token || ''); }).map(function (x) { return x._row; });
@@ -443,7 +445,7 @@ const API = {
   },
   sync: function (r) {
     const a = auth_(r), d = data_(a.id);
-    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: d.prices, marks: d.marks, feat: d.feat };
+    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a) };
   },
   saveProfile: function (r) {
     const a = auth_(r);
@@ -484,6 +486,22 @@ const API = {
     return { acc: pub_(a) };
   },
   /* bildirishnoma sozlamalari: off — o'chirilgan kategoriyalar, push — telefon obunasi (1/0) */
+  /* ballarni Premium'ga almashtirish: r7 — 7 kun, r30 — 1 oy */
+  redeem: function (r) {
+    const a = auth_(r), c = loyalCfg_(), k = String(r.r || '');
+    if (!isStd_(a)) throw new Error("Ballar faqat Standart yo'lida");
+    const cost = k === 'r7' ? c.r7 : k === 'r30' ? c.r30 : 0, days = k === 'r7' ? 7 : 30;
+    if (!cost) throw new Error("Mukofot noto'g'ri");
+    if ((Number(a.points) || 0) < cost) throw new Error("Ball yetarli emas");
+    a.points = (Number(a.points) || 0) - cost;
+    const L = lyl_(a); L.h = [{ at: Date.now(), p: -cost, t: days === 7 ? '7 kun Premium' : '1 oy Premium' }].concat(L.h || []).slice(0, 20); a.loyal = L;
+    put_('Accounts', a, a._row);
+    const until = grant_(a.id, days);
+    const b = all_('Accounts').filter(function (x) { return x.id === a.id; })[0];
+    try { notifyAdmin_('🎁 Ball almashtirildi: <b>' + h_(a.name) + '</b> — ' + (days === 7 ? '7 kun' : '1 oy') + ' Premium'); } catch (e) {}
+    return { acc: pub_(b), loyal: loyal_(b), until: until };
+  },
+  loyal: function (r) { const a = auth_(r); return { loyal: loyal_(a), acc: pub_(a), prices: myPrices_(a) }; },
   setNotify: function (r) {
     const a = auth_(r);
     if (Array.isArray(r.off)) a.notifyOff = r.off.filter(function (x) { return NOTIFY_CATS_.indexOf(x) >= 0; }).join(',');
@@ -546,6 +564,7 @@ const API = {
       createdAt: Number(it.createdAt) || (old && old.createdAt) || now, updatedAt: now,
       cur: it.cur === 'USD' ? 'USD' : '', plan: plan_(it.plan), items: items_(it.items, a, old)
     };
+    if (!old) { try { if (onNewTx_(a, t)) put_('Accounts', a, a._row); } catch (e) { console.error(e); } } else t.pts = old.pts || '';
     put_('Tx', t, old ? old._row : 0);
     return { item: clean_(t) };
   },
@@ -574,7 +593,9 @@ const API = {
   },
   deleteTx: function (r) {
     const a = auth_(r), id = String(r.id || '');
-    delRows_('Tx', all_('Tx').filter(function (t) { return t.id === id && t.acc === a.id; }).map(function (t) { return t._row; }));
+    const del = all_('Tx').filter(function (t) { return t.id === id && t.acc === a.id; });
+    try { if (del[0] && onDelTx_(a, del[0])) put_('Accounts', a, a._row); } catch (e) { console.error(e); }
+    delRows_('Tx', del.map(function (t) { return t._row; }));
     return {};
   },
   /* Bozorlik ro'yxati (Premium): butun ro'yxat bitta qatorda, mahsulotlar JSON ko'rinishida */
@@ -835,7 +856,7 @@ function botContact_(m, chat) {
 
 function botPremium_(chat, a) {
   if (mode_(a) === 'biz') return botBiz_(chat, a);
-  const p = premium_(a), pr = prices_();
+  const p = premium_(a), pr = myPrices_(a);
   let t = '💎 <b>Oldi-Berdi Premium</b>\n\n';
   t += p.trial ? '🎁 Holat: <b>sinov muddati — ' + fdate_(p.until) + ' gacha</b>\nSinov tugagach ilova bepul rejimda ishlayveradi.\n\n' : p.on ? '✅ Holat: <b>faol' + (p.until ? ' — ' + fdate_(p.until) + ' gacha' : ' (muddatsiz)') + '</b>\n\n' : '🆓 Holat: <b>bepul rejim</b>\nAsosiy imkoniyatlar bepul. Premium qo\'shimcha imkoniyatlarni ochadi.\n\n';
   t += 'Premium\'da:\n' + premList_().join('\n') + '\n⏰ Har kuni botda eslatma';
@@ -853,7 +874,7 @@ function botPremium_(chat, a) {
 
 /* Biznes tariflari: ilovadagi «Biznes'ni ulash» tugmasi botni ?start=biz bilan ochadi */
 function botBiz_(chat, a) {
-  const p = premium_(a), pr = prices_();
+  const p = premium_(a), pr = myPrices_(a);
   let t = '🏪 <b>Oldi-Berdi Biznes</b> — do\'kon va savdo uchun\n\n';
   t += p.biz ? (p.bizTrial ? '🎁 Holat: <b>sinov — ' + fdate_(p.bizUntil) + ' gacha</b>\n\n' : '✅ Holat: <b>faol' + (p.bizUntil ? ' — ' + fdate_(p.bizUntil) + ' gacha' : ' (muddatsiz)') + '</b>\n\n') : '⏳ Holat: <b>faol emas</b>\nMa\'lumotlaringiz joyida, yozuv qo\'shish ishlaydi.\n\n';
   t += '🧾 Tovar bilan nasiya\n📣 Ommaviy eslatma — muddati o\'tganlarga ketma-ket SMS\n📋 Qarzdorlar ro\'yxati — Telegram yoki Excel\n🌙 Kechki hisobot — har kuni 20:00 da\n📥 Tez ko\'chirish — qog\'oz daftar yoki Excel\'dan\n🏷 Do\'kon nomi va manzili eslatmalarda\n➕ SMS eslatma, bo\'lib to\'lash, dollar kursi, hisobot va Excel';
@@ -1270,8 +1291,6 @@ function seen_(a, req) {
   put_('Accounts', a, a._row);
   nstatFlush_();
 }
-/* PR3 (ballar) shu yerga ulanadi */
-function onSeen_(a, prev) {}
 
 function daysBetween_(a, b) { return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5); }
 function odSum_(accId, td) {
@@ -1323,6 +1342,130 @@ function oylik() {
     Utilities.sleep(50);
   });
   nstatFlush_();
+}
+
+
+/* ======================= SODIQLIK DASTURI =======================
+ * Standart: «Oldi-Berdi ballari» — ball va darajalar. Biznes: «Hamkor do'kon» — to'langan oylar (staj).
+ * Hamma hisob SERVERDA. Qiymatlar admin panelda o'zgaradi (Meta: loyalty_cfg). */
+const LOYAL_DEF_ = { login: 2, streak7: 20, tx: 3, txMax: 10, ontime: 10, invite: 100, invitePrem: 300, back: 50, lv1: 200, lv2: 600, lv3: 1500, r7: 300, r30: 1000, goldDisc: 20, bizSilverDisc: 10, bizGoldDisc: 15, bizRefDays: 30 };
+const STD_LV_ = [['🌱', 'Yangi', 'Новичок'], ['🥉', 'Faol', 'Активный'], ['🥈', 'Ishonchli', 'Надёжный'], ['🥇', 'Oltin', 'Золотой']];
+const BIZ_LV_ = [['🏪', 'Start', 'Старт', 0], ['🥈', 'Kumush', 'Серебро', 3], ['🥇', 'Oltin', 'Золото', 6], ['💎', 'Platina', 'Платина', 12]];
+let LCFG_MEMO_ = null;
+function loyalCfg_() {
+  if (LCFG_MEMO_) return LCFG_MEMO_;
+  let o = {}; try { o = JSON.parse(meta_('loyalty_cfg') || '{}') || {}; } catch (e) {}
+  const r = {}; Object.keys(LOYAL_DEF_).forEach(function (k) { const v = Number(o[k]); r[k] = o[k] !== undefined && o[k] !== '' && v >= 0 ? v : LOYAL_DEF_[k]; });
+  return (LCFG_MEMO_ = r);
+}
+function lyl_(a) { const v = a.loyal; return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }
+function stdLevel_(earned) { const c = loyalCfg_(); return earned >= c.lv3 ? 3 : earned >= c.lv2 ? 2 : earned >= c.lv1 ? 1 : 0; }
+function lvName_(L, i, a) { return L[i][0] + ' ' + L[i][a && a.lang === 'ru' ? 2 : 1]; }
+function isStd_(a) { return mode_(a) !== 'biz'; }
+/* ball qo'shish/ayirish (faqat Standart yo'lida). why — tarix uchun qisqa izoh */
+function addPts_(a, n, why) {
+  if (!n || !isStd_(a)) return;
+  const L = lyl_(a), c = loyalCfg_();
+  const before = stdLevel_(Number(a.earned) || 0), hadR7 = (Number(a.points) || 0) >= c.r7;
+  a.points = Math.max(0, (Number(a.points) || 0) + n);
+  if (n > 0) a.earned = (Number(a.earned) || 0) + n;
+  L.h = [{ at: Date.now(), p: n, t: why }].concat(L.h || []).slice(0, 20);
+  a.loyal = L;
+  const after = stdLevel_(Number(a.earned) || 0);
+  a.level = String(after);
+  if (after > before) try { notify_(a, 'level', { daraja: lvName_(STD_LV_, after, a) }, { noSave: true }); } catch (e) {}
+  else if (!hadR7 && a.points >= c.r7 && c.r7 > 0) try { notify_(a, 'ball', { ball: a.points }, { noSave: true }); } catch (e) {}
+}
+/* ilovaga kirish: kuniga 1 marta */
+function onSeen_(a, prev) {
+  const c = loyalCfg_(), td = today_();
+  if (!isStd_(a)) return;
+  if (c.login) addPts_(a, c.login, 'Ilovaga kirish');
+  if (a.streak > 1 && a.streak % 7 === 0 && c.streak7) addPts_(a, c.streak7, a.streak + ' kun ketma-ket');
+  if (prev && daysBetween_(prev, td) >= 14 && c.back) addPts_(a, c.back, 'Qaytganingiz uchun sovg\'a');
+}
+/* yangi yozuv: +tx (kuniga ko'pi bilan txMax), o'z qarzini muddatida qaytarish: +ontime (kuniga 1) */
+function onNewTx_(a, t, people) {
+  const c = loyalCfg_(), td = today_(), L = lyl_(a);
+  let changed = false;
+  if (a.ref && !L.refOk) {   // taklif bilan kelgan do'st birinchi yozuvini qildi — taklif qilganga ball
+    L.refOk = 1; a.loyal = L; changed = true;
+    try { refReward_(a, 'join'); } catch (e) { console.error(e); }
+  }
+  if (!isStd_(a)) return changed;
+  if (L.d !== td) { L.d = td; L.tx = 0; L.ot = 0; }
+  if ((L.tx || 0) < c.txMax && c.tx) { L.tx = (L.tx || 0) + 1; a.loyal = L; addPts_(a, c.tx, 'Yangi yozuv'); t.pts = 1; changed = true; }
+  if (t.type === 'paid' && !L.ot && c.ontime) {
+    // shu odamdan olingan, muddati bugundan keyin/bugun bo'lgan va kamida 1 kun oldin yozilgan qarz bo'lsa
+    const ok = all_('Tx').some(function (x) { return x.acc === a.id && x.pid === t.pid && x.type === 'borrow' && x.due && x.due >= t.date && (Number(x.createdAt) || 0) < Date.now() - 864e5; });
+    if (ok) {
+      const b = balances_(a.id); if ((b.bal[t.pid] || 0) >= -0.5) { L.ot = 1; a.loyal = L; addPts_(a, c.ontime, "Qarzni muddatida qaytardingiz"); changed = true; }
+    }
+  }
+  return changed;
+}
+function onDelTx_(a, t) { if (t && String(t.pts) === '1' && isStd_(a)) { addPts_(a, -loyalCfg_().tx, "Yozuv o'chirildi"); return true; } return false; }
+/* taklif: join — do'st birinchi yozuvini qildi; prem — do'st Premium sotib oldi; biz — do'kon Biznes uchun to'ladi */
+function refReward_(inv, kind) {
+  const r = all_('Accounts').filter(function (x) { return x.id === inv.ref; })[0]; if (!r) return;
+  const c = loyalCfg_();
+  if (kind === 'biz') {
+    if (mode_(r) !== 'biz' || !c.bizRefDays) return;
+    grantBiz_(r.id, c.bizRefDays);
+    const r2 = all_('Accounts').filter(function (x) { return x.id === r.id; })[0];
+    notify_(r2, 'ref', { dokon2: bizShop_(inv.id) || inv.name });
+    return;
+  }
+  if (!isStd_(r)) return;
+  const n = kind === 'prem' ? c.invitePrem : c.invite; if (!n) return;
+  addPts_(r, n, (kind === 'prem' ? 'Do\'stingiz Premium oldi: ' : 'Do\'st taklifi: ') + inv.name);
+  notify_(r, 'ref', { dost: firstName_(inv.name), ball: n }, { noSave: true });
+  put_('Accounts', r, r._row);
+}
+/* Biznes staji: to'langan Biznes oylari (admin qo'lda bergani hisobga kirmaydi) */
+function bizMonths_(accId, pays) {
+  let d = 0; (pays || all_('Payments')).forEach(function (p) { if (p.acc === accId && p.status === 'paid' && PLANS[p.tarif] && PLANS[p.tarif].biz) d += Number(p.days) || 0; });
+  return Math.floor(d / 30 + 0.01);
+}
+function bizLevel_(m) { return m >= 12 ? 3 : m >= 6 ? 2 : m >= 3 ? 1 : 0; }
+/* shaxsiy narx: Oltin (Standart) — yillik −goldDisc%, Kumush/Oltin/Platina (Biznes) — yillik chegirma */
+function discFor_(a, plan) {
+  const c = loyalCfg_();
+  if (plan === 'year' && isStd_(a) && stdLevel_(Number(a.earned) || 0) === 3) return c.goldDisc;
+  if (plan === 'bizyear' && mode_(a) === 'biz') { const l = bizLevel_(bizMonths_(a.id)); return l === 1 ? c.bizSilverDisc : l >= 2 ? c.bizGoldDisc : 0; }
+  return 0;
+}
+function priceFor_(a, plan) { const p = prices_()[plan] || 0, d = discFor_(a, plan); return d ? Math.round(p * (100 - d) / 100 / 100) * 100 : p; }
+function myPrices_(a) { const p = prices_(); ['year', 'bizyear'].forEach(function (k) { if (p[k] > 0) { const d = discFor_(a, k); if (d) { p[k + 'Full'] = p[k]; p[k] = priceFor_(a, k); p[k + 'Disc'] = d; } } }); return p; }
+/* to'lovdan keyin: taklif mukofoti, Biznes darajasi, Platina — har 12 oyda 1 oy bepul */
+function onPaid_(accId, plan) {
+  const a = all_('Accounts').filter(function (x) { return x.id === accId; })[0]; if (!a) return;
+  const L = lyl_(a);
+  if (a.ref) {
+    if (PLANS[plan] && PLANS[plan].biz) { if (!L.refBiz) { L.refBiz = 1; a.loyal = L; put_('Accounts', a, a._row); refReward_(a, 'biz'); } }
+    else if (!L.refPrem) { L.refPrem = 1; a.loyal = L; put_('Accounts', a, a._row); refReward_(a, 'prem'); }
+  }
+  if (PLANS[plan] && PLANS[plan].biz) {
+    const m = bizMonths_(a.id), lv = bizLevel_(m), was = Number(L.bl) || 0;
+    const a2 = all_('Accounts').filter(function (x) { return x.id === accId; })[0], L2 = lyl_(a2);
+    if (lv > was) { L2.bl = lv; a2.loyal = L2; put_('Accounts', a2, a2._row); notify_(a2, 'level', { daraja: lvName_(BIZ_LV_, lv, a2), dokon: bizShop_(a2.id) }); }
+    const years = Math.floor(m / 12), got = Number(L2.pf) || 0;
+    if (years > got) { const a3 = all_('Accounts').filter(function (x) { return x.id === accId; })[0], L3 = lyl_(a3); L3.pf = years; a3.loyal = L3; put_('Accounts', a3, a3._row); grantBiz_(accId, 30); notifyTg_(accId, '💎 Platina hamkor sovg\'asi: Biznes tarifiga <b>1 oy bepul</b> qo\'shildi!'); }
+  }
+}
+/* ilovaga yuboriladigan qisqa ma'lumot */
+function loyal_(a) {
+  const c = loyalCfg_(), L = lyl_(a), base = appUrl_() + '?ref=' + a.id;
+  if (mode_(a) === 'biz') {
+    const pays = all_('Payments'), m = bizMonths_(a.id, pays), lv = bizLevel_(m);
+    const refs = all_('Accounts').filter(function (x) { return x.ref === a.id; });
+    const paidRefs = refs.filter(function (x) { return pays.some(function (p) { return p.acc === x.id && p.status === 'paid' && PLANS[p.tarif] && PLANS[p.tarif].biz; }); }).length;
+    return { kind: 'biz', months: m, level: lv, next: lv < 3 ? BIZ_LV_[lv + 1][3] - m : 0, disc: discFor_(a, 'bizyear'), silver: c.bizSilverDisc, gold: c.bizGoldDisc, refDays: c.bizRefDays, ref: base, refs: refs.length, paidRefs: paidRefs };
+  }
+  const e = Number(a.earned) || 0, lv = stdLevel_(e), th = [0, c.lv1, c.lv2, c.lv3];
+  return { kind: 'std', points: Number(a.points) || 0, earned: e, level: lv, th: th, next: lv < 3 ? th[lv + 1] - e : 0, streak: Number(a.streak) || 0, r7: c.r7, r30: c.r30, goldDisc: c.goldDisc, disc: discFor_(a, 'year'),
+    earn: { login: c.login, streak7: c.streak7, tx: c.tx, txMax: c.txMax, ontime: c.ontime, invite: c.invite, invitePrem: c.invitePrem },
+    h: (L.h || []).slice(0, 12), ref: base, refs: all_('Accounts').filter(function (x) { return x.ref === a.id; }).length };
 }
 
 /* Biznes: har kuni 20:00 da do'kon egasiga kunlik natija (botSetup trigger qo'yadi) */
