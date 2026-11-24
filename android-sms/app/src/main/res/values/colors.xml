@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand">#13894a</color>
+    <color name="brand_dark">#0b5c33</color>
+    <color name="lime">#bff26f</color>
+    <color name="bg">#edf5ef</color>
+    <color name="ink">#0e2a1b</color>
+    <color name="muted">#6b7d72</color>
+    <color name="card">#ffffff</color>
+    <color name="warn_bg">#fff4d6</color>
+    <color name="warn">#7a5300</color>
+</resources>
