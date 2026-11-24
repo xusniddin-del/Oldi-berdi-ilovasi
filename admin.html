@@ -166,6 +166,13 @@ h1.page{font-size:24px;font-weight:800;letter-spacing:-.03em;margin:8px 2px 2px}
 textarea.inp{height:auto;min-height:130px;padding:12px 13px;resize:vertical;line-height:1.45}
 .mtag{font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;background:var(--surface-2,#eef3ef);color:var(--muted);margin-left:6px;vertical-align:1px;white-space:nowrap}.mtag.biz{background:var(--plum-bg);color:var(--plum)}
 .modes2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modes2 button{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;border:1px solid var(--line);background:none;font:inherit;color:inherit;cursor:pointer;text-align:left}.modes2 span{font-size:24px}.modes2 small{display:block;color:var(--muted);font-size:12px}.modes2 b{font-size:20px}
+.lv4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.lv4 button{display:flex;align-items:center;gap:8px;padding:10px;border-radius:14px;border:1px solid var(--line);background:var(--card,#fff);font:inherit;color:inherit;cursor:pointer;text-align:left;min-width:0}.lv4 span{font-size:20px}.lv4 small{display:block;color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lv4 b{font-size:18px}
+@media (max-width:520px){.lv4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.chip{border:1px solid var(--line);background:var(--card,#fff);border-radius:99px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.lcfg{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}.lcfg label{font-size:12.5px}
+.mtag.prio{background:#fff4d6;color:#7a5300}
+.sh-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.sh-h b{font-size:18px}
+code{font-size:12px;background:var(--surface-2,#eef3ef);padding:1px 4px;border-radius:5px}
 .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .price-grid .field{margin:0}
 .unit{position:relative}.unit .inp{padding-right:54px}.unit::after{content:"so'm";position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--faint);font-weight:700}
@@ -392,11 +399,11 @@ function derive(){
 function delta(cur,prev){if(!prev&&!cur)return '<span class="delta eq">0%</span>';if(!prev)return '<span class="delta up">yangi</span>';const p=Math.round((cur-prev)/prev*100);return `<span class="delta ${p>0?'up':p<0?'down':'eq'}">${p>0?'+':''}${p}%</span>`}
 
 /* ---------- render ---------- */
-const TABS=[['home','home','Asosiy'],['users','users','Mijozlar'],['feat','grid','Sozlamalar'],['pays','card',"To'lovlar"],['msg','send','Xabar']];
-const TITLES={home:['Asosiy','Bugungi holat bir qarashda'],users:['Mijozlar',''],feat:['Sozlamalar',"Bo'limlar va narxlar — o'zgarish hammada darhol ishlaydi"],pays:["To'lovlar",'Botdagi Premium va Biznes to\'lovlari'],msg:['Xabar yuborish','Bot orqali mijozlarga e\'lon']};
+const TABS=[['home','home','Asosiy'],['users','users','Mijozlar'],['loyal','star','Sodiqlik'],['feat','grid','Sozlamalar'],['pays','card',"To'lovlar"],['msg','send','Xabar']];
+const TITLES={home:['Asosiy','Bugungi holat bir qarashda'],users:['Mijozlar',''],feat:['Sozlamalar',"Bo'limlar va narxlar — o'zgarish hammada darhol ishlaydi"],pays:["To'lovlar",'Botdagi Premium va Biznes to\'lovlari'],loyal:['Sodiqlik','Ballar, hamkorlar, xabarlar va qaytib kelish'],msg:['Xabar yuborish','Bot orqali mijozlarga e\'lon']};
 function render(){
   const v=S.tab,d=derive(),att=d.trialEnd.length+d.premEnd.length;
-  const body=v==='home'?vHome(d):v==='users'?vUsers():v==='feat'?vFeat():v==='pays'?vPays():vMsg();
+  const body=v==='home'?vHome(d):v==='users'?vUsers():v==='feat'?vFeat():v==='pays'?vPays():v==='loyal'?vLoyal():vMsg();
   const cnt=k=>k==='users'&&S.users?S.users.length:'';
   const name=S.me&&S.me.name||'Admin';
   $('#app').innerHTML=`<div class="shell">
@@ -466,7 +473,7 @@ function barChart(vals,labels,color,money){
   return `<svg viewBox="0 0 ${W} ${H}" role="img">${bars}${lab}<line x1="0" x2="${W}" y1="${H-18}" y2="${H-18}" stroke="var(--line)"/></svg>`;
 }
 const ML={std:'Standart',biz:'Biznes'};
-function modeTag(u){return u.mode?` <span class="mtag ${u.mode}">${u.mode==='biz'?'🏪':'👤'} ${ML[u.mode]}</span>`:''}
+function modeTag(u){return (u.mode?` <span class="mtag ${u.mode}">${u.mode==='biz'?'🏪':'👤'} ${ML[u.mode]}</span>`:'')+(u.mode==='biz'&&u.lv>=2?' <span class="mtag prio" title="Ustuvor yordam">⚡ Ustuvor</span>':'')}
 function untilTxt(u){if(u.t==='free')return '';const s=u.t==='biz'?(u.bizUntil||u.until):u.until;if(!s)return 'muddatsiz';const n=daysTo(s);return n<0?'tugagan':n===0?'bugun tugaydi':n+' kun qoldi'}
 function userRow(u){
   const sub=[fphone(u.phone),u.tx?u.tx+' yozuv':''].filter(Boolean).join(' · ');
@@ -575,6 +582,50 @@ function vFeat(){
 }
 function saveNote(m,y){const full=m*12,save=m>0&&y>0?full-y:0;return save>0?`<div class="save-note">${ic('check2')}<span>Yillikda mijoz <b>${fmt(save)} so'm</b> tejaydi (−${Math.round(save/full*100)}%) · oyiga ${fmt(Math.round(y/12))} so'm</span></div>`:'<div style="height:10px"></div>'}
 
+/* ---------- Sodiqlik ---------- */
+const SLV=[['🌱','Yangi'],['🥉','Faol'],['🥈','Ishonchli'],['🥇','Oltin']],BLV=[['🏪','Start'],['🥈','Kumush'],['🥇','Oltin'],['💎','Platina']];
+const LCFG_L=[['login','Ilovaga kirish (kuniga 1)'],['streak7','7 kun ketma-ket bonus'],['tx','Yangi yozuv'],['txMax','Kuniga nechta yozuv hisoblanadi'],['ontime','Qarzni muddatida qaytarish'],['invite',"Do'st taklifi"],['invitePrem',"Do'st Premium olsa"],['back','14+ kundan keyin qaytsa'],['lv1','🥉 Faol — ball'],['lv2','🥈 Ishonchli — ball'],['lv3','🥇 Oltin — ball'],['r7','7 kun Premium — narxi (ball)'],['r30','1 oy Premium — narxi (ball)'],['goldDisc','🥇 Oltin: yillik Premium chegirma %'],['bizSilverDisc','Biznes 🥈 Kumush: yillik chegirma %'],['bizGoldDisc','Biznes 🥇 Oltin/💎 Platina: yillik chegirma %'],['bizRefDays',"Biznes taklif: to'lagan do'kon uchun bepul kun"]];
+async function loadLoyal(silent){try{S.ly=await api('admLoyal')}catch(e){toast(e.message);S.ly=S.ly||null}if(!silent)render()}
+function vLoyal(){const L=S.ly;if(!L)return `<div class="kpis">${'<div class="skel" style="height:118px"></div>'.repeat(4)}</div><div class="skel" style="height:300px;margin-top:14px"></div>`;
+ const st=L.stats||{},sum=k=>Object.keys(st).filter(x=>x.startsWith(k+':')).reduce((z,x)=>z+st[x],0);
+ const inF=S.lyIn||1,mF=S.lyM||'all';const inL=L.inact.filter(u=>(inF===1?u.days===1:u.days>=inF)&&(mF==='all'||(mF==='biz'?u.mode==='biz':u.mode!=='biz')));
+ const lvRow=(arr,names,m)=>`<div class="lv4">${names.map((x,i)=>`<button data-lyto="lv:${m}:${i}"><span>${x[0]}</span><div><small>${x[1]}</small><b class="num">${arr[i]}</b></div></button>`).join('')}</div>`;
+ const sentTot=Object.keys(L.kinds).reduce((z,k)=>z+sum(k),0);
+ return `<div class="kpis">
+  <div class="card kpi k-brand"><div class="kh"><span class="ki">${ic('user')}</span>Bugun kirdi</div><b class="num">${L.seenToday}</b><div class="kf">${L.total} mijozdan</div></div>
+  <div class="card kpi k-warn"><div class="kh"><span class="ki">${ic('clock')}</span>3+ kun kirmagan</div><b class="num">${L.inact.filter(u=>u.days>=3).length}</b><div class="kf">7+ kun: ${L.inact.filter(u=>u.days>=7).length}</div></div>
+  <div class="card kpi k-sky"><div class="kh"><span class="ki">${ic('bell')}</span>Xabarlar · 30 kun</div><b class="num">${sentTot}</b><div class="kf">push: ${sum('push')} · qaytdi: ${sum('ret')}</div></div>
+  <div class="card kpi k-plum"><div class="kh"><span class="ki">${ic('bolt')}</span>Push bosildi</div><b class="num">${L.os&&L.os.sent?Math.round(L.os.clicked/L.os.sent*100)+'%':'—'}</b><div class="kf">${L.os&&L.os.sent!==undefined?`${L.os.clicked}/${L.os.sent} · so'nggi ${L.os.n} xabar`:L.pushOn?'OneSignal javob bermadi':'OneSignal ulanmagan'}</div></div></div>
+ <div class="set2"><div>
+  <div class="sec"><h2>👤 Standart darajalari</h2><span class="hint">ballar bo'yicha</span></div>${lvRow(L.std,SLV,'std')}
+  <div class="sec"><h2>🏪 Hamkor do'konlar</h2><span class="hint">to'langan oylar bo'yicha</span></div>${lvRow(L.biz,BLV,'biz')}
+  <div class="sec"><h2>Kirmaganlar</h2><span class="hint">${inL.length} kishi</span></div>
+  <div class="chips">${[[1,'Bugun'],[3,'3+ kun'],[7,'7+ kun'],[14,'14+ kun']].map(([k,l])=>`<button class="chip ${inF===k?'on':''}" data-lyin="${k}">${l}</button>`).join('')}<span style="width:8px"></span>${[['all','Hammasi'],['std','Standart'],['biz','Biznes']].map(([k,l])=>`<button class="chip ${mF===k?'on':''}" data-lym="${k}">${l}</button>`).join('')}</div>
+  <div class="card list">${inL.slice(0,60).map(u=>`<div class="row" data-user="${u.id}"><span class="ava" style="background:${avc(u.id)}1f;color:${avc(u.id)}">${esc(ini(u.name))}</span><div class="mid"><div class="t1">${esc(u.name)} ${u.mode?`<span class="mtag ${u.mode}">${u.mode==='biz'?'🏪':'👤'}</span>`:''}</div><div class="t2">${u.days} kun oldin · ${fdate(u.lastSeen)}${u.tg?' · bot':''}${u.push?' · push':''}</div></div>${ic('chev')}</div>`).join('')||'<div class="empty">Hech kim yo\'q 🎉</div>'}</div>
+  ${inL.length?`<button class="btn btn-ghost w100" style="margin-top:10px" data-lyto="in:${inF}">${ic('send')} Shularga xabar yozish</button>`:''}
+  <div class="sec"><h2>Xabar turlari</h2><span class="hint">30 kunda yuborilgan</span></div>
+  <div class="card list">${Object.keys(L.kinds).filter(k=>k!=='manual').map(k=>{const on=L.msgs[k]&&L.msgs[k].on!==false;const n=(L.msgs[k]&&['std','biz'].reduce((z,m)=>z+(L.msgs[k][m].uz||[]).length,0))||0;
+   return `<div class="feat"><div class="mid"><div class="t1">${esc(L.kinds[k].t)}</div><div class="t2"><span class="num">${sum(k)}</span> ta yuborildi${k==='due'?'':` · ${n} variant`}</div></div>${k==='due'?'':`<button class="btn btn-ghost btn-sm" data-lymsg="${k}">Matnlar</button>`}<div class="seg"><button class="${on?'':'on m-off'}" data-lyon="${k}" data-v="0">O'chiq</button><button class="${on?'on':''}" data-lyon="${k}" data-v="1">Yoqiq</button></div></div>`}).join('')}</div>
+ </div><div>
+  <div class="sec"><h2>Qo'lda yuborish</h2><span class="hint">push + bot</span></div>
+  <div class="card pad"><div class="field"><label for="ly-to">Kimga</label><select class="inp" id="ly-to">${[['all','Hammaga'],['std','👤 Standart'],['biz','🏪 Biznes'],...SLV.map((x,i)=>['lv:std:'+i,'👤 '+x[0]+' '+x[1]]),...BLV.map((x,i)=>['lv:biz:'+i,'🏪 '+x[0]+' '+x[1]]),['in:3','3+ kun kirmaganlar'],['in:7','7+ kun kirmaganlar'],['in:14','14+ kun kirmaganlar']].map(([k,l])=>`<option value="${k}" ${S.lyTo===k?'selected':''}>${l}</option>`).join('')}</select></div>
+  <textarea class="inp" id="ly-text" maxlength="600" placeholder="Masalan: Yangi imkoniyat — Ballarim! Profil'da ko'ring 🎁">${esc(S.lyDraft||'')}</textarea>
+  <button class="btn btn-primary w100" style="margin-top:12px" data-lysend="1">${ic('send')} Yuborish</button>
+  <p class="hint" style="margin:8px 0 0">«Takliflar»ni o'chirgan mijozlarga bormaydi. Telefon bildirishnomasi 22:00–08:00 da ertalabgacha kutadi.</p></div>
+  <div class="sec"><h2>Ball va mukofotlar</h2><span class="hint">0 — o'chiq</span></div>
+  <div class="card pad"><div class="lcfg">${LCFG_L.map(([k,l])=>`<div class="field"><label for="lc-${k}">${l}</label><input class="inp num" id="lc-${k}" inputmode="numeric" value="${L.cfg[k]}" placeholder="${L.def[k]}"></div>`).join('')}</div>
+  <button class="btn btn-primary w100" data-lycfg="1">Saqlash</button>
+  <p class="hint" style="margin:8px 0 0">Darajalar umrbod yig'ilgan ballga qarab beriladi — mukofotga almashtirish darajani tushirmaydi. Ball faqat Standart yo'lida yig'iladi.</p></div>
+  <div class="sec"><h2>Kanallar</h2></div>
+  <div class="card list"><div class="row"><span class="ava" style="background:var(--sky-bg);color:var(--sky)">${ic('send')}</span><div class="mid"><div class="t1">Telegram bot</div><div class="t2">${L.tgUsers} mijoz ulangan</div></div></div>
+  <div class="row"><span class="ava" style="background:var(--plum-bg);color:var(--plum)">${ic('bell')}</span><div class="mid"><div class="t1">Telefon push (OneSignal)</div><div class="t2">${L.pushOn?`${L.pushUsers} mijoz obuna`:"Ulanmagan — Script Properties'ga ONESIGNAL_APP_ID va ONESIGNAL_API_KEY qo'shing"}</div></div></div></div>
+ </div></div>`}
+function msgEditor(k){const L=S.ly,m=L.msgs[k];const ta=(mm,l,t)=>`<div class="field"><label>${t}</label><textarea class="inp" data-me="${mm}.${l}" rows="${Math.max(4,(m[mm][l]||[]).length*2+1)}">${esc((m[mm][l]||[]).join('\n'))}</textarea></div>`;
+ openSheet(`<div class="sh-h"><b>${esc(L.kinds[k].t)}</b><button class="icon-btn" data-close="1">${ic('x')}</button></div>
+ <p class="hint" style="margin:0 0 12px">Har bir qator — bitta variant, navbat bilan yuboriladi. O'zgaruvchilar: <code>{ism} {soni} {summa} {dokon} {ball} {daraja} {streak} {qaytdi} {berildi} {mijoz} {dost} {dokon2} {kun}</code>. Qiymati 0 yoki bo'sh bo'lgan o'zgaruvchili variant o'tkazib yuboriladi.</p>
+ ${ta('std','uz','👤 Standart · o\'zbekcha')}${ta('std','ru','👤 Standart · ruscha')}${ta('biz','uz','🏪 Biznes · o\'zbekcha')}${ta('biz','ru','🏪 Biznes · ruscha')}
+ <button class="btn btn-primary w100" data-mesave="${k}">Saqlash</button><button class="btn btn-ghost w100" style="margin-top:8px" data-mereset="${k}">Asl matnlarga qaytarish</button>`)}
+
 /* ---------- To'lovlar ---------- */
 const PST={paid:"To'langan",active:'Kutilmoqda',created:'Kutilmoqda',expired:'Muddati o\'tgan',cancelled:'Bekor qilingan'};
 const PTL={month:'1 oy',year:'1 yil',biz:'Biznes · 1 oy',bizyear:'Biznes · 1 yil'};
@@ -610,11 +661,22 @@ function vMsg(){
 }
 
 /* ---------- hodisalar ---------- */
-function go(t){S.tab=t;haptic();if(t==='pays'&&!S.pays)loadPays();render();window.scrollTo(0,0)}
+function go(t){S.tab=t;haptic();if(t==='pays'&&!S.pays)loadPays();if(t==='loyal'&&!S.ly)loadLoyal();render();window.scrollTo(0,0)}
 document.addEventListener('click',async e=>{
   const b=e.target.closest('button,[data-user],[data-pick]');if(!b)return;const d=b.dataset;
   if(d.go){closeSheet(true);go(d.go);return}
-  if(d.reload){reloadAll();return}
+  if(d.reload){reloadAll();if(S.tab==='loyal')loadLoyal();return}
+  if(d.lyin){S.lyIn=+d.lyin;render();return}
+  if(d.lym){S.lyM=d.lym;render();return}
+  if(d.lyto){S.lyDraft=($('#ly-text')||{}).value||S.lyDraft;S.lyTo=d.lyto;render();setTimeout(()=>{const t=$('#ly-text');if(t){t.scrollIntoView({behavior:'smooth',block:'center'});t.focus()}},60);return}
+  if(d.lymsg){msgEditor(d.lymsg);return}
+  if(d.lyon){const k=d.lyon,on=d.v==='1';try{const j=await api('admMsgCfg',{key:k,on});S.ly.msgs=j.msgs;haptic('ok');toast(on?'Yoqildi':"O'chirildi");render()}catch(er){toast(er.message)}return}
+  if(d.mesave||d.mereset){const k=d.mesave||d.mereset;const body={key:k};if(d.mereset){if(!await confirmBox('Asl matnlar tiklansinmi?'))return;body.reset=1}else{['std','biz'].forEach(m=>{body[m]={};['uz','ru'].forEach(l=>{const el=document.querySelector(`[data-me="${m}.${l}"]`);body[m][l]=(el?el.value:'').split('\n').map(x=>x.trim()).filter(Boolean)})})}
+    b.disabled=true;try{const j=await api('admMsgCfg',body);S.ly.msgs=j.msgs;haptic('ok');toast('Saqlandi');closeSheet();render()}catch(er){toast(er.message);b.disabled=false}return}
+  if(d.lycfg){const cfg={};LCFG_L.forEach(([k])=>{const v=String(($('#lc-'+k)||{}).value||'').replace(/\D/g,'');if(v!=='')cfg[k]=+v});b.disabled=true;try{const j=await api('admLoyalCfg',{cfg});S.ly.cfg=j.cfg;haptic('ok');toast('Saqlandi');render()}catch(er){toast(er.message);b.disabled=false}return}
+  if(d.lysend){const text=(($('#ly-text')||{}).value||'').trim(),to=($('#ly-to')||{}).value||'all';if(!text){toast('Matnni yozing');return}
+    if(!await confirmBox('Xabar tanlangan guruhga push va bot orqali yuboriladi. Davom etamizmi?'))return;
+    b.disabled=true;b.textContent='Yuborilmoqda…';try{const j=await api('admNotify',{text,to});S.lyDraft='';haptic('ok');toast(`✅ ${j.n} kishiga yuborildi${j.skip?` · ${j.skip} tasi o'tkazildi`:''}`);loadLoyal()}catch(er){toast(er.message);b.disabled=false;b.textContent='Yuborish'}return}
   if(d.flt){S.flt=d.flt;if(S.tab!=='users'){S.tab='users';window.scrollTo(0,0)}render();return}
   if(d.pick){closeSheet(true);openUser(d.pick,'plan');return}
   if(d.user){haptic();openUser(d.user);return}
