@@ -650,8 +650,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=50;
-const WHATS_NEW=["Telefonga bildirishnoma endi o'zi yoqiladi — telefon bir marta «Ruxsat berish»ni so'raydi"];
+const APP_VERSION=51;
+const WHATS_NEW=["Eslatma SMS'larida ism yoniga «aka» yoki «opa» o'zi qo'shiladi","Tasdiqlash havolasi endi oldiberdi.uz manzili bilan"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1723,7 +1723,7 @@ function debtSheet(){const ds=debtRows();if(!ds.length){toast("Hozircha qarzdor 
  <div class="actions" style="margin-top:14px"><button class="btn btn-primary tg-btn" data-act="debtTg">${I.send} Telegram'ga yuborish</button><button class="btn btn-ghost" data-act="debtXlsx">${I.download} Excel</button></div>
  <button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="debtCopy">Matnni nusxalash</button>`,'debts')}
 function debtListText(){const ds=debtRows(),shop=shopLine();
- return `${shop?shop+'\n':''}${tr("Qarzdorlar ro'yxati")} · ${tr(fdate(today()))}\n\n${ds.map((x,k)=>`${k+1}. ${x.p.name}${x.p.phone?' ('+fphone(x.p.phone)+')':''} — ${tr(money(x.b))}${x.od?' · '+tr('muddati '+fdate(x.od)+' da o\'tgan'):''}`).join('\n')}\n\n${tr('Jami')}: ${tr(money(sumOf(ds,x=>x.b)))} (${ds.length} ${tr('kishi')})`}
+ return `${SMS_HEAD}\n\n${shop?shop+'\n':''}${tr("Qarzdorlar ro'yxati")} · ${tr(fdate(today()))}\n\n${ds.map((x,k)=>`${k+1}. ${x.p.name}${x.p.phone?' ('+fphone(x.p.phone)+')':''} — ${tr(money(x.b))}${x.od?' · '+tr('muddati '+fdate(x.od)+' da o\'tgan'):''}`).join('\n')}\n\n${tr('Jami')}: ${tr(money(sumOf(ds,x=>x.b)))} (${ds.length} ${tr('kishi')})\n\n${SMS_SITE}`}
 async function saveXlsx(wb,X,fn){const out=X.write(wb,{bookType:'xlsx',type:'array'});const blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
  let shared=false;try{const f=new File([blob],fn,{type:blob.type});if(/Android|iPhone|iPad/i.test(navigator.userAgent)&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});shared=true}}catch(e){if(e&&e.name==='AbortError')shared=true}
  if(!shared){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},4000);toast(tr('Excel fayl yuklab olindi'))}}
@@ -2041,19 +2041,34 @@ function remindList(){const td=today(),tm=addDays(td,1),out=[];const now=Date.no
  return out.sort((a,b)=>a.rank-b.rank||(S.bal[b.p.id]||0)-(S.bal[a.p.id]||0))}
 function remRowHtml(x){const ph=normPhone(x.p.phone||'');return `<div class="rem-row" id="rem-${x.p.id}">${avatar(x.p,42)}<div class="mid"><b>${esc(x.p.name)}</b><small class="why ${x.why}">${x.label}</small><small class="num">${money(S.bal[x.p.id]||0)}${ph||msgCh()==='tg'?'':' · raqam yo\'q'}</small></div><div class="rem-btns"><button class="btn btn-primary btn-sm" data-act="remSms" data-id="${x.p.id}">${msgCh()==='tg'?'Telegram':ph?'SMS yuborish':'Raqam kiritish'}</button><button class="btn btn-ghost btn-sm" data-act="remSnooze" data-id="${x.p.id}">Keyinroq</button></div></div>`}
 function maybeRemindPrompt(){maybeInstPrompt();maybeTrialAsk();if(!S.acc||locked('remind')||S.locked||S.setup||sheets.length||S.view!=='home'||!S.loaded.t)return;if(LS.get('oldiberdi_remauto')==='off')return;if(LS.get('oldiberdi_remprompt')===today())return;if(!remindList().length)return;LS.set('oldiberdi_remprompt',today());setTimeout(()=>{if(!sheets.length&&!S.locked&&!S.setup)A.remCenter()},900)}
+/* SMS'da ilova reklamasi: tepada nom, oxirida sayt */
+const SMS_HEAD='Oldi-Berdi',SMS_SITE='Oldiberdi.uz';
+/* ismga qarab «aka» yoki «opa»: ayol ismlari odatda -a, -oy, -gul, -xon, -niso… bilan tugaydi; aniq bo'lmasa — hech narsa qo'shilmaydi */
+const MALE_A=['musa','iso','isa','yahyo','zakariyo','mustafo','mustafa','murtazo','mirzo','mullo','ota','raja','hamza','usama','muso','yunusa','safo','vafo','ziyo','taqa','luqmon'];
+const FEM=['mohinur','gulnur','dilnur','oydin','nilufar','barno','yulduz','shirin','saodat','sabohat','mehrinoz','dilnoz','gulnoz','ra\'no','rano','mohigul','zebo','nasiba','mohlaroy','xurshid','sevinch','ozod','dilorom','marhabo','mohim','shahlo','gavhar','mavjud','surayyo','muhayyo','ziyoda','hilola','nargiz','kumush','oysha','zarina','ruxsor','gulruh','mohira'];
+function hon(name){const n=String(name||'').trim();if(!n)return n;
+ if(/\b(aka|opa|ota|ona|xola|amaki|tog'a|tog‘a|buvi|bobo|xonim|janob|domla|ustoz|hoji|aya)\b/i.test(n))return n;
+ const f=n.split(/\s+/)[0].toLowerCase().replace(/[‘’`ʻʼ]/g,"'");
+ if(!/^[a-z'ʻ-]+$/.test(f))return n;
+ if(FEM.includes(f)&&f!=='xurshid'&&f!=='ozod'&&f!=='mavjud')return n+' opa';
+ if(/(xon|oy|gul|niso|nisa|bonu|bibi|begim|poshsha|noz|o'r|lo)$/.test(f))return n+' opa';
+ if(/a$/.test(f)&&!MALE_A.includes(f))return n+' opa';
+ if(/(bek|jon|boy|ali|ulla|iddin|dor|mat|mad|mon|nur|sher|ur|im|in|on|im|il|ov|ev|ar|or|er|ir|zod|bor|tosh|qul|vali|mal|lol|od|iz|uz|am|an|un|at|ot|id|ib|ob|ub|ug|oh|ix|ux|qob|sur|mur|bur|jur|om)$/.test(f)||MALE_A.includes(f))return n+' aka';
+ return n}
+function smsFoot(){const s=isBiz()&&isBizMode()&&shopLine();return (s?s+'\n':'')+SMS_SITE}
 function remindText(p){if(isRu())return remindTextRu(p);const b=S.bal[p.id]||0;const od=overdueOf(p.id);let next=null,due=null;
  for(const x of Object.values(S.tx)){if(x.pid!==p.id||x.type!=='lend')continue;const L=S.alloc[x.id];if(!L||L.left<=0.5)continue;const i=nextInst(L);if(i&&(!next||i.d<next.d))next={d:i.d,a:L.t.cur==='USD'?'$'+fmt(i.a):fmt(i.a)+' '+cur()};if(!L.inst.length&&x.due&&(!due||x.due<due))due=x.due}
- let s=`Assalomu alaykum, ${p.name}!\n\nYodingizga solib qo'ymoqchi edim: sizda ${money(b)} qarz bor`;
+ let s=`${SMS_HEAD}\n\nAssalomu alaykum, ${hon(p.name)}!\n\nYodingizga solib qo'ymoqchi edim: sizda ${money(b)} qarz bor`;
  const u=S.usd[p.id]||0;if(u>0&&usdOn())s+=` (shundan $${fmt(u)})`;s+='.';
  if(next)s+=next.d<today()?`\n${fdate(next.d)} kuni ${next.a} to'lashingiz kerak edi.`:`\nKeyingi to'lov: ${fdate(next.d)} — ${next.a}.`;else if(od)s+=`\nQaytarish muddati ${fdate(od)} edi.`;else if(due)s+=`\nQaytarish muddati: ${fdate(due)}.`;
- return s+`\n\nRahmat!\n${signName()}`}
+ return s+`\n\nRahmat!\n${smsFoot()}`}
 function remindTextRu(p){const b=S.bal[p.id]||0;const od=overdueOf(p.id);let next=null,due=null;const R=x=>tr(x);
  for(const x of Object.values(S.tx)){if(x.pid!==p.id||x.type!=='lend')continue;const L=S.alloc[x.id];if(!L||L.left<=0.5)continue;const i=nextInst(L);if(i&&(!next||i.d<next.d))next={d:i.d,a:L.t.cur==='USD'?'$'+fmt(i.a):R(fmt(i.a)+' '+cur())};if(!L.inst.length&&x.due&&(!due||x.due<due))due=x.due}
- let s=`Здравствуйте, ${p.name}!\n\nХочу напомнить: за вами долг ${R(money(b))}`;
+ let s=`${SMS_HEAD}\n\nЗдравствуйте, ${p.name}!\n\nХочу напомнить: за вами долг ${R(money(b))}`;
  const u=S.usd[p.id]||0;if(u>0&&usdOn())s+=` (из них $${fmt(u)})`;s+='.';
  if(next)s+=next.d<today()?`\n${R(fdate(next.d))} нужно было оплатить ${next.a}.`:`\nСледующий платёж: ${R(fdate(next.d))} — ${next.a}.`;else if(od)s+=`\nСрок возврата был ${R(fdate(od))}.`;else if(due)s+=`\nСрок возврата: ${R(fdate(due))}.`;
- return s+`\n\nСпасибо!\n${signName()}`}
-function confirmLink(token){return location.origin+location.pathname.replace(/index\.html$/,'')+'?c='+token}
+ return s+`\n\nСпасибо!\n${smsFoot()}`}
+function confirmLink(token){return 'https://oldiberdi.uz/?c='+token}
 
 /* --- quick entry: "Akmalga 500 ming berdim" (typed or spoken) --- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition||null;
@@ -2323,7 +2338,7 @@ const A={
   try{await QCHAIN;const j=await api('shareTx',{id:d.id});S.confirms[d.id]={status:j.status,token:j.token};saveCache();
    const amt=amtTxt(t);const me=S.acc.name;const desc=t.type==='lend'?`${me} sizga ${amt} qarz berdi`:t.type==='borrow'?`${me} sizdan ${amt} qarz oldi`:t.type==='got'?`siz ${me}ga ${amt} qaytardingiz`:`${me} sizga ${amt} qaytardi`;
    const amtR=tr(amt),descR=t.type==='lend'?`${me} дал(а) вам в долг ${amtR}`:t.type==='borrow'?`${me} взял(а) у вас в долг ${amtR}`:t.type==='got'?`вы вернули ${me} ${amtR}`:`${me} вернул(а) вам ${amtR}`;
-   const text=isRu()?`Здравствуйте, ${p.name}!\nOldi-Berdi: ${descR} (${tr(fdate(t.date))}).\nПодтвердите: ${confirmLink(j.token)}`:`Assalomu alaykum, ${p.name}!\nOldi-Berdi: ${desc} (${fdate(t.date)}).\nTasdiqlang: ${confirmLink(j.token)}`;
+   const text=isRu()?`${SMS_HEAD}\n\nЗдравствуйте, ${p.name}!\nOldi-Berdi: ${descR} (${tr(fdate(t.date))}).\nПодтвердите: ${confirmLink(j.token)}`:`${SMS_HEAD}\n\nAssalomu alaykum, ${hon(p.name)}!\nOldi-Berdi: ${desc} (${fdate(t.date)}).\nTasdiqlang: ${confirmLink(j.token)}`;
    closeSheet();smsSheet('Tasdiqlashga yuborish',`Havola ${msgCh()==='tg'?'Telegram':'SMS'} orqali ${esc(p.name)}ga boradi. U ochib, «Ha, to'g'ri» ni bosadi va yozuv ikki tomonlama tasdiqlanadi.`,text,t.pid,'confirm')}
   catch(e){toast(writeErr(e));el.disabled=false;el.innerHTML=old}},
  smsSend:()=>{const c=S.smsCtx||{};let p=S.people[c.pid];if(!p)return;const text=($('#sh-text')||{}).value||'';let ph=normPhone(p.phone||'');const patch={};

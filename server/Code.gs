@@ -1455,7 +1455,7 @@ function onPaid_(accId, plan) {
 }
 /* ilovaga yuboriladigan qisqa ma'lumot */
 function loyal_(a) {
-  const c = loyalCfg_(), L = lyl_(a), base = appUrl_() + '?ref=' + a.id;
+  const c = loyalCfg_(), L = lyl_(a), base = 'https://oldiberdi.uz/?ref=' + a.id;
   if (mode_(a) === 'biz') {
     const pays = all_('Payments'), m = bizMonths_(a.id, pays), lv = bizLevel_(m);
     const refs = all_('Accounts').filter(function (x) { return x.ref === a.id; });
