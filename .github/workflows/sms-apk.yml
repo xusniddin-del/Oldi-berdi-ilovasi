@@ -55,7 +55,7 @@ jobs:
             android-sms/app/build/outputs/apk/debug/*.apk
           if-no-files-found: ignore
       - name: APK'ni repoga yozish
-        if: steps.ks.outputs.have == '1' && github.event_name == 'push'
+        if: steps.ks.outputs.have == '1'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898388+github-actions[bot]@users.noreply.github.com"
