@@ -59,7 +59,7 @@ function featOk_(a, f) { return feat_()[f] === 'free' || premium_(a).on; }
 const PREM_BADGES_ = ['green', 'gold', 'gem', 'crown'];
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, bulkImport: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, bulkImport: 1, setNotify: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -200,7 +200,7 @@ function loginFail_(phone) {
 function normPhone_(p) { let d = String(p || '').replace(/\D/g, ''); if (d.length === 9) d = '998' + d; return d; }
 function str_(v, max) { return String(v === undefined || v === null ? '' : v).slice(0, max || 500); }
 function pub_(a) {
-  return { id: a.id, name: a.name, phone: a.phone, photo: a.photo, currency: a.currency || "so'm", pinSalt: a.pinSalt, pinHash: a.pinHash, createdAt: a.createdAt, premium: premium_(a), tg: !!a.tg, badge: a.badge || '', mode: mode_(a), bizTrialUsed: !!a.bizTrialEnd };
+  return { id: a.id, name: a.name, phone: a.phone, photo: a.photo, currency: a.currency || "so'm", pinSalt: a.pinSalt, pinHash: a.pinHash, createdAt: a.createdAt, premium: premium_(a), tg: !!a.tg, badge: a.badge || '', mode: mode_(a), bizTrialUsed: !!a.bizTrialEnd, notifyOff: notifyOff_(a), push: String(a.push) === '1' };
 }
 /* Biznes tarif muddati: '' — yo'q, 'ha' — muddatsiz, aks holda sana */
 function bizUntil_(a) {
@@ -297,7 +297,7 @@ function data_(accId) {
     docs: all_('Docs').filter(function (x) { return x.acc === accId; }).map(clean_),
     confirms: confirms,
     rate: rate_(),
-    api: 14,
+    api: 15,
     feat: feat_(),
     marks: marks_(accId),
     prices: prices_(),
@@ -481,6 +481,14 @@ const API = {
     if (m === 'biz' && !a.bizTrialEnd && !bizUntil_(a)) { a.bizTrialEnd = addDays_(today_(), BIZ_TRIAL_DAYS - 1); trial = true; }
     put_('Accounts', a, a._row);
     if (was !== m) try { notifyAdmin_((m === 'biz' ? '🏪 Biznes' : '👤 Standart') + " yo'nalishi: <b>" + h_(a.name) + '</b> (+' + a.phone + ')' + (trial ? ' · 30 kun sinov' : '')); } catch (e) {}
+    return { acc: pub_(a) };
+  },
+  /* bildirishnoma sozlamalari: off — o'chirilgan kategoriyalar, push — telefon obunasi (1/0) */
+  setNotify: function (r) {
+    const a = auth_(r);
+    if (Array.isArray(r.off)) a.notifyOff = r.off.filter(function (x) { return NOTIFY_CATS_.indexOf(x) >= 0; }).join(',');
+    if (r.push !== undefined) a.push = Number(r.push) ? '1' : '';
+    put_('Accounts', a, a._row);
     return { acc: pub_(a) };
   },
   setBadge: function (r) {
@@ -1225,8 +1233,25 @@ function bizShop_(accId) {
   const d = all_('Docs').filter(function (x) { return x.acc === accId && x.kind === 'biz'; })[0];
   return d && d.data && d.data.shop ? String(d.data.shop) : '';
 }
-/* push: PR2 da OneSignal orqali yoqiladi */
-function push_(a, title, body, url) { return false; }
+/* Telefonga push — OneSignal REST API. Script Properties: ONESIGNAL_APP_ID, ONESIGNAL_API_KEY.
+ * Foydalanuvchi ilovada OneSignal.login(Accounts.id) qiladi, shu external_id ga yuboriladi. */
+function push_(a, title, body, url) {
+  const id = prop_('ONESIGNAL_APP_ID'), key = prop_('ONESIGNAL_API_KEY');
+  if (!id || !key || String(a.push) !== '1') return false;
+  const link = appUrl_() + (url ? '#go=' + url : '');
+  try {
+    const res = UrlFetchApp.fetch('https://api.onesignal.com/notifications?c=push', {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      headers: { Authorization: 'Key ' + key },
+      payload: JSON.stringify({ app_id: id, target_channel: 'push', include_aliases: { external_id: [a.id] }, headings: { en: String(title).slice(0, 60) }, contents: { en: String(body).slice(0, 300) }, url: link, chrome_web_icon: appUrl_() + 'icon-192.png' })
+    });
+    let j = {}; try { j = JSON.parse(res.getContentText()); } catch (e) {}
+    const errs = j.errors && (j.errors.invalid_aliases || (Array.isArray(j.errors) ? j.errors : null));
+    if (res.getResponseCode() === 200 && j.id && !errs) { nstat_('push'); return true; }
+    if (j.errors && j.errors.invalid_aliases) { a.push = ''; }   // obuna yo'q — keyingi safar urinmaymiz
+    return false;
+  } catch (e) { console.error(e); return false; }
+}
 
 /* Ilova ochilganda (har qanday so'rovda, kuniga 1 marta): lastSeen, streak, til */
 function seen_(a, req) {

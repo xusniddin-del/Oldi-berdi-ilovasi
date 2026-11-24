@@ -6,3 +6,6 @@ window.OLDIBERDI_DEV = {
   telegram: "mot_075",   // @ belgisisiz
   phone: "+998 90 832 44 36"   // bo'sh bo'lsa, qo'ng'iroq tugmasi chiqmaydi
 };
+
+// Telefonga bildirishnoma (OneSignal → Settings → Keys & IDs → App ID). Bo'sh bo'lsa, faqat Telegram bot ishlaydi:
+window.OLDIBERDI_ONESIGNAL = "";
