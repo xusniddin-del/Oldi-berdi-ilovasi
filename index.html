@@ -650,8 +650,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=49;
-const WHATS_NEW=["Oldi-Berdi ballari: kirish, yozuvlar va do'st taklifi uchun ball yig'ing — Premium'ga almashtiring","Darajalar: 🌱 Yangi → 🥉 Faol → 🥈 Ishonchli → 🥇 Oltin","Biznes uchun «Hamkor do'kon»: staj oshgani sari yillik tarifga chegirma","Shaxsiy taklif havolangiz — Profil'da"];
+const APP_VERSION=50;
+const WHATS_NEW=["Telefonga bildirishnoma endi o'zi yoqiladi — telefon bir marta «Ruxsat berish»ni so'raydi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1832,18 +1832,23 @@ function pushLoad(){if(!pushSupported())return Promise.resolve(null);if(PUSH.loa
 function pushOn(){try{return !!(PUSH.os&&PUSH.os.User.PushSubscription.optedIn)}catch(e){return false}}
 async function pushReport(){if(!S.acc||S.api<15)return;const on=pushOn()?1:0;if(!!S.acc.push===!!on)return;try{const j=await api('setNotify',{push:on});setAcc(j.acc)}catch(e){}}
 /* sessiya boshlanganda: ruxsat allaqachon berilgan bo'lsa — jim ulanadi */
-function pushBoot(){if(!pushSupported()||pushPerm()!=='granted')return;pushLoad().then(os=>{if(os)setTimeout(pushReport,1500)})}
-async function pushEnable(btn){if(btn){btn.disabled=true;btn.textContent=tr('Ulanmoqda…')}
+function pushBoot(){if(pushSupported()&&pushPerm()==='default'&&Object.keys(S.tx||{}).length){const once=()=>{document.removeEventListener('click',once,true);setTimeout(()=>{},0);pushAuto()};setTimeout(()=>document.addEventListener('click',once,true),4000)}
+ if(!pushSupported()||pushPerm()!=='granted')return;pushLoad().then(os=>{if(os)setTimeout(pushReport,1500)})}
+async function pushEnable(btn,quiet){if(btn){btn.disabled=true;btn.textContent=tr('Ulanmoqda…')}
  try{const OS=await pushLoad();if(!OS)throw 0;await OS.Notifications.requestPermission();if(pushPerm()==='granted'&&!pushOn())try{await OS.User.PushSubscription.optIn()}catch(e){}
   await new Promise(r=>setTimeout(r,1200));if(S.acc)try{await OS.login(S.acc.id)}catch(e){}
-  if(pushOn()){await pushReport();closeAllSheets();toast(tr('Bildirishnomalar yoqildi'));render();return true}
-  toast(pushPerm()==='denied'?tr("Brauzerda bildirishnomalar taqiqlangan. Sayt sozlamalaridan ruxsat bering."):tr("Bildirishnomani yoqib bo'lmadi"))}
- catch(e){toast(tr("Bildirishnomani yoqib bo'lmadi"))}
+  if(pushOn()){await pushReport();if(!quiet){closeAllSheets();render()}toast(tr('Bildirishnomalar yoqildi'));return true}
+  if(!quiet)toast(pushPerm()==='denied'?tr("Brauzerda bildirishnomalar taqiqlangan. Sayt sozlamalaridan ruxsat bering."):tr("Bildirishnomani yoqib bo'lmadi"))}
+ catch(e){if(!quiet)toast(tr("Bildirishnomani yoqib bo'lmadi"))}
  finally{if(btn&&btn.isConnected){btn.disabled=false;btn.textContent=tr('Ha, yoqish')}}return false}
 async function pushDisable(){try{const OS=PUSH.os||await pushLoad();if(OS)await OS.User.PushSubscription.optOut()}catch(e){}await pushReport();render();notifSheet();toast(tr("Telefon bildirishnomalari o'chirildi"))}
 /* ruxsat so'rash: birinchi qarz yozilgandan keyin; «Keyinroq» — 3 kundan keyin yana bir marta */
 function pushAskState(){try{return JSON.parse(LS.get('oldiberdi_pushask')||'{}')||{}}catch(e){return {}}}
-function maybePushAsk(){if(!S.acc||sheets.length)return;const ok=pushSupported()&&pushPerm()==='default';const ios=pushIosBlocked();if(!ok&&!ios)return;
+/* yozuv saqlanganda (foydalanuvchi bosgan paytda) brauzerning o'z ruxsat oynasi darhol chiqadi — oraliq oynasiz */
+function pushAuto(){if(S.pushAuto||!pushSupported()||pushPerm()!=='default')return;S.pushAuto=1;
+ let p;try{p=Notification.requestPermission()}catch(e){return}
+ Promise.resolve(p).then(r=>{const st=pushAskState();st.done=1;LS.set('oldiberdi_pushask',JSON.stringify(st));if(r==='granted')pushEnable(null,true)}).catch(()=>{})}
+function maybePushAsk(){if(!S.acc||sheets.length)return;const ios=pushIosBlocked();if(!ios)return;const ok=false;
  const st=pushAskState();if(st.done||(st.n||0)>=2)return;if(st.n===1&&Date.now()-(st.at||0)<3*864e5)return;
  setTimeout(()=>{if(!sheets.length)pushAskSheet(ios)},700)}
 function pushAskSheet(ios){
@@ -1964,6 +1969,7 @@ async function saveTx(){
  if(!TX.pid||!S.people[TX.pid])return err.textContent='Kim bilan ekanini tanlang yoki yarating';
  if(!(amount>0))return err.textContent='Summani kiriting';
  const isNew=!TX.id;const id=TX.id||uid();const now=Date.now();
+ if(isNew)pushAuto();
  const prev=isNew?null:S.tx[id];
  const loan=TX.type==='lend'||TX.type==='borrow';const plan=loan&&TX.planOn?buildPlan():[];
  if(loan&&TX.planOn&&plan.length<2)return err.textContent=TX.freq==='d'?"Grafik uchun summa va kunlar sonini kiriting (2–100 kun)":"Grafik uchun summa va oylar sonini kiriting (2–36 oy)";
