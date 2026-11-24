@@ -406,11 +406,11 @@ function derive(){
 function delta(cur,prev){if(!prev&&!cur)return '<span class="delta eq">0%</span>';if(!prev)return '<span class="delta up">yangi</span>';const p=Math.round((cur-prev)/prev*100);return `<span class="delta ${p>0?'up':p<0?'down':'eq'}">${p>0?'+':''}${p}%</span>`}
 
 /* ---------- render ---------- */
-const TABS=[['home','home','Asosiy'],['users','users','Mijozlar'],['loyal','star','Sodiqlik'],['survey','chart',"So'rovnoma",1],['feat','grid','Sozlamalar'],['pays','card',"To'lovlar"],['msg','send','Xabar']];
-const TITLES={home:['Asosiy','Bugungi holat bir qarashda'],users:['Mijozlar',''],feat:['Sozlamalar',"Bo'limlar va narxlar — o'zgarish hammada darhol ishlaydi"],pays:["To'lovlar",'Botdagi Premium va Biznes to\'lovlari'],survey:["So'rovnoma",'Mijozlar fikri, muammolar, video roziligi'],loyal:['Sodiqlik','Ballar, hamkorlar, xabarlar va qaytib kelish'],msg:['Xabar yuborish','Bot orqali mijozlarga e\'lon']};
+const TABS=[['home','home','Asosiy'],['users','users','Mijozlar'],['loyal','star','Sodiqlik'],['survey','chart',"So'rovnoma",1],['sms','phone','Avto-SMS',1],['feat','grid','Sozlamalar'],['pays','card',"To'lovlar"],['msg','send','Xabar']];
+const TITLES={home:['Asosiy','Bugungi holat bir qarashda'],users:['Mijozlar',''],feat:['Sozlamalar',"Bo'limlar va narxlar — o'zgarish hammada darhol ishlaydi"],pays:["To'lovlar",'Botdagi Premium va Biznes to\'lovlari'],sms:['Avto-SMS',"Biznes mijozlarning SIM kartasidan ketadigan eslatmalar"],survey:["So'rovnoma",'Mijozlar fikri, muammolar, video roziligi'],loyal:['Sodiqlik','Ballar, hamkorlar, xabarlar va qaytib kelish'],msg:['Xabar yuborish','Bot orqali mijozlarga e\'lon']};
 function render(){
   const v=S.tab,d=derive(),att=d.trialEnd.length+d.premEnd.length;
-  const body=v==='home'?vHome(d):v==='users'?vUsers():v==='feat'?vFeat():v==='pays'?vPays():v==='loyal'?vLoyal():v==='survey'?vSurvey():vMsg();
+  const body=v==='home'?vHome(d):v==='users'?vUsers():v==='feat'?vFeat():v==='pays'?vPays():v==='loyal'?vLoyal():v==='survey'?vSurvey():v==='sms'?vSms():vMsg();
   const cnt=k=>k==='users'&&S.users?S.users.length:'';
   const name=S.me&&S.me.name||'Admin';
   $('#app').innerHTML=`<div class="shell">
@@ -457,6 +457,7 @@ function vHome(d){
    <button data-qa="prem"><span style="background:var(--pos-bg);color:var(--brand)">${ic('gem')}</span>Premium berish</button>
    <button data-go="msg"><span style="background:var(--sky-bg);color:var(--sky)">${ic('send')}</span>Xabar</button>
    <button data-go="survey"><span style="background:var(--warn-bg);color:var(--warn)">${ic('chart')}</span>So'rovnoma</button>
+   <button data-go="sms"><span style="background:var(--pos-bg);color:var(--brand)">${ic('phone')}</span>Avto-SMS</button>
    <button data-qa="prices"><span style="background:var(--warn-bg);color:var(--warn)">${ic('money')}</span>Narxlar</button>
    <button data-go="feat"><span style="background:var(--plum-bg);color:var(--plum)">${ic('grid')}</span>Bo'limlar</button>
   </div>
@@ -714,13 +715,35 @@ function vMsg(){
   <div class="card pad"><div class="bubble" id="pv"><b>Oldi-Berdi</b>📢 ${esc(S.draft||'Xabar matni shu yerda ko\'rinadi…')}</div></div></div></div>`;
 }
 
+/* ---------- Avto-SMS ---------- */
+async function loadSms(silent){try{S.sms=await api('admSms')}catch(e){toast(e.message);S.sms=S.sms||null}if(!silent)render()}
+function vSms(){const V=S.sms;if(!V)return `<div class="kpis">${'<div class="skel" style="height:118px"></div>'.repeat(4)}</div><div class="skel" style="height:300px;margin-top:14px"></div>`;
+ const c=V.cfg,D=V.devices.slice().sort((a,b)=>(b.online-a.online)||(b.today.sent-a.today.sent)),on=D.filter(d=>d.online).length;
+ return `<div class="kpis">
+  <div class="card kpi ${c.off?'k-warn':'k-brand'}"><div class="kh"><span class="ki">${ic('phone')}</span>Holati</div><b>${c.off?"O'chiq":'Ishlayapti'}</b><div class="kf">${c.off?'Hech bir telefon SMS yubormaydi':'Navbat telefonlarga beriladi'}</div></div>
+  <div class="card kpi k-sky"><div class="kh"><span class="ki">${ic('users')}</span>Telefonlar</div><b class="num">${D.length}</b><div class="kf">${on} tasi hozir onlayn</div></div>
+  <div class="card kpi k-brand"><div class="kh"><span class="ki">${ic('send')}</span>Bugun yuborildi</div><b class="num">${V.today.sent}</b><div class="kf">${V.today.queued} tasi navbatda</div></div>
+  <div class="card kpi ${V.today.failed?'k-warn':'k-plum'}"><div class="kh"><span class="ki">${ic('chart')}</span>Bugun xato</div><b class="num">${V.today.failed}</b><div class="kf">${V.today.sent+V.today.failed?Math.round(V.today.sent/(V.today.sent+V.today.failed)*100)+'% muvaffaqiyat':'—'}</div></div></div>
+ <div class="set2"><div>
+  <div class="sec"><h2>Ulangan telefonlar</h2><span class="hint">${D.length} ta</span></div>
+  ${D.length?`<div class="card list">${D.map(d=>`<button class="row" data-user="${esc(d.acc)}"><span class="ava" style="background:${d.online?'#19a35b':'#c9a227'}1f;color:${d.online?'#19a35b':'#a07a00'}">${ic('phone')}</span><div class="mid"><div class="t1">${esc(d.shop||d.name)} <span class="hint">· ${esc(d.model||'Android')}</span></div><div class="t2">${d.online?'🟢 onlayn':'🟠 '+ago(d.lastPing)}${d.sim?' · '+esc(d.sim):''} · ${d.auto?'avto yoqiq':'avto o\'chiq'} · limit ${d.limit}${d.appVer?' · v'+esc(d.appVer):''}</div></div><span class="rcol"><b class="num" style="font-size:18px">${d.today.sent}</b><div class="t2">${d.today.failed?`<span style="color:#c2401f">${d.today.failed} xato</span>`:'bugun'}</div></span></button>`).join('')}</div>`:`<div class="card empty"><b>Hali telefon ulanmagan</b>Biznes mijozlar Profil → Avto-SMS orqali ulaydi.</div>`}
+ </div><div>
+  <div class="sec"><h2>Boshqaruv</h2></div>
+  <div class="card pad"><div class="feat" style="padding:0 0 12px"><div class="mid"><div class="t1">Avto-SMS (hammasi uchun)</div><div class="t2">O'chirilsa, telefonlar navbatni olmaydi — SMS'lar kutib turadi</div></div><div class="seg"><button class="${c.off?'on m-off':''}" data-smsoff="1">O'chiq</button><button class="${c.off?'':'on'}" data-smsoff="0">Yoqiq</button></div></div>
+  <div class="field"><label for="sms-def">Standart kunlik limit (yangi mijozlar uchun)</label><input class="inp num" id="sms-def" type="number" min="10" max="150" value="${c.defLimit}"></div>
+  <div class="field"><label for="sms-gap">SMS orasidagi vaqt (soniya)</label><input class="inp num" id="sms-gap" type="number" min="5" max="300" value="${c.gap}"></div>
+  <button class="btn btn-primary w100" data-smssave="1">Saqlash</button>
+  <p class="hint" style="margin:8px 0 0">Limit: 10–150. Oraliq juda qisqa bo'lsa, operator SIM kartani spam deb bloklashi mumkin — 20–30 soniya tavsiya etiladi.</p></div>
+ </div></div>`}
 /* ---------- hodisalar ---------- */
-function go(t){S.tab=t;haptic();if(t==='pays'&&!S.pays)loadPays();if(t==='loyal'&&!S.ly)loadLoyal();if(t==='survey')loadSurvey();render();window.scrollTo(0,0)}
+function go(t){S.tab=t;haptic();if(t==='pays'&&!S.pays)loadPays();if(t==='loyal'&&!S.ly)loadLoyal();if(t==='survey')loadSurvey();if(t==='sms')loadSms();render();window.scrollTo(0,0)}
 document.addEventListener('click',async e=>{
   const b=e.target.closest('button,[data-user],[data-pick]');if(!b)return;const d=b.dataset;
   if(d.go){closeSheet(true);go(d.go);return}
-  if(d.reload){reloadAll();if(S.tab==='loyal')loadLoyal();if(S.tab==='survey')loadSurvey();return}
+  if(d.reload){reloadAll();if(S.tab==='loyal')loadLoyal();if(S.tab==='survey')loadSurvey();if(S.tab==='sms')loadSms();return}
   if(d.svrow){svRowSheet(d.svrow);return}
+  if(d.smsoff){const off=d.smsoff==='1';if(off&&!await confirmBox("Avto-SMS hamma uchun to'xtatilsinmi? Telefonlar navbatni olmaydi, SMS'lar kutib turadi."))return;try{const j=await api('admSmsSet',{off});S.sms.cfg=j.cfg;haptic('ok');toast(off?"To'xtatildi":'Yoqildi');render()}catch(er){toast(er.message)}return}
+  if(d.smssave){const defLimit=+(($('#sms-def')||{}).value||0),gap=+(($('#sms-gap')||{}).value||0);if(defLimit<10||defLimit>150){toast('Limit 10–150 oralig\'ida');return}if(gap<5||gap>300){toast('Oraliq 5–300 soniya');return}b.disabled=true;try{const j=await api('admSmsSet',{defLimit,gap});S.sms.cfg=j.cfg;haptic('ok');toast('Saqlandi');render()}catch(er){toast(er.message);b.disabled=false}return}
   if(d.svon){const on=d.svon==='1';try{const j=await api('admSurveySet',{on});S.sv.survey=j.survey;haptic('ok');toast(on?'Faol':'Yopildi');render()}catch(er){toast(er.message)}return}
   if(d.svrestart){if(!await confirmBox("Yangi so'rovnoma boshlansinmi? Hisoblagichlar noldan boshlanadi, eski javoblar jadvalda qoladi."))return;try{await api('admSurveySet',{restart:1});await loadSurvey();toast('Boshlandi')}catch(er){toast(er.message)}return}
   if(d.svsend){const text=(($('#sv-text')||{}).value||'').trim(),to=($('#sv-to')||{}).value||'all';if(!text){toast('Matnni yozing');return}
