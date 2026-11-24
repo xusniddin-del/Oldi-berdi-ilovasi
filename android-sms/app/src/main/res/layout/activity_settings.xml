@@ -5,6 +5,14 @@
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:text="@string/settings" android:textColor="@color/ink" android:textSize="22sp" android:textStyle="bold"/>
 
     <LinearLayout style="@style/Card">
+        <TextView style="@style/H" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lang"/>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="10dp">
+            <Button android:id="@+id/btnLangUz" style="@style/BtnGhost" android:layout_width="0dp" android:layout_weight="1" android:layout_marginRight="6dp" android:text="@string/lang_uz"/>
+            <Button android:id="@+id/btnLangRu" style="@style/BtnGhost" android:layout_width="0dp" android:layout_weight="1" android:layout_marginLeft="6dp" android:text="@string/lang_ru"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout style="@style/Card">
         <TextView style="@style/H" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/sim"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/sim_hint" android:textColor="@color/muted" android:textSize="13sp"/>
         <Button android:id="@+id/btnSim" style="@style/BtnGhost" android:layout_marginTop="10dp"/>

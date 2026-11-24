@@ -25,12 +25,14 @@ import java.util.concurrent.atomic.AtomicInteger
  * Ish vaqtidan tashqarida har 15 daqiqada faqat «tirikman» deydi. Internet bo'lmasa — navbat serverda kutadi.
  */
 class SmsService : Service() {
+    override fun attachBaseContext(newBase: android.content.Context) { super.attachBaseContext(Lang.wrap(newBase)) }
+
     companion object {
         const val CH_RUN = "run"; const val CH_ALERT = "alert"
-        const val NOTIF_RUN = 1; const val NOTIF_ALERT = 2
+        const val NOTIF_RUN = 1; const val NOTIF_ALERT = 2; const val NOTIF_UPD = 3
         const val ACT_SENT = "uz.oldiberdi.sms.SENT"; const val ACT_DELIV = "uz.oldiberdi.sms.DELIVERED"
         const val ACT_KICK = "uz.oldiberdi.sms.KICK"
-        const val APP_VER = "1.0"
+        const val APP_VER = Upd.NAME
         @Volatile var running = false
         private val reqCode = AtomicInteger(1000)
 
@@ -135,6 +137,7 @@ class SmsService : Service() {
         } finally {
             try { wake?.release() } catch (e: Exception) { }
         }
+        try { if (Upd.check(prefs) && prefs.updNotified < prefs.newCode) { prefs.updNotified = prefs.newCode; updAlert() } } catch (e: Exception) { }
         updateNotif()
         h.postDelayed(tickR, next)
     }
@@ -226,6 +229,16 @@ class SmsService : Service() {
     }
 
     private fun updateNotif() { try { (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(NOTIF_RUN, runNotif()) } catch (e: Exception) { } }
+
+    private fun updAlert() {
+        try {
+            val pi = PendingIntent.getActivity(this, 3, Intent(Intent.ACTION_VIEW, android.net.Uri.parse(Upd.URL_APP)), if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
+            val t = getString(R.string.upd_notif, prefs.newName)
+            val n = builder(CH_ALERT).setSmallIcon(R.drawable.ic_stat).setContentTitle(getString(R.string.upd_title)).setContentText(t)
+                .setStyle(Notification.BigTextStyle().bigText(t)).setAutoCancel(true).setContentIntent(pi).build()
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(NOTIF_UPD, n)
+        } catch (e: Exception) { }
+    }
 
     private fun alert(text: String) {
         try {

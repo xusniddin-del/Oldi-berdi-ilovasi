@@ -14,6 +14,8 @@ import org.json.JSONObject
 
 /** 3-ekran: SIM, ish vaqti, batareya, uzish. */
 class SettingsActivity : Activity() {
+    override fun attachBaseContext(newBase: android.content.Context) { super.attachBaseContext(Lang.wrap(newBase)) }
+
     private lateinit var prefs: Prefs
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +28,8 @@ class SettingsActivity : Activity() {
         findViewById<Button>(R.id.btnTo).setOnClickListener { pickTime(false) }
         findViewById<Button>(R.id.btnBattery).setOnClickListener { MainActivity.batteryDialog(this) }
         findViewById<Button>(R.id.btnUnpair).setOnClickListener { unpair() }
+        findViewById<Button>(R.id.btnLangUz).setOnClickListener { setLang("uz") }
+        findViewById<Button>(R.id.btnLangRu).setOnClickListener { setLang("ru") }
         draw()
     }
 
@@ -34,6 +38,16 @@ class SettingsActivity : Activity() {
         findViewById<Button>(R.id.btnFrom).text = prefs.from
         findViewById<Button>(R.id.btnTo).text = prefs.to
         findViewById<TextView>(R.id.txtVer).text = getString(R.string.version, SmsService.APP_VER)
+        val uz = prefs.lang != "ru"
+        findViewById<Button>(R.id.btnLangUz).setBackgroundResource(if (uz) R.drawable.btn else R.drawable.btn_ghost)
+        findViewById<Button>(R.id.btnLangUz).setTextColor(if (uz) 0xFFFFFFFF.toInt() else 0xFF0E2A1B.toInt())
+        findViewById<Button>(R.id.btnLangRu).setBackgroundResource(if (!uz) R.drawable.btn else R.drawable.btn_ghost)
+        findViewById<Button>(R.id.btnLangRu).setTextColor(if (!uz) 0xFFFFFFFF.toInt() else 0xFF0E2A1B.toInt())
+    }
+
+    private fun setLang(l: String) {
+        if (prefs.lang == l) return
+        prefs.lang = l; SmsService.kick(this); recreate()
     }
 
     private fun pickTime(from: Boolean) {

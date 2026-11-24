@@ -25,7 +25,10 @@ import org.json.JSONObject
 
 /** 1-ekran: ulash (6 xonali kod). 2-ekran: asosiy — Avto-SMS tugmasi, bugungi son, oxirgi 10 ta SMS. */
 class MainActivity : Activity() {
+    override fun attachBaseContext(newBase: android.content.Context) { super.attachBaseContext(Lang.wrap(newBase)) }
+
     private lateinit var prefs: Prefs
+    private var shownLang = ""
     private val ui = Handler(Looper.getMainLooper())
     private val refresh = object : Runnable { override fun run() { if (prefs.paired) drawMain(); ui.postDelayed(this, 4000) } }
 
@@ -41,11 +44,17 @@ class MainActivity : Activity() {
         }
         findViewById<Button>(R.id.btnResume).setOnClickListener { prefs.paused = false; prefs.fails = 0; SmsService.kick(this); drawMain() }
         findViewById<Button>(R.id.btnSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
+        findViewById<Button>(R.id.btnUpdate).setOnClickListener { Upd.open(this) }
+        findViewById<Button>(R.id.btnLangPair).setOnClickListener { prefs.lang = if (prefs.lang == "ru") "uz" else "ru"; recreate() }
+        shownLang = prefs.lang
     }
 
     override fun onResume() {
         super.onResume()
+        if (shownLang != prefs.lang) { recreate(); return }
         show()
+        drawUpdate()
+        Thread { Upd.check(prefs, true); ui.post { drawUpdate() } }.start()
         ui.post(refresh)
     }
 
@@ -136,6 +145,13 @@ class MainActivity : Activity() {
             row.addView(TextView(this).apply { text = label; textSize = 12.5f; setTextColor(Color.parseColor(col)); setPadding(dp(10), dp(4), dp(10), dp(4)); background = round(Color.parseColor("#eef4f0"), 40f) })
             list.addView(row)
         }
+    }
+
+    private fun drawUpdate() {
+        val box = findViewById<View>(R.id.boxUpdate)
+        if (!prefs.hasUpdate) { box.visibility = View.GONE; return }
+        box.visibility = View.VISIBLE
+        findViewById<TextView>(R.id.txtUpdate).text = getString(R.string.upd_text, prefs.newName) + (if (prefs.newNotes.isNotEmpty()) "\n" + prefs.newNotes else "")
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
