@@ -36,9 +36,10 @@ const TABLES = {
   Reminders: ['key', 'acc', 'pid', 'txId', 'idx', 'due', 'amount', 'status', 'markDay', 'chat', 'msg', 'text', 'updatedAt'],
   Payments: ['bill', 'acc', 'phone', 'tarif', 'days', 'amount', 'status', 'createdAt', 'paidAt', 'until'],
   Lists:    ['id', 'acc', 'name', 'items', 'createdAt', 'updatedAt'],
-  Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt']
+  Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt'],
+  Survey:   ['id', 'sid', 'acc', 'name', 'phone', 'mode', 'src', 'answers', 'createdAt', 'updatedAt']
 };
-const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true, lastNotify: true, loyal: true };
+const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true, lastNotify: true, loyal: true, answers: true };
 /* Docs turlari va ular uchun kerakli tarif: '' — bepul, 'prem' — Premium, 'biz' — Biznes */
 const DOC_KINDS = { toy: 'prem', toyg: 'prem', loan: 'prem', gap: 'prem', yigin: '', biz: 'biz' };
 /* ---------- imkoniyatlar: admin paneldan boshqariladi ----------
@@ -59,7 +60,7 @@ function featOk_(a, f) { return feat_()[f] === 'free' || premium_(a).on; }
 const PREM_BADGES_ = ['green', 'gold', 'gem', 'crown'];
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, bulkImport: 1, setNotify: 1, redeem: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, bulkImport: 1, setNotify: 1, redeem: 1, surveyGet: 1, surveySubmit: 1, admSurveySet: 1, admSurveySend: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -426,7 +427,7 @@ const API = {
     put_('Accounts', a);
     try { notifyAdmin_('🆕 Yangi foydalanuvchi: <b>' + h_(name) + '</b> (+' + phone + ')'); } catch (e) {}
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a) };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a), survey: surveyState_(a) };
   },
   login: function (r) {
     const phone = normPhone_(r.phone);
@@ -436,7 +437,7 @@ const API = {
     if (!checkPw_(a, String(r.pass || ''))) { loginFail_(phone); throw new Error("Parol noto'g'ri"); }
     CacheService.getScriptCache().remove('lf_' + phone);
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a) };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a), survey: surveyState_(a) };
   },
   logout: function (r) {
     const rows = all_('Sessions').filter(function (x) { return x.token === String(r.token || ''); }).map(function (x) { return x._row; });
@@ -445,7 +446,7 @@ const API = {
   },
   sync: function (r) {
     const a = auth_(r), d = data_(a.id);
-    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a) };
+    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a), survey: surveyState_(a) };
   },
   saveProfile: function (r) {
     const a = auth_(r);
@@ -657,6 +658,43 @@ const API = {
     const token = uid_() + uid_();
     put_('Confirms', { token: token, acc: a.id, txId: id, status: 'pending', answeredAt: '', createdAt: Date.now() });
     return { token: token, status: 'pending' };
+  },
+  /* so'rovnoma: savollar va holat (ochilganlar soni shu yerda sanaladi) */
+  surveyGet: function (r) {
+    const s = survey_();
+    let me = null;
+    if (r.token) try { const a = auth_(r); me = { name: a.name, phone: a.phone, mode: mode_(a), done: surveyState_(a).done }; } catch (e) {}
+    if (s.on && !r.noCount) { s.opens = (Number(s.opens) || 0) + 1; surveySave_(s); }
+    return { on: !!s.on, id: s.id, q: SURVEY_Q_, me: me };
+  },
+  surveySubmit: function (r) {
+    const s = survey_(); if (!s.on) throw new Error("So'rovnoma yopilgan. Rahmat!");
+    let a = null; if (r.token) try { a = auth_(r); } catch (e) {}
+    const name = str_(r.name || (a && a.name), 80).trim(), phone = normPhone_(r.phone || (a && a.phone) || '');
+    const ans = {}, src = r.answers || {};
+    SURVEY_Q_.forEach(function (q) {
+      const v = src[q.id];
+      if (q.type === 'one') { const i = Number(v); if (v !== '' && v !== null && v !== undefined && i >= 0 && i < q.o.length) ans[q.id] = i; }
+      else if (q.type === 'many') { if (Array.isArray(v)) ans[q.id] = v.map(Number).filter(function (i) { return i >= 0 && i < q.o.length; }).slice(0, q.o.length); }
+      else if (q.type === 'scale') { const i = Number(v); if (i >= 1 && i <= 5) ans[q.id] = i; }
+      else if (q.type === 'nps') { const i = Number(v); if (v !== '' && v !== null && v !== undefined && i >= 0 && i <= 10) ans[q.id] = i; }
+      else if (q.type === 'text') { const t = str_(v, 1000).trim(); if (t) ans[q.id] = t; }
+    });
+    const need = SURVEY_Q_.filter(function (q) { return !q.opt && ans[q.id] === undefined; });
+    if (need.length) throw new Error('Iltimos, barcha savollarga javob bering');
+    if ((ans.q10 === 0 || ans.q10 === 1) && phone.length < 9) throw new Error('Video uchun telefon raqamingizni yozing');
+    const ex = all_('Survey').filter(function (x) { return x.sid === s.id && ((a && x.acc === a.id) || (phone && x.phone === phone)); })[0];
+    const now = Date.now();
+    const row = ex || { id: uid_(), sid: s.id, createdAt: now };
+    row.acc = a ? a.id : (ex && ex.acc) || ''; row.name = name; row.phone = phone; row.mode = a ? mode_(a) : ''; row.src = str_(r.src, 20); row.answers = ans; row.updatedAt = now;
+    put_('Survey', row, ex ? ex._row : 0);
+    try {
+      let t = "📝 <b>So'rovnoma javobi</b>" + (ex ? ' (yangilandi)' : '') + '\n👤 ' + h_(name || 'Ismsiz') + (phone ? ' · +' + phone : '') + (a ? ' · ' + (mode_(a) === 'biz' ? '🏪 Biznes' : '👤 Standart') : ' · ilovaga kirmagan') + '\n';
+      SURVEY_Q_.forEach(function (q, i) { if (q.if && !(q.if[1].indexOf(ans[q.if[0]]) >= 0)) return; t += '\n<b>' + (i + 1) + '. ' + h_(q.t[0]) + '</b>\n' + h_(surveyLine_(q, ans[q.id])); });
+      if (ans.q10 === 0 || ans.q10 === 1) t += '\n\n🎥 <b>Video uchun rozi!</b> Bog\'lanish: +' + phone;
+      notifyAdmin_(t.slice(0, 4000));
+    } catch (e) { console.error(e); }
+    return { ok: true };
   },
   getConfirm: function (r) {
     const c = all_('Confirms').filter(function (x) { return x.token === String(r.c || ''); })[0];
@@ -1468,6 +1506,39 @@ function loyal_(a) {
     h: (L.h || []).slice(0, 12), ref: base, refs: all_('Accounts').filter(function (x) { return x.ref === a.id; }).length };
 }
 
+
+/* ======================= SO'ROVNOMA =======================
+ * Havola: oldiberdi.uz/?s=1 (sayt ilovaga uzatadi). Kirmagan odam ham to'ldira oladi; kirgan bo'lsa akkauntga bog'lanadi.
+ * Holat Meta.survey'da: { id, on, opens, sent, startedAt }. Javoblar Survey jadvalida. Har bir javob adminga botda keladi. */
+const SURVEY_Q_ = [
+  { id: 'q1', type: 'one', t: ["Oldi-Berdi'dan qancha vaqtdan beri foydalanasiz?", 'Как давно вы пользуетесь Oldi-Berdi?'], o: [['1 haftadan kam', 'Меньше недели'], ['1 oygacha', 'До месяца'], ['1–3 oy', '1–3 месяца'], ["3 oydan ko'p", 'Больше 3 месяцев']] },
+  { id: 'q2', type: 'one', t: ['Ilovani qanchalik tez-tez ochasiz?', 'Как часто открываете приложение?'], o: [['Har kuni', 'Каждый день'], ['Haftada bir necha marta', 'Несколько раз в неделю'], ['Haftada bir marta', 'Раз в неделю'], ['Kamdan-kam', 'Редко']] },
+  { id: 'q3', type: 'many', t: ['Asosan nima uchun ishlatasiz?', 'Для чего в основном используете?'], o: [["Shaxsiy qarz-haqlar (tanish, oila)", 'Личные долги (знакомые, семья)'], ["Do'kon yoki savdo nasiyasi", 'Долги в магазине или торговле'], ["Bo'lib to'lash grafigi", 'График рассрочки'], ['Eslatma SMS yuborish', 'Отправка SMS-напоминаний'], ['Hisobot va Excel', 'Отчёты и Excel'], ["Bozorlik ro'yxati", 'Список покупок']] },
+  { id: 'q4', type: 'scale', t: ['Ilova sizga qanchalik foyda berdi?', 'Насколько приложение вам полезно?'], lo: ['umuman', 'совсем нет'], hi: ['juda katta', 'очень'] },
+  { id: 'q5', type: 'one', t: ["Ilova tufayli qarzlar o'z vaqtida qaytishi o'zgardimi?", 'Стали ли долги возвращаться вовремя благодаря приложению?'], o: [['Ha, ancha tezlashdi', 'Да, заметно быстрее'], ['Biroz yaxshilandi', 'Немного лучше'], ["O'zgarmadi", 'Не изменилось'], ['Bilmayman', 'Не знаю']] },
+  { id: 'q6', type: 'many', t: ['Qanday muammolarga duch keldingiz?', 'С какими проблемами столкнулись?'], o: [['Tushunish qiyin', 'Сложно разобраться'], ['Sekin ishlaydi yoki qotadi', 'Медленно работает или зависает'], ['Kirish yoki parol bilan muammo', 'Проблемы со входом или паролем'], ['SMS yuborish noqulay', 'Неудобно отправлять SMS'], ['Narxi qimmat', 'Дорого'], ["Kerakli imkoniyat yo'q", 'Нет нужной функции'], ["Muammo yo'q", 'Проблем нет']] },
+  { id: 'q7', type: 'text', opt: true, t: ['Muammoni batafsil yozing', 'Опишите проблему подробнее'], ph: ['Masalan: SMS ochilmayapti, Samsung telefonda…', 'Например: не открывается SMS на Samsung…'] },
+  { id: 'q8', type: 'text', opt: true, t: ["Ilovaga nima qo'shishimizni xohlaysiz?", 'Что добавить в приложение?'], ph: ["Istagan fikringizni yozing", 'Напишите любую идею'] },
+  { id: 'q9', type: 'nps', t: ["Oldi-Berdi'ni do'stlaringizga tavsiya qilasizmi?", 'Порекомендуете Oldi-Berdi друзьям?'], lo: ["yo'q", 'нет'], hi: ['albatta', 'обязательно'] },
+  { id: 'q10', type: 'one', t: ["Oldi-Berdi haqida 15–30 soniyalik video-fikringizni yozib olishimizga ruxsat berasizmi? Reklamada ishlatiladi.", 'Разрешите записать ваш видео-отзыв об Oldi-Berdi на 15–30 секунд? Он будет использован в рекламе.'], o: [['Ha, mamnuniyat bilan', 'Да, с удовольствием'], ['Faqat ovozli yoki yuzim ko\'rinmasin', 'Только голос или без лица'], ["Yo'q, rahmat", 'Нет, спасибо']] },
+  { id: 'q11', type: 'one', opt: true, if: ['q10', [0, 1]], t: ['Qachon siz bilan bog\'lansak qulay?', 'Когда удобно связаться?'], o: [['Hafta ichi kunduzi', 'Будни днём'], ['Hafta ichi kechqurun', 'Будни вечером'], ['Dam olish kunlari', 'Выходные']] }
+];
+function survey_() { let o = {}; try { o = JSON.parse(meta_('survey') || '{}') || {}; } catch (e) {} if (!o.id) o = { id: 's1', on: true, opens: 0, startedAt: Date.now() }; return o; }
+function surveySave_(o) { setMeta_('survey', JSON.stringify(o)); }
+function surveyState_(a) {
+  const s = survey_(); if (!s.on) return { on: false };
+  const done = all_('Survey').some(function (x) { return x.sid === s.id && (x.acc === a.id || (a.phone && x.phone === a.phone)); });
+  return { on: true, id: s.id, done: done };
+}
+function surveyLine_(q, v) {
+  if (v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length)) return '—';
+  if (q.type === 'one') return q.o[v] ? q.o[v][0] : '—';
+  if (q.type === 'many') return v.map(function (i) { return q.o[i] ? q.o[i][0] : ''; }).filter(Boolean).join(', ');
+  if (q.type === 'scale') return v + ' / 5';
+  if (q.type === 'nps') return v + ' / 10';
+  return String(v);
+}
+
 /* Biznes: har kuni 20:00 da do'kon egasiga kunlik natija (botSetup trigger qo'yadi) */
 function kechki() {
   if (!prop_('TG_TOKEN')) return;
@@ -1823,6 +1894,50 @@ Object.assign(API, {
       setMeta_(PLANS[k].key, String(n));
     });
     return { prices: prices_() };
+  },
+  /* ---------- So'rovnoma ---------- */
+  admSurvey: function (r) {
+    admAuth_(r);
+    const s = survey_(), rows = all_('Survey').filter(function (x) { return x.sid === s.id; });
+    const agg = {};
+    SURVEY_Q_.forEach(function (q) {
+      if (q.type === 'one' || q.type === 'many') { const c = q.o.map(function () { return 0; }); rows.forEach(function (x) { const v = x.answers && x.answers[q.id]; if (Array.isArray(v)) v.forEach(function (i) { if (c[i] !== undefined) c[i]++; }); else if (v !== undefined && c[v] !== undefined) c[v]++; }); agg[q.id] = c; }
+      else if (q.type === 'scale' || q.type === 'nps') { const c = []; for (let i = q.type === 'nps' ? 0 : 1; i <= (q.type === 'nps' ? 10 : 5); i++) c.push(0); rows.forEach(function (x) { const v = x.answers && x.answers[q.id]; if (v !== undefined) c[v - (q.type === 'nps' ? 0 : 1)]++; }); agg[q.id] = c; }
+    });
+    const nps = rows.map(function (x) { return x.answers && x.answers.q9; }).filter(function (v) { return v !== undefined; });
+    const npsScore = nps.length ? Math.round((nps.filter(function (v) { return v >= 9; }).length - nps.filter(function (v) { return v <= 6; }).length) / nps.length * 100) : null;
+    const acc = all_('Accounts');
+    return { survey: s, q: SURVEY_Q_, agg: agg, n: rows.length, nps: npsScore,
+      reach: { all: acc.length, bot: acc.filter(function (a) { return a.tg; }).length, push: acc.filter(function (a) { return String(a.push) === '1'; }).length },
+      rows: rows.sort(function (x, y) { return (Number(y.updatedAt) || 0) - (Number(x.updatedAt) || 0); }).slice(0, 300).map(function (x) { return { id: x.id, acc: x.acc, name: x.name, phone: x.phone, mode: x.mode, src: x.src, answers: x.answers, at: Number(x.updatedAt) || Number(x.createdAt) || 0 }; }) };
+  },
+  admSurveySet: function (r) {
+    admAuth_(r);
+    const s = survey_();
+    if (r.on !== undefined) s.on = !!r.on;
+    if (r.restart) { s.id = 's' + Date.now().toString(36); s.on = true; s.opens = 0; s.sent = null; s.startedAt = Date.now(); }
+    surveySave_(s);
+    return { survey: s };
+  },
+  /* mijozlarga bot + push orqali havola (javob berganlarga yuborilmaydi) */
+  admSurveySend: function (r) {
+    admAuth_(r);
+    const s = survey_(); if (!s.on) throw new Error("Avval so'rovnomani yoqing");
+    const to = String(r.to || 'all'), text = str_(r.text, 600).trim();
+    if (!text) throw new Error('Xabar matnini yozing');
+    const done = {}; all_('Survey').forEach(function (x) { if (x.sid === s.id) { if (x.acc) done[x.acc] = 1; if (x.phone) done['p' + x.phone] = 1; } });
+    let n = 0, skip = 0;
+    all_('Accounts').forEach(function (a) {
+      if (isAdminChat_(a.tg) || done[a.id] || done['p' + a.phone]) return;
+      const m = mode_(a) === 'biz' ? 'biz' : 'std';
+      if (to !== 'all' && to !== m) return;
+      if (!a.tg && String(a.push) !== '1') return;
+      const ok = notify_(a, 'manual', {}, { text: text, force: true, url: 'survey', kb: { inline_keyboard: [[{ text: "📝 So'rovnomani ochish", url: 'https://oldiberdi.uz/?s=1' }]] } });
+      if (ok) n++; else skip++;
+      Utilities.sleep(40);
+    });
+    s.sent = { n: (s.sent && s.sent.n || 0) + n, at: Date.now() }; surveySave_(s); nstatFlush_();
+    return { n: n, skip: skip, survey: s };
   },
   /* ---------- Sodiqlik bo'limi ---------- */
   admLoyal: function (r) {
