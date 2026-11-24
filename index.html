@@ -629,8 +629,8 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=46;
-const WHATS_NEW=["Biznes tarifi endi yillik ham bor — 12 oyga arzonroq","Biznes'ni ilovadan yoki Telegram botdan to'g'ridan-to'g'ri ulaysiz","Sinov paytida to'lasangiz, muddat sinov tugagan kundan qo'shiladi"];
+const APP_VERSION=47;
+const WHATS_NEW=["Telegram bot endi kerakli paytda eslatib turadi: muddatlar, oylik hisobot va boshqalar","Bot xabarlari tanlangan tilda (o'zbek yoki rus) keladi"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -855,7 +855,7 @@ const API_URL=String(window.OLDIBERDI_API||'').trim();
 const Store={cloud:true};
 async function api(action,data){
  if(!API_URL)throw new Error("Ilova sozlanmagan: config.js fayliga server havolasini qo'ying");
- const body=JSON.stringify({action,token:S.token||'',...(data||{})});
+ const body=JSON.stringify({action,token:S.token||'',lang:LANG,...(data||{})});
  let r;try{r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body,redirect:'follow'})}catch(e){throw new Error("Internetga ulanib bo'lmadi. Qayta urinib ko'ring.")}
  let j;try{j=await r.json()}catch(e){throw new Error("Server javob bermadi. Birozdan keyin urinib ko'ring.")}
  if(!j.ok){if(j.error==='AUTH'){if(S.acc){logout();toast('Sessiya tugadi, qayta kiring')}throw new Error('Qayta kiring')}throw new Error(j.error||'Xatolik yuz berdi')}
