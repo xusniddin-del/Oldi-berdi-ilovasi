@@ -135,9 +135,9 @@ button{cursor:pointer;border:0;background:none}
 .sv-done{text-align:center;padding:10px 0}.sv-done h2{margin:12px 0 6px}.sv-done p{color:var(--muted);line-height:1.5}
 .sv-ok{width:72px;height:72px;border-radius:50%;background:var(--pos-bg);color:var(--brand);display:grid;place-items:center;margin:0 auto}.sv-ok svg{width:36px;height:36px}
 .sv-video{background:var(--pos-bg);color:var(--fg)!important;border-radius:12px;padding:10px 12px}
-.sv-card{position:relative;display:flex;align-items:center;gap:12px;padding:14px 40px 14px 14px;border-radius:18px;background:linear-gradient(135deg,#fff4d6,#ffe9b3);margin-bottom:12px}
-.sv-card .mid{flex:1;min-width:0}.sv-card .mid b{display:block;line-height:1.25}.sv-card>.btn{flex:none;width:auto;min-width:0;margin:0;padding:0 16px;white-space:nowrap}.sv-ic{flex:none;font-size:28px}@media(max-width:400px){.sv-card{flex-wrap:wrap}.sv-card .mid{flex:1 1 0}.sv-card>.btn{flex:1 1 100%;height:42px}}.sv-card small{display:block;color:#7a5300;font-size:13px}.sv-ic{font-size:26px}
-.sv-x{position:absolute;top:8px;right:8px;width:26px;height:26px;border:0;background:none;color:#7a5300;cursor:pointer;display:grid;place-items:center}.sv-x svg{width:16px;height:16px}
+
+
+
 .kpi3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .tool.soon{opacity:.55;cursor:default}
 .biz-tg{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;margin-bottom:12px}
@@ -684,6 +684,11 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 .sms-wait{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);margin:8px 0 4px}.sms-wait .spin{width:18px;height:18px}
 .sms-or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin:4px 0 12px}.sms-or:before,.sms-or:after{content:"";flex:1;height:1px;background:var(--line)}
 @media(max-width:380px){.sms-kpi{grid-template-columns:repeat(2,1fr)}}
+.sv-card{position:relative;display:flex;align-items:center;gap:12px;padding:12px 40px 12px 12px;margin:14px 0 0;border-radius:18px;background:linear-gradient(135deg,#fff6dc,#ffeab8);border:1px solid #f3dc9c;cursor:pointer}
+.sv-ic{width:44px;height:44px;border-radius:13px;background:#fff;display:grid;place-items:center;flex:none;font-size:24px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.sv-card .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.sv-card .mid b{font-size:15px;line-height:1.25}.sv-card .mid small{font-size:12.5px;color:#7a5300;line-height:1.3}
+.sv-go{background:var(--brand);color:#fff;font-weight:800;font-size:13px;padding:8px 16px;border-radius:99px;flex:none;border:0;cursor:pointer;font-family:inherit;line-height:1.2;white-space:nowrap}
+.sv-x{position:absolute;top:50%;right:6px;transform:translateY(-50%);width:28px;height:28px;border:0;background:transparent;color:#7a5300;opacity:.7;cursor:pointer;display:grid;place-items:center;border-radius:50%}.sv-x svg{width:16px;height:16px}
 </style>
 </head>
 <body>
@@ -705,7 +710,7 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=55;
+const APP_VERSION=56;
 const WHATS_NEW=["Avto-SMS (Biznes): eslatmalar o'z SIM kartangizdan avtomatik ketadi — Profil → Avto-SMS"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
@@ -2065,7 +2070,7 @@ async function svSubmit(el){svKeep();const qs=SV.q.filter(q=>q.id!=='q7'?svShown
  try{await api('surveySubmit',{token:S.token||LS.get('oldiberdi_token')||'',answers:ans,name:SV.name||'',phone:normPhone(SV.phone||''),src:S.token?'app':'link'});SV.done=true;SV.err='';if(S.survey)S.survey.done=true;drawSurvey();window.scrollTo(0,0)}
  catch(e){SV.err=e.message||writeErr(e);el.disabled=false;const y=window.scrollY;drawSurvey();window.scrollTo(0,y)}}
 function surveyCard(){const s=S.survey;if(!s||!s.on||s.done||LS.get('oldiberdi_svhide_'+s.id))return '';
- return `<div class="sv-card"><button class="sv-x" data-act="svHide" aria-label="Yopish">${I.x}</button><span class="sv-ic">📝</span><div class="mid"><b>${tr("2 daqiqalik so'rovnoma")}</b><small>${tr("Fikringiz ilovani yaxshilashga yordam beradi")}</small></div><button class="btn btn-primary btn-sm" data-act="svOpen">${tr('Boshlash')}</button></div>`}
+ return `<div class="sv-card" data-act="svOpen"><button class="sv-x" data-act="svHide" aria-label="Yopish">${I.x}</button><span class="sv-ic">📝</span><div class="mid"><b>${tr("2 daqiqalik so'rovnoma")}</b><small>${tr("Fikringiz ilovani yaxshilashga yordam beradi")}</small></div><button class="sv-go" data-act="svOpen">${tr('Boshlash')}</button></div>`}
 
 /* ============ sheets ============ */
 const sheets=[];
