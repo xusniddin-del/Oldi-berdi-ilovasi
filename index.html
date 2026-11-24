@@ -705,7 +705,7 @@ button.trial-card{width:100%;text-align:left;font-family:inherit;cursor:pointer}
 
 <script>
 /* ============ version ============ */
-const APP_VERSION=54;
+const APP_VERSION=55;
 const WHATS_NEW=["Avto-SMS (Biznes): eslatmalar o'z SIM kartangizdan avtomatik ketadi — Profil → Avto-SMS"];
 /* ============ helpers ============ */
 const $=(s,r=document)=>r.querySelector(s);
@@ -2024,6 +2024,9 @@ async function loyalRefresh(){if(S.api<16)return;try{const j=await api('loyal');
 function redeemAsk(k){const L=S.loyal;const cost=k==='r7'?L.r7:L.r30;confirmSheet(k==='r7'?'7 kun Premium olinsinmi?':'1 oy Premium olinsinmi?',`${fmt(cost)} ${tr('ball sarflanadi')}. ${tr("Premium darhol yoqiladi, mavjud muddatga qo'shiladi.")}`,'Olish',async()=>{const j=await api('redeem',{r:k});S.loyal=j.loyal;setAcc(j.acc);render();toast(tr('Premium yoqildi')+' 🎉')})}
 
 /* ============ SO'ROVNOMA (?s=1 havola yoki ilovadagi banner) ============ */
+/* so'rovnoma saytda to'ldiriladi (oldiberdi.uz/sorovnoma.html) — ilova to'ldirish paytida boshqa bo'limga o'tib ketmaydi; ism va raqam oldindan yoziladi */
+const SV_URL='https://oldiberdi.uz/sorovnoma.html';
+function svUrl(){const a=S.acc||{};const q=new URLSearchParams({from:'app',l:LANG==='ru'?'ru':'uz'});if(a.name)q.set('n',a.name);if(a.phone)q.set('p',a.phone);return SV_URL+'?'+q.toString()}
 let SV=null;
 const svL=a=>Array.isArray(a)?(isRu()?a[1]:a[0]):a;
 async function renderSurvey(){SV={q:null,me:null,ans:{},done:false,err:''};
@@ -2400,7 +2403,7 @@ const A={
  notif:()=>{closeAllSheets();notifSheet()},
  svPick:d=>svPick(d),
  svSubmit:(d,el)=>svSubmit(el),
- svOpen:()=>{closeAllSheets();try{history.pushState(null,'','?s=1')}catch(e){}renderSurvey()},
+ svOpen:()=>{closeAllSheets();window.open(svUrl(),'_blank')},
  svHide:()=>{if(S.survey)LS.set('oldiberdi_svhide_'+S.survey.id,'1');render()},
  redeem:d=>redeemAsk(d.v),
  refCopy:async()=>{try{await navigator.clipboard.writeText(S.loyal.ref);toast('Nusxalandi')}catch(e){shareSheet('Taklif havolasi','',S.loyal.ref)}},
@@ -2598,7 +2601,7 @@ document.addEventListener('change',async e=>{const t=e.target;const k=t.dataset.
  if(!API_URL){$('#app').innerHTML=`<div class="auth"><div class="auth-top pad">${LOGO}<h1>Oldi<span>-</span>Berdi</h1><p>Ilova hali serverga ulanmagan.</p></div><div class="pad"><div class="auth-card"><b>Sozlash kerak</b><p class="hint">GitHub'dagi <b>config.js</b> faylini oching va Google Apps Script'dan olgan havolani qo'shtirnoq ichiga yozing.</p></div></div></div>`;return}
  {const rp=new URLSearchParams(location.search).get('remind');if(rp){S.remindParam=rp;try{history.replaceState(null,'',location.pathname)}catch(e){}}}
  if(new URLSearchParams(location.search).get('pay')){try{history.replaceState(null,'',location.pathname)}catch(e){}}
- if(new URLSearchParams(location.search).get('s')){renderSurvey();return}
+ if(new URLSearchParams(location.search).get('s')){location.replace(svUrl());return}
  const cParam=new URLSearchParams(location.search).get('c');
  if(cParam){renderConfirm(cParam);return}
  let a=null;try{a=JSON.parse(LS.get('oldiberdi_acc')||'null')}catch(e){}
