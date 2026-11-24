@@ -27,9 +27,9 @@
  */
 
 const TABLES = {
-  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge', 'mode', 'bizTrialEnd', 'lastSeen', 'streak', 'points', 'level', 'notifyOff', 'lastNotify', 'lang', 'push', 'earned', 'ref', 'loyal'],
+  Accounts: ['id', 'name', 'phone', 'salt', 'hash', 'photo', 'currency', 'pinSalt', 'pinHash', 'createdAt', 'premium', 'tg', 'trialEnd', 'biz', 'badge', 'mode', 'bizTrialEnd', 'lastSeen', 'streak', 'points', 'level', 'notifyOff', 'lastNotify', 'lang', 'push', 'earned', 'ref', 'loyal', 'smsCfg'],
   Sessions: ['token', 'acc', 'createdAt'],
-  People:   ['id', 'acc', 'name', 'phone', 'note', 'photo', 'log', 'createdAt', 'updatedAt'],
+  People:   ['id', 'acc', 'name', 'phone', 'note', 'photo', 'log', 'createdAt', 'updatedAt', 'noAutoSms'],
   Tx:       ['id', 'acc', 'pid', 'type', 'amount', 'date', 'due', 'note', 'photo', 'edits', 'createdAt', 'updatedAt', 'cur', 'plan', 'items', 'pts'],
   Confirms: ['token', 'acc', 'txId', 'status', 'answeredAt', 'createdAt'],
   Meta:     ['key', 'value'],
@@ -37,9 +37,11 @@ const TABLES = {
   Payments: ['bill', 'acc', 'phone', 'tarif', 'days', 'amount', 'status', 'createdAt', 'paidAt', 'until'],
   Lists:    ['id', 'acc', 'name', 'items', 'createdAt', 'updatedAt'],
   Docs:     ['id', 'acc', 'kind', 'name', 'data', 'createdAt', 'updatedAt'],
-  Survey:   ['id', 'sid', 'acc', 'name', 'phone', 'mode', 'src', 'answers', 'createdAt', 'updatedAt']
+  Survey:   ['id', 'sid', 'acc', 'name', 'phone', 'mode', 'src', 'answers', 'createdAt', 'updatedAt'],
+  SmsDevices: ['id', 'acc', 'token', 'model', 'sim', 'appVer', 'lastPing', 'status', 'createdAt'],
+  SmsQueue: ['id', 'acc', 'pid', 'phone', 'text', 'source', 'status', 'attempts', 'error', 'createdAt', 'pickedAt', 'sentAt', 'deliveredAt', 'updatedAt']
 };
-const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true, lastNotify: true, loyal: true, answers: true };
+const JSON_FIELDS = { log: true, edits: true, plan: true, items: true, data: true, lastNotify: true, loyal: true, answers: true, smsCfg: true };
 /* Docs turlari va ular uchun kerakli tarif: '' — bepul, 'prem' — Premium, 'biz' — Biznes */
 const DOC_KINDS = { toy: 'prem', toyg: 'prem', loan: 'prem', gap: 'prem', yigin: '', biz: 'biz' };
 /* ---------- imkoniyatlar: admin paneldan boshqariladi ----------
@@ -60,7 +62,7 @@ function featOk_(a, f) { return feat_()[f] === 'free' || premium_(a).on; }
 const PREM_BADGES_ = ['green', 'gold', 'gem', 'crown'];
 const TX_TYPES = { lend: true, borrow: true, got: true, paid: true };
 const BLOCKABLE = { savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, shareTx: 1, mirrorConfirm: 1, setCurrency: 1, instMark: 1 };
-const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, bulkImport: 1, setNotify: 1, redeem: 1, surveyGet: 1, surveySubmit: 1, admSurveySet: 1, admSurveySend: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
+const WRITE = { startTrial: 1, instMark: 1, payCreate: 1, payCheck: 1, shareTx: 1, answerConfirm: 1, mirrorConfirm: 1, register: 1, login: 1, logout: 1, saveProfile: 1, setBadge: 1, changePass: 1, setPin: 1, setCurrency: 1, savePerson: 1, deletePerson: 1, saveTx: 1, deleteTx: 1, saveList: 1, deleteList: 1, saveDoc: 1, deleteDoc: 1, setMode: 1, bulkImport: 1, setNotify: 1, redeem: 1, surveyGet: 1, surveySubmit: 1, smsPair: 1, smsPull: 1, smsReport: 1, smsEnqueue: 1, smsCancel: 1, smsUnpair: 1, smsSet: 1, admSmsSet: 1, admSurveySet: 1, admSurveySend: 1, admSetPlan: 1, admTrial: 1, admPass: 1, admLogout: 1, admFeat: 1, admPrices: 1 };
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -298,7 +300,7 @@ function data_(accId) {
     docs: all_('Docs').filter(function (x) { return x.acc === accId; }).map(clean_),
     confirms: confirms,
     rate: rate_(),
-    api: 16,
+    api: 17,
     feat: feat_(),
     marks: marks_(accId),
     prices: prices_(),
@@ -427,7 +429,7 @@ const API = {
     put_('Accounts', a);
     try { notifyAdmin_('🆕 Yangi foydalanuvchi: <b>' + h_(name) + '</b> (+' + phone + ')'); } catch (e) {}
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a), survey: surveyState_(a) };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a), survey: surveyState_(a), sms: smsSum_(a) };
   },
   login: function (r) {
     const phone = normPhone_(r.phone);
@@ -437,7 +439,7 @@ const API = {
     if (!checkPw_(a, String(r.pass || ''))) { loginFail_(phone); throw new Error("Parol noto'g'ri"); }
     CacheService.getScriptCache().remove('lf_' + phone);
     const d = data_(a.id);
-    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a), survey: surveyState_(a) };
+    return { acc: pub_(a), token: newSession_(a.id), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a), survey: surveyState_(a), sms: smsSum_(a) };
   },
   logout: function (r) {
     const rows = all_('Sessions').filter(function (x) { return x.token === String(r.token || ''); }).map(function (x) { return x._row; });
@@ -446,7 +448,7 @@ const API = {
   },
   sync: function (r) {
     const a = auth_(r), d = data_(a.id);
-    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a), survey: surveyState_(a) };
+    return { acc: pub_(a), people: d.people, tx: d.tx, lists: d.lists, docs: d.docs, confirms: d.confirms, rate: d.rate, api: d.api, version: d.version, prices: myPrices_(a), marks: d.marks, feat: d.feat, loyal: loyal_(a), survey: surveyState_(a), sms: smsSum_(a) };
   },
   saveProfile: function (r) {
     const a = auth_(r);
@@ -534,7 +536,7 @@ const API = {
     const now = Date.now();
     const p = {
       id: id, acc: a.id, name: name, phone: normPhone_(it.phone), note: str_(it.note, 1000),
-      photo: photo_(a.id, it.photo), log: (Array.isArray(it.log) ? it.log : []).slice(-30),
+      photo: photo_(a.id, it.photo), log: (Array.isArray(it.log) ? it.log : []).slice(-30), noAutoSms: it.noAutoSms !== undefined ? (it.noAutoSms ? '1' : '') : (old && old.noAutoSms) || '',
       createdAt: Number(it.createdAt) || (old && old.createdAt) || now, updatedAt: now
     };
     put_('People', p, old ? old._row : 0);
@@ -658,6 +660,100 @@ const API = {
     const token = uid_() + uid_();
     put_('Confirms', { token: token, acc: a.id, txId: id, status: 'pending', answeredAt: '', createdAt: Date.now() });
     return { token: token, status: 'pending' };
+  },
+  /* ---------- Avto-SMS ---------- */
+  smsPairCode: function (r) {
+    const a = auth_(r); smsNeedBiz_(a);
+    if (!smsCfg_(a).agreed) throw new Error("Avval shartlarga rozilik bering");
+    const cache = CacheService.getScriptCache();
+    let code = ''; for (let i = 0; i < 5; i++) { code = String(100000 + Math.floor(Math.random() * 900000)); if (!cache.get('smspair_' + code)) break; }
+    cache.put('smspair_' + code, a.id, 600);
+    return { code: code, until: Date.now() + 600000 };
+  },
+  smsPair: function (r) {
+    const code = String(r.code || '').replace(/\D/g, '');
+    const cache = CacheService.getScriptCache(), accId = code.length === 6 ? cache.get('smspair_' + code) : null;
+    if (!accId) throw new Error("Kod noto'g'ri yoki eskirgan. Ilovadan yangi kod oling");
+    const a = all_('Accounts').filter(function (x) { return x.id === accId; })[0]; if (!a) throw new Error("Akkaunt topilmadi");
+    smsNeedBiz_(a);
+    cache.remove('smspair_' + code);
+    all_('SmsDevices').forEach(function (d) { if (d.acc === a.id && d.status === 'active') { d.status = 'off'; put_('SmsDevices', d, d._row); } });
+    const d = { id: uid_(), acc: a.id, token: uid_() + uid_(), model: str_(r.model, 60), sim: str_(r.sim, 60), appVer: str_(r.appVer, 20), lastPing: Date.now(), status: 'active', createdAt: Date.now() };
+    put_('SmsDevices', d);
+    try { notifyTg_(a.id, '📱 <b>Oldi-Berdi SMS</b> telefoni ulandi: ' + h_(d.model || 'Android')); } catch (e) {}
+    const c = smsCfg_(a);
+    return { dt: d.token, name: a.name, shop: bizDoc_(a.id).shop || '', cfg: { from: c.from, to: c.to, gap: c.gap, limit: c.limit } };
+  },
+  /* yordamchi ilova: navbatdagi ko'pi bilan 5 ta xabar ('sending' bo'ladi) */
+  smsPull: function (r) {
+    const x = devAuth_(r), d = x.d, a = x.a;
+    d.lastPing = Date.now(); if (r.sim) d.sim = str_(r.sim, 60); if (r.appVer) d.appVer = str_(r.appVer, 20); put_('SmsDevices', d, d._row);
+    const g = smsGlobal_(), c = smsCfg_(a), biz = !!premium_(a).biz;
+    const out = { cfg: { from: c.from, to: c.to, gap: c.gap, limit: c.limit, off: g.off, biz: biz }, items: [] };
+    if (g.off || !biz || r.ping) return out;
+    smsRequeue_(a.id);
+    const sentToday = smsToday_(a.id).filter(function (q) { return q.status === 'sent' || q.status === 'delivered' || q.status === 'sending'; }).length;
+    let room = Math.min(5, c.limit - sentToday); if (room <= 0) { out.limit = true; return out; }
+    all_('SmsQueue').filter(function (q) { return q.acc === a.id && q.status === 'queued'; }).sort(function (p, q) { return (Number(p.createdAt) || 0) - (Number(q.createdAt) || 0); }).slice(0, room).forEach(function (q) {
+      q.status = 'sending'; q.pickedAt = Date.now(); q.attempts = (Number(q.attempts) || 0) + 1; q.updatedAt = Date.now(); put_('SmsQueue', q, q._row);
+      out.items.push({ id: q.id, phone: q.phone, text: q.text });
+    });
+    return out;
+  },
+  smsReport: function (r) {
+    const x = devAuth_(r), a = x.a, st = String(r.status || '');
+    if (['sent', 'delivered', 'failed'].indexOf(st) < 0) throw new Error("Holat noto'g'ri");
+    const q = all_('SmsQueue').filter(function (y) { return y.id === String(r.id || '') && y.acc === a.id; })[0];
+    if (!q) return { ok: false };
+    if (q.status === 'delivered' && st !== 'delivered') return { ok: true };
+    q.status = st; q.updatedAt = Date.now();
+    if (st === 'sent') { q.sentAt = Date.now(); q.error = ''; }
+    if (st === 'delivered') { q.deliveredAt = Date.now(); if (!q.sentAt) q.sentAt = q.deliveredAt; }
+    if (st === 'failed') q.error = str_(r.error, 200) || 'Xato';
+    put_('SmsQueue', q, q._row);
+    if (st === 'sent') try { smsLogPerson_(a.id, q.pid, 'Eslatma yuborildi (Avto-SMS' + (q.source === 'auto' ? '' : ' · qo\'lda') + ')'); } catch (e) {}
+    return { ok: true };
+  },
+  smsEnqueue: function (r) {
+    const a = auth_(r); smsNeedBiz_(a);
+    if (!smsDevice_(a.id)) throw new Error("Avval telefonni ulang: Profil → Avto-SMS");
+    const p = all_('People').filter(function (x) { return x.id === String(r.pid || '') && x.acc === a.id; })[0];
+    if (!p) throw new Error("Odam topilmadi");
+    const text = str_(r.text, 900).trim(); if (!text) throw new Error("Matn bo'sh");
+    const q = smsQueuePut_(a, p, text, r.source === 'pc' ? 'pc' : 'manual');
+    return { item: smsPub_(q, { [p.id]: p.name }) };
+  },
+  smsList: function (r) {
+    const a = auth_(r);
+    const names = {}; all_('People').forEach(function (p) { if (p.acc === a.id) names[p.id] = p.name; });
+    const all = all_('SmsQueue').filter(function (q) { return q.acc === a.id; }).sort(function (x, y) { return (Number(y.createdAt) || 0) - (Number(x.createdAt) || 0); });
+    const td = smsToday_(a.id), c = smsCfg_(a);
+    return { biz: !!premium_(a).biz, off: smsGlobal_().off, device: devPub_(smsDevice_(a.id)), cfg: c,
+      today: { all: td.length, sent: td.filter(function (q) { return q.status === 'sent' || q.status === 'delivered'; }).length, failed: td.filter(function (q) { return q.status === 'failed'; }).length, queued: td.filter(function (q) { return q.status === 'queued' || q.status === 'sending'; }).length },
+      items: all.slice(0, 100).map(function (q) { return smsPub_(q, names); }) };
+  },
+  smsCancel: function (r) {
+    const a = auth_(r);
+    const q = all_('SmsQueue').filter(function (y) { return y.id === String(r.id || '') && y.acc === a.id; })[0];
+    if (!q) throw new Error('Topilmadi');
+    if (q.status !== 'queued') throw new Error("Bu SMS allaqachon telefonga uzatilgan");
+    q.status = 'cancelled'; q.updatedAt = Date.now(); put_('SmsQueue', q, q._row);
+    return { ok: true };
+  },
+  smsUnpair: function (r) {
+    let accId;
+    if (r.dt) { try { accId = devAuth_(r).a.id; } catch (e) { return { ok: true }; } } else accId = auth_(r).id;
+    all_('SmsDevices').forEach(function (d) { if (d.acc === accId && d.status === 'active') { d.status = 'off'; put_('SmsDevices', d, d._row); } });
+    all_('SmsQueue').forEach(function (q) { if (q.acc === accId && (q.status === 'queued' || q.status === 'sending')) { q.status = 'cancelled'; q.updatedAt = Date.now(); put_('SmsQueue', q, q._row); } });
+    return { ok: true };
+  },
+  smsSet: function (r) {
+    const a = auth_(r), c = smsCfg_(a), n = r.cfg || {};
+    const o = { auto: n.auto !== undefined ? !!n.auto : c.auto, agreed: n.agreed !== undefined ? !!n.agreed : c.agreed, limit: n.limit !== undefined ? Math.min(150, Math.max(10, Number(n.limit) || c.limit)) : c.limit,
+      from: /^\d{2}:\d{2}$/.test(String(n.from || '')) ? n.from : c.from, to: /^\d{2}:\d{2}$/.test(String(n.to || '')) ? n.to : c.to };
+    if (o.auto) smsNeedBiz_(a);
+    a.smsCfg = o; put_('Accounts', a, a._row);
+    return { cfg: smsCfg_(a) };
   },
   /* so'rovnoma: savollar va holat (ochilganlar soni shu yerda sanaladi) */
   surveyGet: function (r) {
@@ -1539,6 +1635,117 @@ function surveyLine_(q, v) {
   return String(v);
 }
 
+
+/* ======================= AVTO-SMS (faqat Biznes) =======================
+ * Ilova/kompyuter → SmsQueue → do'kondor telefonidagi «Oldi-Berdi SMS» yordamchi ilovasi navbatni oladi (smsPull)
+ * → SIM kartadan yuboradi → holatni qaytaradi (smsReport). Ulash: 6 xonali kod (10 daqiqa), bitta akkauntga 1 faol qurilma.
+ * Global sozlama Meta.sms_cfg: { off, defLimit, gap }. Akkaunt sozlamasi Accounts.smsCfg: { auto, limit, from, to, agreed }. */
+const SMS_DEF_ = { off: false, defLimit: 50, gap: 25 };
+function smsGlobal_() { let o = {}; try { o = JSON.parse(meta_('sms_cfg') || '{}') || {}; } catch (e) {} return { off: !!o.off, defLimit: Number(o.defLimit) >= 10 ? Number(o.defLimit) : SMS_DEF_.defLimit, gap: Number(o.gap) >= 5 ? Number(o.gap) : SMS_DEF_.gap }; }
+function smsCfg_(a) {
+  const g = smsGlobal_(), c = a.smsCfg && typeof a.smsCfg === 'object' && !Array.isArray(a.smsCfg) ? a.smsCfg : {};
+  const hm = function (v, d) { return /^\d{2}:\d{2}$/.test(String(v || '')) ? String(v) : d; };
+  return { auto: !!c.auto, agreed: !!c.agreed, limit: Math.min(150, Math.max(10, Number(c.limit) || g.defLimit)), from: hm(c.from, '09:00'), to: hm(c.to, '21:00'), gap: g.gap };
+}
+function smsNeedBiz_(a) {
+  if (!premium_(a).biz) throw new Error("Avto-SMS faqat Biznes tarifida ishlaydi");
+  if (smsGlobal_().off) throw new Error("Avto-SMS vaqtincha to'xtatilgan. Keyinroq urinib ko'ring");
+}
+function smsDevice_(accId) { return all_('SmsDevices').filter(function (d) { return d.acc === accId && d.status === 'active'; })[0] || null; }
+function smsOnline_(d) { return !!d && Date.now() - (Number(d.lastPing) || 0) < 3 * 60000; }
+function smsToday_(accId) {
+  const t0 = new Date(today_() + 'T00:00:00').getTime();
+  return all_('SmsQueue').filter(function (q) { return q.acc === accId && (Number(q.createdAt) || 0) >= t0 && q.status !== 'cancelled'; });
+}
+function smsPub_(q, names) { return { id: q.id, pid: q.pid, name: names ? names[q.pid] || '' : '', phone: q.phone, text: q.text, source: q.source, status: q.status, error: q.error || '', attempts: Number(q.attempts) || 0, createdAt: Number(q.createdAt) || 0, sentAt: Number(q.sentAt) || 0, deliveredAt: Number(q.deliveredAt) || 0 }; }
+function devPub_(d) { return d ? { model: d.model, sim: d.sim, appVer: d.appVer, lastPing: Number(d.lastPing) || 0, online: smsOnline_(d), createdAt: Number(d.createdAt) || 0 } : null; }
+/* qurilma tokeni bilan kirish */
+function devAuth_(r) {
+  const tok = String(r.dt || '');
+  const d = tok && all_('SmsDevices').filter(function (x) { return x.token === tok; })[0];
+  if (!d || d.status !== 'active') throw new Error('DEVICE');
+  const a = all_('Accounts').filter(function (x) { return x.id === d.acc; })[0];
+  if (!a) throw new Error('DEVICE');
+  return { d: d, a: a };
+}
+/* «aka»/«opa» — ilovadagi hon() bilan bir xil qoida */
+const HON_MALE_A_ = ['musa', 'iso', 'isa', 'yahyo', 'zakariyo', 'mustafo', 'mustafa', 'murtazo', 'mirzo', 'mullo', 'ota', 'raja', 'hamza', 'usama', 'muso', 'safo', 'vafo', 'ziyo', 'luqmon'];
+const HON_FEM_ = ['mohinur', 'gulnur', 'dilnur', 'oydin', 'nilufar', 'barno', 'yulduz', 'shirin', 'saodat', 'sabohat', 'mehrinoz', 'dilnoz', 'gulnoz', "ra'no", 'rano', 'mohigul', 'zebo', 'nasiba', 'mohlaroy', 'sevinch', 'dilorom', 'marhabo', 'shahlo', 'gavhar', 'surayyo', 'muhayyo', 'ziyoda', 'hilola', 'nargiz', 'kumush', 'oysha', 'zarina', 'ruxsor', 'gulruh', 'mohira'];
+function hon_(name) {
+  const n = String(name || '').trim(); if (!n) return n;
+  if (/\b(aka|opa|ota|ona|xola|amaki|tog'a|buvi|bobo|xonim|janob|domla|ustoz|hoji|aya)\b/i.test(n)) return n;
+  const f = n.split(/\s+/)[0].toLowerCase().replace(/[‘’`ʻʼ]/g, "'");
+  if (!/^[a-z'-]+$/.test(f)) return n;
+  if (HON_FEM_.indexOf(f) >= 0) return n + ' opa';
+  if (/(xon|oy|gul|niso|nisa|bonu|bibi|begim|poshsha|noz|o'r|lo)$/.test(f)) return n + ' opa';
+  if (/a$/.test(f) && HON_MALE_A_.indexOf(f) < 0) return n + ' opa';
+  if (/(bek|jon|boy|ali|ulla|iddin|dor|mat|mad|mon|nur|sher|ur|im|in|on|il|ov|ev|ar|or|er|ir|zod|bor|tosh|qul|vali|mal|lol|od|iz|uz|am|an|un|at|ot|id|ib|ob|ub|ug|oh|ix|ux|qob|sur|mur|bur|jur|om)$/.test(f) || HON_MALE_A_.indexOf(f) >= 0) return n + ' aka';
+  return n;
+}
+/* eslatma matni — ilovadagi remindText() bilan bir xil ko'rinish, oxirida do'kon nomi */
+function smsRemindText_(a, p, bal, due) {
+  const td = today_(), D = bizDoc_(a.id), shop = [D.shop, D.addr].filter(Boolean).join(', ');
+  if (a.lang === 'ru') {
+    let s = 'Oldi-Berdi\n\nЗдравствуйте, ' + p.name + '!\n\nХочу напомнить: за вами долг ' + sum_(bal).replace("so'm", 'сум') + '.';
+    if (due) s += due < td ? '\nСрок возврата был ' + fdate_(due) + '.' : '\nСрок возврата: ' + fdate_(due) + '.';
+    return s + '\n\nСпасибо!\n' + (shop ? shop + '\n' : '') + 'Oldiberdi.uz';
+  }
+  let s = 'Oldi-Berdi\n\nAssalomu alaykum, ' + hon_(p.name) + "!\n\nYodingizga solib qo'ymoqchi edim: sizda " + sum_(bal) + ' qarz bor.';
+  if (due) s += due < td ? '\nQaytarish muddati ' + fdate_(due) + ' edi.' : '\nQaytarish muddati: ' + fdate_(due) + '.';
+  return s + '\n\nRahmat!\n' + (shop ? shop + '\n' : '') + 'Oldiberdi.uz';
+}
+function bizDoc_(accId) { const d = all_('Docs').filter(function (x) { return x.acc === accId && x.kind === 'biz'; })[0]; return d && d.data || {}; }
+/* odam jurnaliga yozib qo'yish (ilovadagi «Oxirgi eslatma» shu yerdan) */
+function smsLogPerson_(accId, pid, text) {
+  const p = all_('People').filter(function (x) { return x.id === pid && x.acc === accId; })[0]; if (!p) return;
+  p.log = (Array.isArray(p.log) ? p.log : []).concat([{ at: Date.now(), t: text }]).slice(-30); p.updatedAt = Date.now();
+  put_('People', p, p._row);
+}
+/* 10 daqiqada javob kelmagan 'sending' — qaytadan navbatga (3 urinishdan keyin 'failed') */
+function smsRequeue_(accId) {
+  const lim = Date.now() - 10 * 60000;
+  all_('SmsQueue').forEach(function (q) {
+    if (q.acc !== accId || q.status !== 'sending' || (Number(q.pickedAt) || 0) > lim) return;
+    if ((Number(q.attempts) || 0) >= 3) { q.status = 'failed'; q.error = q.error || "Telefon javob bermadi"; }
+    else q.status = 'queued';
+    q.updatedAt = Date.now(); put_('SmsQueue', q, q._row);
+  });
+}
+function smsQueuePut_(a, p, text, source) {
+  const c = smsCfg_(a), today = smsToday_(a.id).length;
+  if (today >= c.limit) throw new Error('Bugungi chegara tugadi (' + c.limit + ' ta). Ertaga davom etadi');
+  const phone = normPhone_(p.phone);
+  if (phone.length < 9) throw new Error("Bu odamning telefon raqami yozilmagan");
+  const now = Date.now();
+  const q = { id: uid_(), acc: a.id, pid: p.id, phone: phone, text: str_(text, 900), source: source, status: 'queued', attempts: 0, error: '', createdAt: now, pickedAt: 0, sentAt: 0, deliveredAt: 0, updatedAt: now };
+  put_('SmsQueue', q);
+  return q;
+}
+/* har kuni 10:00 — muddati 1, 3 va 7 kun o'tgan qarzlar uchun avto-SMS navbatga */
+function smsSum_(a) { if (mode_(a) !== 'biz') return null; const d = smsDevice_(a.id), c = smsCfg_(a); return { paired: !!d, online: smsOnline_(d), lastPing: d ? Number(d.lastPing) || 0 : 0, auto: c.auto, agreed: c.agreed }; }
+function avtoSms() {
+  if (smsGlobal_().off) return;
+  const td = today_(), days = {}; days[addDays_(td, -1)] = 1; days[addDays_(td, -3)] = 3; days[addDays_(td, -7)] = 7;
+  const recent = {}, lim3 = Date.now() - 3 * 864e5;
+  all_('SmsQueue').forEach(function (q) { if ((Number(q.createdAt) || 0) >= lim3 && q.status !== 'cancelled' && q.status !== 'failed') recent[q.acc + ':' + q.pid] = 1; });
+  const pplBy = {}; all_('People').forEach(function (p) { (pplBy[p.acc] = pplBy[p.acc] || {})[p.id] = p; });
+  let total = 0;
+  all_('Accounts').forEach(function (a) {
+    if (mode_(a) !== 'biz' || !premium_(a).biz) return;
+    const c = smsCfg_(a); if (!c.auto || !c.agreed || !smsDevice_(a.id)) return;
+    const b = balances_(a.id), ppl = pplBy[a.id] || {};
+    let left = c.limit - smsToday_(a.id).length;
+    Object.keys(b.bal).forEach(function (pid) {
+      if (left <= 0) return;
+      const p = ppl[pid], v = b.bal[pid], due = b.due[pid];
+      if (!p || v <= 0.5 || !due || !days[due] || String(p.noAutoSms) === '1' || recent[a.id + ':' + pid]) return;
+      if (normPhone_(p.phone).length < 9) return;
+      try { smsQueuePut_(a, p, smsRemindText_(a, p, v, due), 'auto'); left--; total++; } catch (e) { console.error(e); }
+    });
+  });
+  console.log('avtoSms: ' + total);
+}
+
 /* Biznes: har kuni 20:00 da do'kon egasiga kunlik natija (botSetup trigger qo'yadi) */
 function kechki() {
   if (!prop_('TG_TOKEN')) return;
@@ -1585,6 +1792,8 @@ function botSetup() {
   ScriptApp.getProjectTriggers().forEach(function (t) { if (['sogindik', 'oylik'].indexOf(t.getHandlerFunction()) >= 0) ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('sogindik').timeBased().everyDays(1).atHour(19).create();
   ScriptApp.newTrigger('oylik').timeBased().everyDays(1).atHour(10).create();
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'avtoSms') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('avtoSms').timeBased().everyDays(1).atHour(10).create();
   const msg = 'Bot: @' + me.result.username + ' | webhook: ' + url + ' → ' + (w && w.ok ? 'OK' : JSON.stringify(w));
   Logger.log(msg);
   return msg;
@@ -1894,6 +2103,23 @@ Object.assign(API, {
       setMeta_(PLANS[k].key, String(n));
     });
     return { prices: prices_() };
+  },
+  /* ---------- Avto-SMS (admin) ---------- */
+  admSms: function (r) {
+    admAuth_(r);
+    const td = today_(), t0 = new Date(td + 'T00:00:00').getTime(), acc = {}; all_('Accounts').forEach(function (a) { acc[a.id] = a; });
+    const per = {};
+    all_('SmsQueue').forEach(function (q) { if ((Number(q.createdAt) || 0) < t0) return; const o = per[q.acc] = per[q.acc] || { sent: 0, failed: 0, queued: 0 }; if (q.status === 'sent' || q.status === 'delivered') o.sent++; else if (q.status === 'failed') o.failed++; else if (q.status === 'queued' || q.status === 'sending') o.queued++; });
+    const devs = all_('SmsDevices').filter(function (d) { return d.status === 'active'; }).map(function (d) { const a = acc[d.acc] || {}; const c = a.id ? smsCfg_(a) : {}; return { acc: d.acc, name: a.name || '', phone: a.phone || '', shop: bizDoc_(d.acc).shop || '', model: d.model, sim: d.sim, appVer: d.appVer, lastPing: Number(d.lastPing) || 0, online: smsOnline_(d), auto: !!c.auto, limit: c.limit, today: per[d.acc] || { sent: 0, failed: 0, queued: 0 } }; });
+    let tot = { sent: 0, failed: 0, queued: 0 }; Object.keys(per).forEach(function (k) { tot.sent += per[k].sent; tot.failed += per[k].failed; tot.queued += per[k].queued; });
+    return { cfg: smsGlobal_(), devices: devs, today: tot };
+  },
+  admSmsSet: function (r) {
+    admAuth_(r);
+    const g = smsGlobal_(), o = { off: r.off !== undefined ? !!r.off : g.off, defLimit: r.defLimit !== undefined ? Math.min(150, Math.max(10, Number(r.defLimit) || g.defLimit)) : g.defLimit, gap: r.gap !== undefined ? Math.min(300, Math.max(5, Number(r.gap) || g.gap)) : g.gap };
+    setMeta_('sms_cfg', JSON.stringify(o));
+    if (o.off && !g.off) all_('SmsQueue').forEach(function (q) { if (q.status === 'sending') { q.status = 'queued'; put_('SmsQueue', q, q._row); } });
+    return { cfg: smsGlobal_() };
   },
   /* ---------- So'rovnoma ---------- */
   admSurvey: function (r) {
