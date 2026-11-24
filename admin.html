@@ -166,6 +166,13 @@ h1.page{font-size:24px;font-weight:800;letter-spacing:-.03em;margin:8px 2px 2px}
 textarea.inp{height:auto;min-height:130px;padding:12px 13px;resize:vertical;line-height:1.45}
 .mtag{font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;background:var(--surface-2,#eef3ef);color:var(--muted);margin-left:6px;vertical-align:1px;white-space:nowrap}.mtag.biz{background:var(--plum-bg);color:var(--plum)}
 .modes2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modes2 button{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;border:1px solid var(--line);background:none;font:inherit;color:inherit;cursor:pointer;text-align:left}.modes2 span{font-size:24px}.modes2 small{display:block;color:var(--muted);font-size:12px}.modes2 b{font-size:20px}
+.sv-res{margin-bottom:10px}.sv-rq{display:flex;gap:8px;align-items:flex-start;font-weight:700;margin-bottom:10px;line-height:1.35}.sv-n{width:24px;height:24px;border-radius:8px;background:var(--pos-bg);color:var(--brand);display:inline-grid;place-items:center;font-size:12px;font-weight:800;flex:none}
+.sv-bar{margin-bottom:8px}.sv-bl{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;margin-bottom:3px}.sv-bt{height:8px;border-radius:9px;background:var(--surface-2,#eef3ef);overflow:hidden}.sv-bt i{display:block;height:100%;background:var(--brand);border-radius:9px}
+.sv-hist{display:flex;gap:4px;align-items:flex-end;height:110px;padding-top:16px}.sv-hist>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}.sv-hist i{width:100%;min-height:2px;background:var(--brand);border-radius:6px 6px 2px 2px}.sv-hist i.r{background:var(--neg,#d6452a)}.sv-hist i.y{background:var(--warn,#e0a100)}.sv-hist i.g{background:var(--brand)}.sv-hist span{font-size:11px;color:var(--muted);margin-top:4px}.sv-hist b{position:absolute;top:0;font-size:11px}
+.sv-txt{padding:8px 10px;border-radius:10px;background:var(--surface-2,#eef3ef);margin-bottom:6px;font-size:13.5px;line-height:1.4}.sv-txt small{display:block;color:var(--muted);margin-top:2px}
+.sv-link{display:flex;gap:8px;align-items:center;padding:8px 8px 8px 12px;border-radius:12px;background:var(--surface-2,#eef3ef);font-size:13px}.sv-link span{flex:1;overflow-wrap:anywhere}
+.sv-sms{white-space:pre-line;font-size:13.5px}
+.sv-a{padding:9px 0;border-bottom:1px solid var(--line)}.sv-a small{display:block;color:var(--muted);font-size:12.5px;margin-bottom:2px}
 .lv4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.lv4 button{display:flex;align-items:center;gap:8px;padding:10px;border-radius:14px;border:1px solid var(--line);background:var(--card,#fff);font:inherit;color:inherit;cursor:pointer;text-align:left;min-width:0}.lv4 span{font-size:20px}.lv4 small{display:block;color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lv4 b{font-size:18px}
 @media (max-width:520px){.lv4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.chip{border:1px solid var(--line);background:var(--card,#fff);border-radius:99px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
@@ -399,11 +406,11 @@ function derive(){
 function delta(cur,prev){if(!prev&&!cur)return '<span class="delta eq">0%</span>';if(!prev)return '<span class="delta up">yangi</span>';const p=Math.round((cur-prev)/prev*100);return `<span class="delta ${p>0?'up':p<0?'down':'eq'}">${p>0?'+':''}${p}%</span>`}
 
 /* ---------- render ---------- */
-const TABS=[['home','home','Asosiy'],['users','users','Mijozlar'],['loyal','star','Sodiqlik'],['feat','grid','Sozlamalar'],['pays','card',"To'lovlar"],['msg','send','Xabar']];
-const TITLES={home:['Asosiy','Bugungi holat bir qarashda'],users:['Mijozlar',''],feat:['Sozlamalar',"Bo'limlar va narxlar — o'zgarish hammada darhol ishlaydi"],pays:["To'lovlar",'Botdagi Premium va Biznes to\'lovlari'],loyal:['Sodiqlik','Ballar, hamkorlar, xabarlar va qaytib kelish'],msg:['Xabar yuborish','Bot orqali mijozlarga e\'lon']};
+const TABS=[['home','home','Asosiy'],['users','users','Mijozlar'],['loyal','star','Sodiqlik'],['survey','chart',"So'rovnoma",1],['feat','grid','Sozlamalar'],['pays','card',"To'lovlar"],['msg','send','Xabar']];
+const TITLES={home:['Asosiy','Bugungi holat bir qarashda'],users:['Mijozlar',''],feat:['Sozlamalar',"Bo'limlar va narxlar — o'zgarish hammada darhol ishlaydi"],pays:["To'lovlar",'Botdagi Premium va Biznes to\'lovlari'],survey:["So'rovnoma",'Mijozlar fikri, muammolar, video roziligi'],loyal:['Sodiqlik','Ballar, hamkorlar, xabarlar va qaytib kelish'],msg:['Xabar yuborish','Bot orqali mijozlarga e\'lon']};
 function render(){
   const v=S.tab,d=derive(),att=d.trialEnd.length+d.premEnd.length;
-  const body=v==='home'?vHome(d):v==='users'?vUsers():v==='feat'?vFeat():v==='pays'?vPays():v==='loyal'?vLoyal():vMsg();
+  const body=v==='home'?vHome(d):v==='users'?vUsers():v==='feat'?vFeat():v==='pays'?vPays():v==='loyal'?vLoyal():v==='survey'?vSurvey():vMsg();
   const cnt=k=>k==='users'&&S.users?S.users.length:'';
   const name=S.me&&S.me.name||'Admin';
   $('#app').innerHTML=`<div class="shell">
@@ -415,7 +422,7 @@ function render(){
     <button class="icon-btn ${S.busy?'spin':''}" data-reload="1" aria-label="Yangilash">${ic('refresh')}</button><span class="me" title="${esc(name)}">${esc(ini(name))}</span></div>
    ${body}
   </main>
-  <nav class="nav"><div class="in">${TABS.map(([k,i,l])=>`<button class="${v===k?'on':''}" data-go="${k}"><span class="bub">${ic(i)}</span>${l}${k==='home'&&att?`<span class="cnt">${att}</span>`:''}</button>`).join('')}</div></nav></div>`;
+  <nav class="nav"><div class="in">${TABS.filter(t=>!t[3]).map(([k,i,l])=>`<button class="${v===k?'on':''}" data-go="${k}"><span class="bub">${ic(i)}</span>${l}${k==='home'&&att?`<span class="cnt">${att}</span>`:''}</button>`).join('')}</div></nav></div>`;
   if(render._focus){const el=document.getElementById(render._focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}render._focus=null}
 }
 
@@ -449,6 +456,7 @@ function vHome(d){
   <div class="qa">
    <button data-qa="prem"><span style="background:var(--pos-bg);color:var(--brand)">${ic('gem')}</span>Premium berish</button>
    <button data-go="msg"><span style="background:var(--sky-bg);color:var(--sky)">${ic('send')}</span>Xabar</button>
+   <button data-go="survey"><span style="background:var(--warn-bg);color:var(--warn)">${ic('chart')}</span>So'rovnoma</button>
    <button data-qa="prices"><span style="background:var(--warn-bg);color:var(--warn)">${ic('money')}</span>Narxlar</button>
    <button data-go="feat"><span style="background:var(--plum-bg);color:var(--plum)">${ic('grid')}</span>Bo'limlar</button>
   </div>
@@ -582,6 +590,52 @@ function vFeat(){
 }
 function saveNote(m,y){const full=m*12,save=m>0&&y>0?full-y:0;return save>0?`<div class="save-note">${ic('check2')}<span>Yillikda mijoz <b>${fmt(save)} so'm</b> tejaydi (−${Math.round(save/full*100)}%) · oyiga ${fmt(Math.round(y/12))} so'm</span></div>`:'<div style="height:10px"></div>'}
 
+/* ---------- So'rovnoma ---------- */
+const SV_LINK='https://oldiberdi.uz/?s=1';
+const SV_SMS="Assalomu alaykum! Oldi-Berdi ilovasidan foydalanayotganingiz uchun rahmat 🙏\nIlovani siz uchun yanada qulay qilmoqchimiz. 2 daqiqalik so'rovnomaga javob bering:\n"+SV_LINK+"\n\nOldiberdi.uz";
+const SV_BOT="📝 Oldi-Berdi'ni birga yaxshilaymiz! 2 daqiqalik so'rovnomaga javob bering — qanday foydalanayotganingiz, qanday muammolar borligi va nimani qo'shishimizni yozing. Javobingiz biz uchun juda muhim 🙏";
+async function loadSurvey(silent){try{S.sv=await api('admSurvey')}catch(e){toast(e.message);S.sv=S.sv||null}if(!silent)render()}
+function svAns(q,v){if(v===undefined||v===null||v===''||(Array.isArray(v)&&!v.length))return '—';if(q.type==='one')return q.o[v]?q.o[v][0]:'—';if(q.type==='many')return v.map(i=>q.o[i]?q.o[i][0]:'').filter(Boolean).join(', ');if(q.type==='scale')return v+' / 5';if(q.type==='nps')return v+' / 10';return String(v)}
+function vSurvey(){const V=S.sv;if(!V)return `<div class="kpis">${'<div class="skel" style="height:118px"></div>'.repeat(4)}</div><div class="skel" style="height:300px;margin-top:14px"></div>`;
+ const s=V.survey,op=+s.opens||0,conv=op?Math.round(V.n/op*100):0,Q=V.q;
+ const bars=(q)=>{const c=V.agg[q.id]||[],mx=Math.max(1,...c),tot=c.reduce((a,b)=>a+b,0);
+  if(q.type==='scale'||q.type==='nps'){const a=q.type==='nps'?0:1;const avg=tot?(c.reduce((z,n,i)=>z+n*(i+a),0)/tot).toFixed(1):'—';return `<div class="sv-hist">${c.map((n,i)=>`<div><i style="height:${Math.round(n/mx*100)}%" class="${q.type==='nps'?(i+a>=9?'g':i+a<=6?'r':'y'):''}"></i><span>${i+a}</span><b>${n||''}</b></div>`).join('')}</div><div class="hint" style="margin-top:6px">O'rtacha: <b>${avg}</b>${q.type==='nps'&&V.nps!==null?` · NPS: <b>${V.nps>0?'+':''}${V.nps}</b>`:''}</div>`}
+  return q.o.map((o,i)=>`<div class="sv-bar"><div class="sv-bl"><span>${esc(o[0])}</span><b class="num">${c[i]||0}</b></div><div class="sv-bt"><i style="width:${Math.round((c[i]||0)/mx*100)}%"></i></div></div>`).join('')};
+ const texts=q=>{const L=V.rows.filter(r=>r.answers&&r.answers[q.id]);return L.length?L.slice(0,8).map(r=>`<div class="sv-txt">«${esc(r.answers[q.id])}»<small>— ${esc(r.name||'Ismsiz')}</small></div>`).join('')+(L.length>8?`<div class="hint">va yana ${L.length-8} ta…</div>`:''):'<div class="hint">Hali yozilmagan</div>'};
+ const vids=V.rows.filter(r=>r.answers&&(r.answers.q10===0||r.answers.q10===1));
+ return `<div class="kpis">
+  <div class="card kpi ${s.on?'k-brand':'k-warn'}"><div class="kh"><span class="ki">${ic('chart')}</span>Holati</div><b>${s.on?'Faol':'Yopiq'}</b><div class="kf">${s.startedAt?fdate(new Date(+s.startedAt).toISOString().slice(0,10))+' dan':''}</div></div>
+  <div class="card kpi k-sky"><div class="kh"><span class="ki">${ic('send')}</span>Yuborildi</div><b class="num">${s.sent&&s.sent.n||0}</b><div class="kf">bot/push · SMS'ni siz yuborasiz</div></div>
+  <div class="card kpi k-plum"><div class="kh"><span class="ki">${ic('globe')}</span>Ochildi</div><b class="num">${op}</b><div class="kf">havola ochilgan marta</div></div>
+  <div class="card kpi k-brand"><div class="kh"><span class="ki">${ic('check2')}</span>Javob berdi</div><b class="num">${V.n}</b><div class="kf">${op?conv+'% ochganlardan':''}${V.nps!==null?` · NPS ${V.nps>0?'+':''}${V.nps}`:''}</div></div></div>
+ <div class="set2"><div>
+  <div class="sec"><h2>Natijalar</h2><span class="hint">${V.n} ta javob</span></div>
+  ${Q.filter(q=>q.type!=='text').map((q,i)=>`<div class="card pad sv-res"><div class="sv-rq"><span class="sv-n">${Q.indexOf(q)+1}</span>${esc(q.t[0])}</div>${bars(q)}</div>`).join('')}
+  ${Q.filter(q=>q.type==='text').map(q=>`<div class="card pad sv-res"><div class="sv-rq"><span class="sv-n">${Q.indexOf(q)+1}</span>${esc(q.t[0])}</div>${texts(q)}</div>`).join('')}
+  <div class="sec"><h2>Barcha javoblar</h2><span class="hint">bosib ko'ring</span></div>
+  <div class="card list">${V.rows.map(r=>`<button class="row" data-svrow="${r.id}"><span class="ava" style="background:${avc(r.id)}1f;color:${avc(r.id)}">${esc(ini(r.name||'?'))}</span><div class="mid"><div class="t1">${esc(r.name||'Ismsiz')}${r.mode?` <span class="mtag ${r.mode}">${r.mode==='biz'?'🏪':'👤'}</span>`:''}${r.answers&&(r.answers.q10===0||r.answers.q10===1)?' 🎥':''}</div><div class="t2">${new Date(r.at).toLocaleString('uz-UZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} · ${r.answers&&r.answers.q4?'foyda '+r.answers.q4+'/5':''}${r.answers&&r.answers.q9!==undefined?' · tavsiya '+r.answers.q9+'/10':''}</div></div>${ic('chev')}</button>`).join('')||'<div class="empty">Hali javob yo\'q</div>'}</div>
+ </div><div>
+  <div class="sec"><h2>Boshqaruv</h2></div>
+  <div class="card pad"><div class="feat" style="padding:0 0 12px"><div class="mid"><div class="t1">So'rovnoma</div><div class="t2">Yopiq bo'lsa havola «yakunlangan» deydi</div></div><div class="seg"><button class="${s.on?'':'on m-off'}" data-svon="0">Yopiq</button><button class="${s.on?'on':''}" data-svon="1">Faol</button></div></div>
+  <div class="field"><label>Havola</label><div class="sv-link"><span class="num">${SV_LINK}</span><button class="btn btn-ghost btn-sm" data-copy="${SV_LINK}">${ic('copy')}</button></div></div>
+  <button class="btn btn-ghost w100" data-svrestart="1">Yangi so'rovnoma boshlash</button>
+  <p class="hint" style="margin:8px 0 0">Yangi boshlansa, eski javoblar jadvalda qoladi, hisoblagichlar noldan boshlanadi.</p></div>
+  <div class="sec"><h2>Mijozlarga yuborish</h2><span class="hint">bot + push</span></div>
+  <div class="card pad"><div class="field"><label for="sv-to">Kimga</label><select class="inp" id="sv-to"><option value="all">Hammaga (${V.reach.bot} botda, ${V.reach.push} push)</option><option value="std">👤 Standart</option><option value="biz">🏪 Biznes</option></select></div>
+  <textarea class="inp" id="sv-text" maxlength="600">${esc(S.svDraft||SV_BOT)}</textarea>
+  <button class="btn btn-primary w100" style="margin-top:12px" data-svsend="1">${ic('send')} Yuborish</button>
+  <p class="hint" style="margin:8px 0 0">Javob berganlarga yuborilmaydi. Xabar ostida «So'rovnomani ochish» tugmasi bo'ladi.</p></div>
+  <div class="sec"><h2>SMS matni</h2><span class="hint">o'zingiz yuborasiz</span></div>
+  <div class="card pad"><div class="bubble sv-sms">${esc(SV_SMS)}</div><button class="btn btn-ghost w100" style="margin-top:10px" data-copy="${esc(SV_SMS)}">${ic('copy')} Nusxalash</button></div>
+  <div class="sec"><h2>🎥 Videoga rozi</h2><span class="hint">${vids.length} kishi</span></div>
+  <div class="card list">${vids.map(r=>`<div class="row"><span class="ava" style="background:var(--pos-bg);color:var(--brand)">🎥</span><div class="mid"><div class="t1">${esc(r.name||'Ismsiz')}</div><div class="t2">${r.answers.q10===1?'Faqat ovoz / yuzsiz':'Video'}${r.answers.q11!==undefined&&Q[10].o[r.answers.q11]?' · '+esc(Q[10].o[r.answers.q11][0]):''}</div></div>${r.phone?`<a class="btn btn-ghost btn-sm" href="tel:+${esc(r.phone)}">${ic('phone')}</a>`:''}</div>`).join('')||'<div class="empty">Hali yo\'q</div>'}</div>
+ </div></div>`}
+function svRowSheet(id){const V=S.sv,r=V.rows.find(x=>x.id===id);if(!r)return;
+ openSheet(`<div class="sh-h"><b>${esc(r.name||'Ismsiz')}</b><button class="icon-btn" data-close="1">${ic('x')}</button></div>
+ <p class="hint" style="margin:0 0 12px">${r.phone?'+'+esc(r.phone)+' · ':''}${r.mode?(r.mode==='biz'?'🏪 Biznes':'👤 Standart'):'ilovaga kirmagan'} · ${new Date(r.at).toLocaleString('uz-UZ')}</p>
+ ${V.q.map((q,i)=>{const v=r.answers&&r.answers[q.id];if(v===undefined&&q.opt)return '';return `<div class="sv-a"><small>${i+1}. ${esc(q.t[0])}</small><b>${esc(svAns(q,v))}</b></div>`}).join('')}
+ ${r.acc?`<button class="btn btn-ghost w100" style="margin-top:12px" data-user="${r.acc}">Mijoz kartasini ochish</button>`:''}`)}
+
 /* ---------- Sodiqlik ---------- */
 const SLV=[['🌱','Yangi'],['🥉','Faol'],['🥈','Ishonchli'],['🥇','Oltin']],BLV=[['🏪','Start'],['🥈','Kumush'],['🥇','Oltin'],['💎','Platina']];
 const LCFG_L=[['login','Ilovaga kirish (kuniga 1)'],['streak7','7 kun ketma-ket bonus'],['tx','Yangi yozuv'],['txMax','Kuniga nechta yozuv hisoblanadi'],['ontime','Qarzni muddatida qaytarish'],['invite',"Do'st taklifi"],['invitePrem',"Do'st Premium olsa"],['back','14+ kundan keyin qaytsa'],['lv1','🥉 Faol — ball'],['lv2','🥈 Ishonchli — ball'],['lv3','🥇 Oltin — ball'],['r7','7 kun Premium — narxi (ball)'],['r30','1 oy Premium — narxi (ball)'],['goldDisc','🥇 Oltin: yillik Premium chegirma %'],['bizSilverDisc','Biznes 🥈 Kumush: yillik chegirma %'],['bizGoldDisc','Biznes 🥇 Oltin/💎 Platina: yillik chegirma %'],['bizRefDays',"Biznes taklif: to'lagan do'kon uchun bepul kun"]];
@@ -661,11 +715,17 @@ function vMsg(){
 }
 
 /* ---------- hodisalar ---------- */
-function go(t){S.tab=t;haptic();if(t==='pays'&&!S.pays)loadPays();if(t==='loyal'&&!S.ly)loadLoyal();render();window.scrollTo(0,0)}
+function go(t){S.tab=t;haptic();if(t==='pays'&&!S.pays)loadPays();if(t==='loyal'&&!S.ly)loadLoyal();if(t==='survey')loadSurvey();render();window.scrollTo(0,0)}
 document.addEventListener('click',async e=>{
   const b=e.target.closest('button,[data-user],[data-pick]');if(!b)return;const d=b.dataset;
   if(d.go){closeSheet(true);go(d.go);return}
-  if(d.reload){reloadAll();if(S.tab==='loyal')loadLoyal();return}
+  if(d.reload){reloadAll();if(S.tab==='loyal')loadLoyal();if(S.tab==='survey')loadSurvey();return}
+  if(d.svrow){svRowSheet(d.svrow);return}
+  if(d.svon){const on=d.svon==='1';try{const j=await api('admSurveySet',{on});S.sv.survey=j.survey;haptic('ok');toast(on?'Faol':'Yopildi');render()}catch(er){toast(er.message)}return}
+  if(d.svrestart){if(!await confirmBox("Yangi so'rovnoma boshlansinmi? Hisoblagichlar noldan boshlanadi, eski javoblar jadvalda qoladi."))return;try{await api('admSurveySet',{restart:1});await loadSurvey();toast('Boshlandi')}catch(er){toast(er.message)}return}
+  if(d.svsend){const text=(($('#sv-text')||{}).value||'').trim(),to=($('#sv-to')||{}).value||'all';if(!text){toast('Matnni yozing');return}
+    if(!await confirmBox("So'rovnoma havolasi tanlangan mijozlarga bot va push orqali yuboriladi. Davom etamizmi?"))return;
+    b.disabled=true;b.textContent='Yuborilmoqda…';try{const j=await api('admSurveySend',{text,to});S.sv.survey=j.survey;haptic('ok');toast(`✅ ${j.n} kishiga yuborildi${j.skip?` · ${j.skip} tasi o'tkazildi`:''}`);render()}catch(er){toast(er.message);b.disabled=false;b.textContent='Yuborish'}return}
   if(d.lyin){S.lyIn=+d.lyin;render();return}
   if(d.lym){S.lyM=d.lym;render();return}
   if(d.lyto){S.lyDraft=($('#ly-text')||{}).value||S.lyDraft;S.lyTo=d.lyto;render();setTimeout(()=>{const t=$('#ly-text');if(t){t.scrollIntoView({behavior:'smooth',block:'center'});t.focus()}},60);return}
@@ -686,7 +746,7 @@ document.addEventListener('click',async e=>{
   if(d.payf){S.payF=d.payf;render();return}
   if(d.to){S.draft=($('#bm')||{}).value||S.draft;S.to=d.to;render();return}
   if(d.utab){S.utab=d.utab;rerenderUser();return}
-  if(d.copy){try{await navigator.clipboard.writeText(d.copy);toast('Raqam nusxalandi')}catch(er){toast(d.copy)}return}
+  if(d.copy){try{await navigator.clipboard.writeText(d.copy);toast(/^\+?\d[\d ]+$/.test(d.copy)?'Raqam nusxalandi':'Nusxalandi')}catch(er){toast(d.copy)}return}
   if(d.feat){
     const s=S.stats;if(!s||s.feat[d.feat]===d.m)return;const old=s.feat[d.feat];
     if(d.m==='off'&&!await confirmBox("Bo'lim hamma mijozlarda yashiriladi. Ularning yozuvlari o'chmaydi. Davom etamizmi?"))return;
