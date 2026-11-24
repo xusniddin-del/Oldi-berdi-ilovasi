@@ -53,4 +53,15 @@
     <string name="unpair_q">Отключить телефон?</string>
     <string name="unpair_text">Авто-SMS перестанут отправляться с этого телефона. Позже можно подключить снова по новому коду.</string>
     <string name="version">Версия %1$s</string>
+    <string name="lang">Язык</string>
+    <string name="lang_other">O\'zbek tili</string>
+    <string name="upd_title">Вышла новая версия</string>
+    <string name="upd_text">Oldi-Berdi SMS %1$s готова.</string>
+    <string name="upd_notif">Oldi-Berdi SMS %1$s — нажмите, чтобы обновить</string>
+    <string name="upd_btn">Обновить</string>
+    <string name="upd_hint">Откройте скачанный файл и нажмите «Обновить». Настройки и подключение сохранятся.</string>
+    <string name="safe_title">🔒 Безопасно и прозрачно</string>
+    <string name="safe_text">• Не читает ваши SMS — только отправляет напоминания\n• Нет доступа к звонкам, контактам, фото и файлам\n• Никакой связи с банковскими картами, счетами и деньгами\n• Пишет только должникам, которых вы записали в Oldi-Berdi\n• Каждое SMS видно в списке, отключить можно в любой момент\n• Официальное приложение с подписью Vector Studio</string>
+    <string name="lang_uz">O\'zbekcha</string>
+    <string name="lang_ru">Русский</string>
 </resources>

@@ -30,10 +30,19 @@ class Prefs(ctx: Context) {
     var fails: Int get() = p.getInt("fails", 0); set(v) = p.edit().putInt("fails", v).apply()
     var batteryAsked: Boolean get() = p.getBoolean("batteryAsked", false); set(v) = p.edit().putBoolean("batteryAsked", v).apply()
     var offServer: Boolean get() = p.getBoolean("offServer", false); set(v) = p.edit().putBoolean("offServer", v).apply()
+    /** ilova tili: "uz" (asosiy) yoki "ru" — telefon tilidan qat'i nazar */
+    var lang: String get() = p.getString("lang", "uz") ?: "uz"; set(v) = p.edit().putString("lang", v).apply()
+    /** serverdagi eng yangi versiya (sms-version.json) */
+    var newCode: Int get() = p.getInt("newCode", 0); set(v) = p.edit().putInt("newCode", v).apply()
+    var newName: String get() = p.getString("newName", "") ?: ""; set(v) = p.edit().putString("newName", v).apply()
+    var newNotes: String get() = p.getString("newNotes", "") ?: ""; set(v) = p.edit().putString("newNotes", v).apply()
+    var updChecked: Long get() = p.getLong("updChecked", 0); set(v) = p.edit().putLong("updChecked", v).apply()
+    var updNotified: Int get() = p.getInt("updNotified", 0); set(v) = p.edit().putInt("updNotified", v).apply()
+    val hasUpdate get() = newCode > Upd.CODE
 
     val paired get() = token.isNotEmpty()
 
-    fun clear() { p.edit().clear().apply() }
+    fun clear() { val l = lang; p.edit().clear().putString("lang", l).apply() }
 
     private fun mins(hm: String): Int { val a = hm.split(":"); return (a.getOrNull(0)?.toIntOrNull() ?: 0) * 60 + (a.getOrNull(1)?.toIntOrNull() ?: 0) }
     fun inWorkHours(): Boolean {

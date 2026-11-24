@@ -25,10 +25,21 @@
             <TextView android:id="@+id/pairErr" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#c2401f" android:textSize="14sp"/>
             <Button android:id="@+id/btnPair" style="@style/Btn" android:layout_marginTop="8dp" android:text="@string/pair_btn"/>
         </LinearLayout>
+        <LinearLayout style="@style/Card">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/safe_title" android:textColor="@color/brand" android:textSize="17sp" android:textStyle="bold"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/safe_text" android:textColor="@color/ink" android:textSize="14sp" android:lineSpacingExtra="5dp"/>
+        </LinearLayout>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:text="@string/pair_note" android:textColor="@color/muted" android:textSize="13sp" android:lineSpacingExtra="3dp"/>
+        <Button android:id="@+id/btnLangPair" style="@style/BtnGhost" android:layout_marginTop="12dp" android:text="@string/lang_other"/>
     </LinearLayout>
 
     <!-- 2) ASOSIY -->
+    <LinearLayout android:id="@+id/boxUpdate" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="@drawable/card" android:padding="16dp" android:layout_marginLeft="16dp" android:layout_marginRight="16dp" android:layout_marginTop="16dp" android:visibility="gone">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/upd_title" android:textColor="@color/brand" android:textSize="17sp" android:textStyle="bold"/>
+        <TextView android:id="@+id/txtUpdate" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="@color/ink" android:textSize="14sp" android:lineSpacingExtra="3dp"/>
+        <Button android:id="@+id/btnUpdate" style="@style/Btn" android:layout_height="46dp" android:layout_marginTop="10dp" android:text="@string/upd_btn"/>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="@string/upd_hint" android:textColor="@color/muted" android:textSize="12.5sp"/>
+    </LinearLayout>
     <LinearLayout android:id="@+id/viewMain" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp" android:visibility="gone">
         <Button android:id="@+id/btnToggle" android:layout_width="match_parent" android:layout_height="96dp" android:textColor="#ffffff" android:textSize="22sp" android:textStyle="bold" android:textAllCaps="false" android:stateListAnimator="@null" android:text="@string/st_on"/>
         <TextView android:id="@+id/txtStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="center" android:textColor="@color/muted" android:textSize="14sp"/>
